@@ -97,7 +97,7 @@ organizations can start using Ballerina for EDI processing without redoing any m
 The following command converts Smooks EDI mapping to Ballerina EDI mapping:
 
 ```shell
-bal smooksToBal <Smooks mapping xml file path> <Ballerina mapping json file path>
+bal edi smooksToBal <Smooks mapping xml file path> <Ballerina mapping json file path>
 ```
 
 For example, the below command converts the Smooks mapping for
@@ -105,7 +105,7 @@ EDIFACT [Invoice EDI](https://github.com/chathurace/ballerina-edi/blob/main/edi/
 Ballerina compatible JSON mapping.
 
 ```shell
-bal smooksToBal d3a-invoic-1/mapping.xml d3a-invoic-1/mapping.json
+bal edi smooksToBal d3a-invoic-1/mapping.xml d3a-invoic-1/mapping.json
 ```
 
 Generated JSON mapping is
@@ -123,7 +123,7 @@ The following command converts ESL files to Ballerina EDI mappings. Note that se
 file, which is usually shared by multiple ESL mappings.
 
 ```
-bal eslToBal <ESL file path or directory> <ESL segment definitions path> <output json path or directory>
+bal edi eslToBal <ESL file path or directory> <ESL segment definitions path> <output json path or directory>
 ```
 
 If a directory containing multiple ESL files is given as the input, all ESLs will be converted to Ballerina mappings
@@ -140,12 +140,12 @@ generate records in ballerina.
   records will be saved in orderRecords.bal).
 
 ```shell
-bal codegen edi-mapping1.json orderRecords.bal
+bal edi gen edi-mapping1.json orderRecords.bal
 ```
 
 Generated Ballerina records for the above mapping are shown below.
 
-```
+```ballerina
 type Header_Type record {|
    string orderId?;
    string organization?;
@@ -240,11 +240,12 @@ libraries and convert EDI messages into Ballerina records in a single line of co
 Below command can be used to generate EDI libraries:
 
 ```
-bal libgen <org name> <library name> <EDI mappings folder> <output folder>
+bal edi lib <org name> <library name> <EDI mappings folder> <output folder>
 ```
 
-The Ballerina library project will be generated in the output folder. This library can be built and published by issuing "
-bal pack" and "bal push" commands from the output folder.
+The Ballerina library project will be generated in the output folder. This library can be built and published by
+issuing "bal pack" and "bal push" commands from the output folder. However, once we support `generated` directories,
+user should be able to import the generated code to the user code.
 
 Then the generated library can be imported into any Ballerina project and generated utility functions of the library can
 be invoked to parse EDI messages into Ballerina records. For example, the below Ballerina code parses an X12 834 EDI
