@@ -42,7 +42,7 @@ An EDI mapping file is required in order to parse an EDI document to Ballerina-r
 implemented manually for a given EDI document or can be converted from an existing definition like `Smooks`
 or `ESL`.
 
-The below is a sample EDI mapping file (i.e., `edi-mapping1.json`) for the above EDI document.
+The below is a sample EDI mapping file (i.e., `simple-order-mapping.json`) for the above EDI document.
 
 ```json
 {
@@ -135,11 +135,11 @@ generate records in ballerina.
 
 ### Using a Ballerina command
 
-Ballerina records for the above EDI mapping in the `edi-mapping1.json` file can be generated as follows (generated Ballerina
+Ballerina records for the above EDI mapping in the `simple-order-mapping.json` file can be generated as follows (generated Ballerina
 records will be saved in the `orderRecords.bal` file).
 
 ```bash
-$ bal edi gen edi-mapping1.json orderRecords.bal
+$ bal edi gen simple-order-mapping.json orderRecords.bal
 ```
 
 The generated Ballerina records for the above mapping are shown below.
@@ -178,7 +178,7 @@ import ballerina/io;
 import chathurace/edi.core as edi;
 
 public function main() returns error? {
-    edi:EDIMapping mapping = check edi:readMappingFromFile("resources/edi-mapping1.json");
+    edi:EDIMapping mapping = check edi:readMappingFromFile("resources/simple-order-mapping.json");
 
     string ediText = check io:fileReadString("resources/edi-sample1.edi");
     json orderData = check edi:readEDIAsJson(ediText, mapping);
@@ -248,7 +248,7 @@ Then, the generated library can be imported into any Ballerina project, and the 
 be invoked to parse EDI messages into Ballerina records. For example, the Ballerina code below parses an `X12 834` EDI
 message into the corresponding Ballerina record.
 
-```
+```ballerina
 m834:Benefit_Enrollment_and_Maintenance b = check hl71:readEDI(ediText, hl71:EDI_834).ensureType();
 ```
 
