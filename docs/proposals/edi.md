@@ -251,6 +251,3 @@ message into the corresponding Ballerina record.
 ```ballerina
 m834:Benefit_Enrollment_and_Maintenance b = check hl71:readEDI(ediText, hl71:EDI_834).ensureType();
 ```
-
-
-
