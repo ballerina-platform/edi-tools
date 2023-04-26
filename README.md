@@ -70,7 +70,7 @@ type SimpleOrder record {|
 |};
 ```
 
-### Parsing EDI files
+### Reading EDI files
 
 Below code reads the edi-sample1.edi into a json variable named "orderData" and then convert the orderData json to the generated record "SimpleOrder". Once EDI documents are mapped to the SimpleOrder record, any attribute in the EDI can be accessed using record's fields as shown in the example code below.
 
@@ -79,7 +79,7 @@ import ballerina/io;
 import balarinax/edi;
 
 public function main() returns error? {
-    EDIReader ediReader = check new(check io:fileReadJson("resources/edi-schema1.edi"));
+    EDIReader ediReader = check new(check io:fileReadJson("resources/edi-schema1.json"));
     string ediText = check io:fileReadString("resources/edi-sample1.edi");
     json orderData = check ediReader.readEDI(ediText);
     io:println(orderData.toJsonString());
@@ -119,6 +119,22 @@ public function main() returns error? {
       "quantity": 28
     }
   ]
+}
+````
+
+### Writing EDI files
+
+Ballerina EDI module can also convert Ballerina records or JSON data into EDI texts, based on a given schema. Below code demonstrates the conversion of a SimpleOrder record in a EDI text based on the schema used in the above example:
+
+````ballerina
+import ballerina/io;
+import balarinax/edi;
+
+public function main() returns error? {
+    SimpleOrder order2 = {...};
+    EDIWriter ediWriter = check new(check io:fileReadJson("resources/edi-schema1.json"));
+    string orderEDI = check ediWriter.writeEDI(order2.toJson());
+    io:println(orderEDI);
 }
 ````
 
