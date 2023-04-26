@@ -1,0 +1,71 @@
+{
+    "header": {
+      "orderId": "1201",
+      "date": "2008-01-01"
+    },
+    "organization": {
+      "partnerCode": "P120",
+      "name": "ABC Store",
+      "address": {
+        "streetAddress": "67, Park road",
+        "city": "Colombo",
+        "country": "Sri Lanka"
+      },
+      "contact": [
+        "01 678 8908",
+        "04 732 3721",
+        "04 783 6702"
+      ]
+    },
+    "items": [
+      {
+        "item": "A-250",
+        "quantity": 12,
+        "comments": []
+      },
+      {
+        "item": "A-45",
+        "quantity": 100,
+        "comments": [
+          {
+            "author": "Kevin",
+            "text": "Urgent"
+          }
+        ]
+      },
+      {
+        "item": "D-10",
+        "quantity": 58,
+        "comments": [
+          {
+            "author": "Smith",
+            "text": "REF 10053"
+          },
+          {
+            "author": "Steven",
+            "text": "Pre orders"
+          }
+        ]
+      },
+      {
+        "item": "K-80",
+        "quantity": 250,
+        "comments": [
+          {
+            "author": "Steven",
+            "text": "Before December"
+          }
+        ]
+      },
+      {
+        "item": "T-46",
+        "quantity": 28,
+        "comments": [
+          {
+            "author": "Smith",
+            "text": "Discount code AA1200"
+          }
+        ]
+      }
+    ]
+  }
