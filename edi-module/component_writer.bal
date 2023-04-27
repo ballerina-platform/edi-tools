@@ -7,7 +7,7 @@ class ComponentWriter {
     }    
 
     function serializeComponentGroup(json componentGroup, EDISegSchema segMap, EDIFieldSchema fmap) returns string|error {
-        if componentGroup is null {
+        if componentGroup is () {
             if fmap.required {
                 return error(string `Mandatory composite field "${fmap.tag}" of segment "${segMap.tag}" is not provided.`);
             } else {

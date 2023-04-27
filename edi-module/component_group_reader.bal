@@ -2,52 +2,49 @@ class ComponentGroupReader {
 
     SubcomponentGroupReader subcomponentGroupReader = new();
 
-    function read(string compositeText, EDISchema mapping, EDIFieldSchema emap)
+    function read(string compositeText, EDISchema ediSchema, EDIFieldSchema fieldSchema)
                 returns EDIComponentGroup|error? {
         if compositeText.trim().length() == 0 {
-            // Composite value is not provided. Return null, which will cause this field to be not included.
-            return null;
+            return ();
         }
 
-        string[] components = split(compositeText, mapping.delimiters.component);
-        if emap.truncatable {
-            int minFields = getMinimumCompositeFields(emap);
+        string[] components = split(compositeText, ediSchema.delimiters.component);
+        if fieldSchema.truncatable {
+            int minFields = getMinimumCompositeFields(fieldSchema);
             if components.length() < minFields {
-                return error(string `Composite mapping's field count does not match minimum field count of the truncatable field ${emap.tag}.
+                return error(string `Composite mapping's field count does not match minimum field count of the truncatable field ${fieldSchema.tag}.
                     Required minimum field count: ${minFields}. Found ${components.length()} fields. 
-                    Composite mapping: ${emap.toJsonString()} | Composite text: ${compositeText}`);
+                    Composite mapping: ${fieldSchema.toJsonString()} | Composite text: ${compositeText}`);
             }
-        } else if (emap.components.length() != components.length()) {
-            string errMsg = string `Composite mapping's component count does not match field ${emap.tag}. 
-                    Composite mapping: ${emap.toJsonString()} | Composite text: ${compositeText}`;
-            return error(errMsg);
+        } else if fieldSchema.components.length() != components.length() {
+            return error(string `Composite mapping's component count does not match field ${fieldSchema.tag}. 
+                    Composite mapping: ${fieldSchema.toJsonString()} | Composite text: ${compositeText}`);
         }
 
-        EDIComponentSchema[] subMappings = emap.components;
+        EDIComponentSchema[] subMappings = fieldSchema.components;
         EDIComponentGroup composite = {};
         int componentNumber = 0;
-        while (componentNumber < components.length()) {
+        while componentNumber < components.length() {
             string component = components[componentNumber];
             EDIComponentSchema subMapping = subMappings[componentNumber];
             if component.trim().length() == 0 {
                 if subMapping.required {
                     return error(string `Required component ${subMapping.tag} is not provided.`);
-                } else {
-                    if mapping.preserveEmptyFields {
-                        composite[subMapping.tag] = subMapping.dataType == STRING? component : null;
-                    }
-                    componentNumber += 1;
-                    continue;
+                } 
+                if ediSchema.preserveEmptyFields {
+                    composite[subMapping.tag] = subMapping.dataType == STRING? component : ();
                 }
+                componentNumber += 1;
+                continue;
             }
 
             if subMapping.subcomponents.length() > 0 {
-                EDISubcomponentGroup? scGroup = check self.subcomponentGroupReader.read(component, mapping, subMapping);
-                if scGroup is EDISubcomponentGroup || mapping.preserveEmptyFields {
+                EDISubcomponentGroup? scGroup = check self.subcomponentGroupReader.read(component, ediSchema, subMapping);
+                if scGroup is EDISubcomponentGroup || ediSchema.preserveEmptyFields {
                     composite[subMapping.tag] = scGroup;
                 }
             } else {
-                SimpleType|error value = convertToType(component, subMapping.dataType, mapping.delimiters.decimalSeparator);
+                SimpleType|error value = convertToType(component, subMapping.dataType, ediSchema.delimiters.decimalSeparator);
                 if value is SimpleType? {
                     composite[subMapping.tag] = value;
                 } else {

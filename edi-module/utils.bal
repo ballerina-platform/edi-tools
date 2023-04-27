@@ -6,10 +6,10 @@ function convertToType(string value, EDIDataType dataType, string? decimalSepara
             return value;
         }
         INT => {
-            return int:fromString(decimalSeparator != null? regex:replace(value, decimalSeparator, ".") : value);
+            return int:fromString(decimalSeparator != ()? regex:replace(value, decimalSeparator, ".") : value);
         }
         FLOAT => {
-            return float:fromString(decimalSeparator != null? regex:replace(value, decimalSeparator, ".") : value);
+            return float:fromString(decimalSeparator != ()? regex:replace(value, decimalSeparator, ".") : value);
         }
     }
     return error("Undefined type for value:" + value);

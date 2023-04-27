@@ -43,7 +43,7 @@ class SegmentReader {
                         } else if fieldMapping.dataType == STRING {
                             ediRecord[tag] = fieldText;
                         } else {
-                            ediRecord[tag] = null;
+                            ediRecord[tag] = ();
                         }
                     }
                     fieldNumber = fieldNumber + 1;

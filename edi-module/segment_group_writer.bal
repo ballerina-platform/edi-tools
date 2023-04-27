@@ -58,7 +58,6 @@ class SegmentGroupWriter {
                         }
                     }  
                 }
-
             } else {
                 return error(string `Cardinality of input segment/segment group "${unitKey}" does not match with schema ${printEDIUnitMapping(umap)}.
                 Allowed min: ${umap.minOccurances}, Allowed max: ${umap.maxOccurances}, Found ${unit is EDIUnit[]? unit.length() : 1}`);
