@@ -8,22 +8,22 @@ public class EDIWriter {
     SegmentGroupWriter segmentGroupSerializer;
 
     # Initializes the EDIWriter with an EDI schema
-    # 
+    #
     # + schema - Schema of the EDI type to be processed using the writer.
     # + return - Error is returned if the given schema is not valid.
     public function init(string|json|EDISchema schema) returns error? {
         if schema is string {
-            io:StringReader sr = new(schema);
+            io:StringReader sr = new (schema);
             json schemaJson = check sr.readJson();
             self.schema = check schemaJson.cloneWithType(EDISchema);
         } else {
             self.schema = check schema.cloneWithType(EDISchema);
-        } 
-        self.segmentGroupSerializer = new(self.schema);
+        }
+        self.segmentGroupSerializer = new (self.schema);
     }
 
     # Writes the given JSON varibale into a EDI text according the provided schema
-    # 
+    #
     # + msg - JSON value to be written into EDI
     # + return - EDI text containing the data provided in the JSON variable. Error if the reading fails.
     public function writeEDI(json msg) returns string|error {
@@ -34,7 +34,7 @@ public class EDIWriter {
         check self.segmentGroupSerializer.serialize(msg, self.schema, ediText);
         string ediOutput = "";
         foreach string s in ediText {
-            ediOutput += s + (self.schema.delimiters.segment == "\n"? "" : "\n");
+            ediOutput += s + (self.schema.delimiters.segment == "\n" ? "" : "\n");
         }
         return ediOutput;
     }

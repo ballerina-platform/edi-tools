@@ -1,24 +1,24 @@
 import ballerina/test;
 
-@test:Config{
-    dataProvider: segmentTestDataProvider  
+@test:Config {
+    dataProvider: segmentTestDataProvider
 }
 function testSegments(string testName) returns error? {
     EDISchema schema = check getSchema(testName);
     schema.preserveEmptyFields = true;
-    EDIReader reader = check new(schema);
+    EDIReader reader = check new (schema);
     string ediIn = check getEDIMessage(testName);
     json message = check reader.readEDI(ediIn);
     check saveJsonMessage(testName, message);
-    
-    EDIWriter writer = check new(schema);
+
+    EDIWriter writer = check new (schema);
     string ediOut = check writer.writeEDI(message);
     check saveEDIMessage(testName, ediOut);
 
     ediOut = prepareEDI(ediOut, schema);
     ediIn = prepareEDI(ediIn, schema);
-    
-    test:assertEquals(ediOut, ediIn);    
+
+    test:assertEquals(ediOut, ediIn);
 }
 
 function segmentTestDataProvider() returns string[][] {

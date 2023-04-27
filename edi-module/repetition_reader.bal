@@ -2,7 +2,7 @@ import ballerina/log;
 
 class RepetitionReader {
 
-    ComponentGroupReader componentGroupReader = new();
+    ComponentGroupReader componentGroupReader = new ();
 
     function read(string repeatText, string repeatDelimiter, EDISchema mapping, EDIFieldSchema fieldMapping)
             returns SimpleArray|EDIComponentGroup[]|error {

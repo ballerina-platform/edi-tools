@@ -30,9 +30,9 @@ class ComponentGroupReader {
             if component.trim().length() == 0 {
                 if subMapping.required {
                     return error(string `Required component ${subMapping.tag} is not provided.`);
-                } 
+                }
                 if ediSchema.preserveEmptyFields {
-                    composite[subMapping.tag] = subMapping.dataType == STRING? component : ();
+                    composite[subMapping.tag] = subMapping.dataType == STRING ? component : ();
                 }
                 componentNumber += 1;
                 continue;

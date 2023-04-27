@@ -30,7 +30,7 @@ class SubcomponentGroupReader {
                     return error(string `Required subcomponent ${subMapping.tag} is not provided.`);
                 } else {
                     if mapping.preserveEmptyFields {
-                        scGroup[subMapping.tag] = subMapping.dataType == STRING? subcomponent : ();
+                        scGroup[subMapping.tag] = subMapping.dataType == STRING ? subcomponent : ();
                     }
                     subcomponentNumber += 1;
                     continue;

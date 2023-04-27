@@ -35,7 +35,7 @@ function saveJsonMessage(string testName, json message) returns error? {
 function prepareEDI(string edi, EDISchema schema) returns string {
     string e1 = regex:replaceAll(edi, " ", "");
     e1 = regex:replaceAll(e1, "\n", "");
-    e1 = regex:replaceAll(e1, validateDelimiter((schema.delimiters.decimalSeparator?:".")) + "0", "");
+    e1 = regex:replaceAll(e1, validateDelimiter((schema.delimiters.decimalSeparator ?: ".")) + "0", "");
     e1 = regex:replaceAll(e1, "0", "");
     return e1;
 }

@@ -2,22 +2,22 @@
 # Record for representing EDI schema
 #
 # + name - Name of the schema. This will be used as the main record name by the code generation tool.  
-# 
+#
 # + tag - Tag for the root element. Can be same as the name.  
-# 
+#
 # + delimiters - Delimiters used to separate EDI segments, fields, components, etc.  
-# 
+#
 # + ignoreSegments - List of segment schemas to be ignored when matching a EDI text. 
-#   For example, if it is necessary to process X12 transaction sets only, without ISA as GS segments,
-#   and if the schema contains ISA and GS segments as well, ISA and GS can be provided as ignoreSegments.
-# 
+# For example, if it is necessary to process X12 transaction sets only, without ISA as GS segments,
+# and if the schema contains ISA and GS segments as well, ISA and GS can be provided as ignoreSegments.
+#
 # + preserveEmptyFields - Indicates how to process EDI fields, components and subcomponents containing empty values.
-#   true: Includes fields, components and subcomponents with empty values in the generated JSON.
-#   String values will be represented as empty strings. 
-#   Multi-value fields (i.e. repeats) will be represented as empty arrays.
-#   All other types will be represented as null.
-#   false: Omits fields, components and subcomponents with empty values.
-# 
+# true: Includes fields, components and subcomponents with empty values in the generated JSON.
+# String values will be represented as empty strings. 
+# Multi-value fields (i.e. repeats) will be represented as empty arrays.
+# All other types will be represented as null.
+# false: Omits fields, components and subcomponents with empty values.
+#
 # + segments - Array of segment and segment group schemas
 public type EDISchema record {|
     string name;

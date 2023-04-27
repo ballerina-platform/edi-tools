@@ -2,8 +2,8 @@ import ballerina/log;
 
 class SegmentReader {
 
-    RepetitionReader repetitionReader = new();
-    ComponentGroupReader componentGroupReader = new();
+    RepetitionReader repetitionReader = new ();
+    ComponentGroupReader componentGroupReader = new ();
 
     function read(EDISegSchema segMapping, string[] fields, EDISchema mapping, string segmentDesc)
         returns EDISegment|error {
@@ -54,14 +54,14 @@ class SegmentReader {
                 // this is a repeating field (i.e. array). can be a repeat of composites as well.
                 SimpleArray|EDIComponentGroup[] repeatValues = check self.repetitionReader.read(fieldText, mapping.delimiters.repetition, mapping, fieldMapping);
                 if repeatValues.length() > 0 || mapping.preserveEmptyFields {
-                    ediRecord[tag] = repeatValues;    
-                } 
+                    ediRecord[tag] = repeatValues;
+                }
             } else if (fieldMapping.components.length() > 0) {
                 // this is a composite field (but not a repeat)
                 EDIComponentGroup? composite = check self.componentGroupReader.read(fieldText, mapping, fieldMapping);
                 if (composite is EDIComponentGroup || mapping.preserveEmptyFields) {
                     ediRecord[tag] = composite;
-                } 
+                }
             } else {
                 // this is a simple type field
                 SimpleType|error value = convertToType(fieldText, fieldMapping.dataType, mapping.delimiters.decimalSeparator);
