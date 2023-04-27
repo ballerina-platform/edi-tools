@@ -1,6 +1,6 @@
 class ComponentGroupReader {
 
-    SubcomponentGroupReader subcomponentGroupReader = new();
+    SubcomponentGroupReader subcomponentGroupReader = new ();
 
     function read(string compositeText, EDISchema ediSchema, EDIFieldSchema fieldSchema)
                 returns EDIComponentGroup|error? {
