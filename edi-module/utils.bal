@@ -71,13 +71,13 @@ function prepareToSplit(string content, string delimeter) returns string {
     return preparedContent;
 }
 
-function printEDIUnitMapping(EDIUnitMapping smap) returns string {
-    if smap is EDISegMapping {
+function printEDIUnitMapping(EDIUnitSchema smap) returns string {
+    if smap is EDISegSchema {
         return string `Segment ${smap.code} | Min: ${smap.minOccurances} | Max: ${smap.maxOccurances} | Trunc: ${smap.truncatable}`;    
     } else {
         string sgcode = "";
-        foreach EDIUnitMapping umap in smap.segments {
-            if umap is EDISegMapping {
+        foreach EDIUnitSchema umap in smap.segments {
+            if umap is EDISegSchema {
                 sgcode += umap.code + "-";
             } else {
                 sgcode += printSegGroupMap(umap);
@@ -87,14 +87,14 @@ function printEDIUnitMapping(EDIUnitMapping smap) returns string {
     }
 }
 
-function printSegMap(EDISegMapping smap) returns string {
+function printSegMap(EDISegSchema smap) returns string {
     return string `Segment ${smap.code} | Min: ${smap.minOccurances} | Max: ${smap.maxOccurances} | Trunc: ${smap.truncatable}`;
 }
 
-function printSegGroupMap(EDISegGroupMapping sgmap) returns string {
+function printSegGroupMap(EDISegGroupSchema sgmap) returns string {
     string sgcode = "";
-    foreach EDIUnitMapping umap in sgmap.segments {
-        if umap is EDISegMapping {
+    foreach EDIUnitSchema umap in sgmap.segments {
+        if umap is EDISegSchema {
             sgcode += umap.code + "-";
         } else {
             sgcode += printSegGroupMap(umap);
@@ -110,7 +110,7 @@ public function getString(any|error option1, string option2) returns string {
     return option2;
 }
 
-function getMinimumFields(EDISegMapping segmap) returns int {
+function getMinimumFields(EDISegSchema segmap) returns int {
     int fieldIndex = segmap.fields.length() - 1;
     while fieldIndex > 0 {
         if segmap.fields[fieldIndex].required {
@@ -121,7 +121,7 @@ function getMinimumFields(EDISegMapping segmap) returns int {
     return fieldIndex;
 }
 
-function getMinimumCompositeFields(EDIFieldMapping emap) returns int {
+function getMinimumCompositeFields(EDIFieldSchema emap) returns int {
     int fieldIndex = emap.components.length() - 1;
     while fieldIndex > 0 {
         if emap.components[fieldIndex].required {
@@ -132,7 +132,7 @@ function getMinimumCompositeFields(EDIFieldMapping emap) returns int {
     return fieldIndex;
 }
 
-function getMinimumSubcomponentFields(EDIComponentMapping emap) returns int {
+function getMinimumSubcomponentFields(EDIComponentSchema emap) returns int {
     int fieldIndex = emap.subcomponents.length() - 1;
     while fieldIndex > 0 {
         if emap.subcomponents[fieldIndex].required {
@@ -143,7 +143,7 @@ function getMinimumSubcomponentFields(EDIComponentMapping emap) returns int {
     return fieldIndex;
 }
 
-function serializeSimpleType(SimpleType v, EDIMapping schema) returns string {
+function serializeSimpleType(SimpleType v, EDISchema schema) returns string {
     string sv = v.toString();
     if v is float {
         if sv.endsWith(".0") {

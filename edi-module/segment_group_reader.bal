@@ -4,44 +4,44 @@ import ballerina/regex;
 type SegmentGroupContext record {|
     int mappingIndex = 0;
     EDISegmentGroup segmentGroup = {};
-    EDIUnitMapping[] unitMappings;
+    EDIUnitSchema[] unitSchemas;
 |};
 
 class SegmentGroupReader {
 
     SegmentReader segmentReader = new();
 
-    function read(EDIUnitMapping[] currentMapping, EDIContext context, boolean rootGroup) returns EDISegmentGroup|error {
-        SegmentGroupContext sgContext = {unitMappings: currentMapping};
-        EDIMapping ediMapping = context.schema;
+    function read(EDIUnitSchema[] currentMapping, EDIContext context, boolean rootGroup) returns EDISegmentGroup|error {
+        SegmentGroupContext sgContext = {unitSchemas: currentMapping};
+        EDISchema ediSchema = context.schema;
         while context.rawIndex < context.rawSegments.length() {
             string sDesc = context.rawSegments[context.rawIndex];
             string segmentDesc = regex:replaceAll(sDesc, "\n", "");
-            string[] fields = split(segmentDesc, ediMapping.delimiters.'field);
-            if ediMapping.ignoreSegments.indexOf(fields[0], 0) != null {
+            string[] fields = split(segmentDesc, ediSchema.delimiters.'field);
+            if ediSchema.ignoreSegments.indexOf(fields[0], 0) != null {
                 context.rawIndex += 1;
                 continue;
             }
 
             boolean segmentMapped = false;
-            while sgContext.mappingIndex < sgContext.unitMappings.length() {
-                EDIUnitMapping? segMapping = currentMapping[sgContext.mappingIndex];
-                if (segMapping is EDISegMapping) {
+            while sgContext.mappingIndex < sgContext.unitSchemas.length() {
+                EDIUnitSchema? segMapping = currentMapping[sgContext.mappingIndex];
+                if (segMapping is EDISegSchema) {
                     log:printDebug(string `Trying to match with segment mapping ${printSegMap(segMapping)}`);
                     if segMapping.code != fields[0] {
                         check self.ignoreMapping(segMapping, sgContext, context);
                         continue;
                     }
-                    EDISegment ediRecord = check self.segmentReader.read(segMapping, fields, ediMapping, segmentDesc);
+                    EDISegment ediRecord = check self.segmentReader.read(segMapping, fields, ediSchema, segmentDesc);
                     check self.placeEDISegment(ediRecord, segMapping, sgContext, context);
                     context.rawIndex += 1;
                     segmentMapped = true;
                     break;
 
-                } else if segMapping is EDISegGroupMapping {
+                } else if segMapping is EDISegGroupSchema {
                     log:printDebug(string `Trying to match with segment group mapping ${printSegGroupMap(segMapping)}`);
-                    EDIUnitMapping firstSegMapping = segMapping.segments[0];
-                    if firstSegMapping is EDISegGroupMapping {
+                    EDIUnitSchema firstSegMapping = segMapping.segments[0];
+                    if firstSegMapping is EDISegGroupSchema {
                         return error("First item of segment group must be a segment. Found a segment group.\nSegment group: " + printSegGroupMap(segMapping));
                     }
                     if firstSegMapping.code != fields[0] {
@@ -61,7 +61,7 @@ class SegmentGroupReader {
                 Curren row: ${context.rawIndex}`);
             }
 
-            if sgContext.mappingIndex >= sgContext.unitMappings.length() {
+            if sgContext.mappingIndex >= sgContext.unitSchemas.length() {
                 // We have completed mapping with this segment group.
                 break;
             }
@@ -82,7 +82,7 @@ class SegmentGroupReader {
     # + sgContext - Segment group parsing context  
     # + context - EDI parsing context
     # + return - Return error if the given mapping cannot be ignored.
-    function ignoreMapping(EDIUnitMapping segMapping, SegmentGroupContext sgContext, EDIContext context) returns error? {
+    function ignoreMapping(EDIUnitSchema segMapping, SegmentGroupContext sgContext, EDIContext context) returns error? {
 
         // If the current segment mapping is optional, we can ignore the current mapping and compare the 
         // current segment with the next mapping.
@@ -112,7 +112,7 @@ class SegmentGroupReader {
         Current mapping index: ${sgContext.mappingIndex}`);
     }
 
-    function placeEDISegment(EDISegment segment, EDISegMapping segMapping, SegmentGroupContext sgContext, EDIContext context) returns error? {
+    function placeEDISegment(EDISegment segment, EDISegSchema segMapping, SegmentGroupContext sgContext, EDIContext context) returns error? {
         if (segMapping.maxOccurances == 1) {
             // Current segment has matched with the current mapping AND current segment is not repeatable.
             // So we can move to the next mapping.
@@ -140,7 +140,7 @@ class SegmentGroupReader {
         }  
     }
 
-    function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupMapping segMapping, SegmentGroupContext sgContext, EDIContext context) returns error? {
+    function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema segMapping, SegmentGroupContext sgContext, EDIContext context) returns error? {
         if segMapping.maxOccurances == 1 {
             // This is a non-repeatable mapping. So we have to compare the next segment with the next mapping.
             log:printDebug(string `Completed reading non-repeating segment group ${printSegGroupMap(segMapping)} | Current segment text: ${context.rawIndex < context.rawSegments.length()? context.rawSegments[context.rawIndex] : "-- EOF --"}`);
@@ -167,12 +167,12 @@ class SegmentGroupReader {
     }
 
     function validateRemainingMappings(SegmentGroupContext sgContext) returns error? {
-        if sgContext.mappingIndex < sgContext.unitMappings.length() - 1 {
+        if sgContext.mappingIndex < sgContext.unitSchemas.length() - 1 {
                 int i = sgContext.mappingIndex + 1;
-                while i < sgContext.unitMappings.length() {
-                    EDIUnitMapping umap = sgContext.unitMappings[i];
+                while i < sgContext.unitSchemas.length() {
+                    EDIUnitSchema umap = sgContext.unitSchemas[i];
                     int minOccurs = 1;
-                    if umap is EDISegMapping {
+                    if umap is EDISegSchema {
                         minOccurs = umap.minOccurances;
                     } else {
                         minOccurs = umap.minOccurances;

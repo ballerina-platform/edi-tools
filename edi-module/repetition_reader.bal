@@ -4,7 +4,7 @@ class RepetitionReader {
 
     ComponentGroupReader componentGroupReader = new();
 
-    function read(string repeatText, string repeatDelimiter, EDIMapping mapping, EDIFieldMapping fieldMapping)
+    function read(string repeatText, string repeatDelimiter, EDISchema mapping, EDIFieldSchema fieldMapping)
             returns SimpleArray|EDIComponentGroup[]|error {
         string[] fields = split(repeatText, repeatDelimiter);
         SimpleArray|EDIComponentGroup[] repeatValues = getArray(fieldMapping.dataType);

@@ -1,12 +1,12 @@
 class ComponentWriter {
 
-    EDIMapping emap;
+    EDISchema schema;
 
-    function init(EDIMapping emap) {
-        self.emap = emap;
+    function init(EDISchema schema) {
+        self.schema = schema;
     }    
 
-    function serializeComponentGroup(json componentGroup, EDISegMapping segMap, EDIFieldMapping fmap) returns string|error {
+    function serializeComponentGroup(json componentGroup, EDISegSchema segMap, EDIFieldSchema fmap) returns string|error {
         if componentGroup is null {
             if fmap.required {
                 return error(string `Mandatory composite field "${fmap.tag}" of segment "${segMap.tag}" is not provided.`);
@@ -15,7 +15,7 @@ class ComponentWriter {
             }            
         }
 
-        string cd = self.emap.delimiters.component;
+        string cd = self.schema.delimiters.component;
         if componentGroup is map<json> {
             string[] ckeys = componentGroup.keys();
             if ckeys.length() < fmap.components.length() && !fmap.truncatable {
@@ -25,7 +25,7 @@ class ComponentWriter {
             int cindex = 0;
             string cGroupText = "";
             while cindex < fmap.components.length() {
-                EDIComponentMapping cmap = fmap.components[cindex];
+                EDIComponentSchema cmap = fmap.components[cindex];
                 if cindex >= ckeys.length() {
                     if cmap.required {
                         return error(string `Mandatory component ${cmap.tag} not found in ${componentGroup.toString()} in segment ${segMap.code}`);
@@ -49,7 +49,7 @@ class ComponentWriter {
                 }
                 if cmap.subcomponents.length() == 0 {
                     if componentValue is SimpleType {
-                        cGroupText += (cindex == 0? "" : cd) + serializeSimpleType(componentValue, self.emap);
+                        cGroupText += (cindex == 0? "" : cd) + serializeSimpleType(componentValue, self.schema);
                         cindex += 1;
                     } else {
                         return error(string `Component ${cmap.tag} in [Segment: ${segMap.code}, Field: ${fmap.tag}] must contain a primitive value. Found: ${componentValue.toString()}`);
@@ -79,8 +79,8 @@ class ComponentWriter {
         }
     }
 
-    function serializeSubcomponentGroup(json subcomponentGroup, EDISegMapping segMap, EDIComponentMapping compMap) returns string|error {
-        string scd = self.emap.delimiters.subcomponent;
+    function serializeSubcomponentGroup(json subcomponentGroup, EDISegSchema segMap, EDIComponentSchema compMap) returns string|error {
+        string scd = self.schema.delimiters.subcomponent;
         if subcomponentGroup is map<json> {
             string[] sckeys = subcomponentGroup.keys();
             if sckeys.length() < compMap.subcomponents.length() && !compMap.truncatable {
@@ -90,7 +90,7 @@ class ComponentWriter {
             int scindex = 0;
             string scGroupText = "";
             while scindex < compMap.subcomponents.length() {
-                EDISubcomponentMapping scmap = compMap.subcomponents[scindex];
+                EDISubcomponentSchema scmap = compMap.subcomponents[scindex];
                 if scindex >= sckeys.length() {
                     if scmap.required {
                         return error(string `Mandatory subcomponent ${scmap.tag} not found in ${subcomponentGroup.toString()} in segment ${segMap.code}`);
@@ -104,7 +104,7 @@ class ComponentWriter {
                 }
                 var subcomponentValue = subcomponentGroup.get(sckey);
                 if subcomponentValue is SimpleType {
-                    scGroupText += (scGroupText == ""? "" : scd) + serializeSimpleType(subcomponentValue, self.emap);
+                    scGroupText += (scGroupText == ""? "" : scd) + serializeSimpleType(subcomponentValue, self.schema);
                     scindex += 1;
                 } else {
                     return error(string `Only primitive types are supported as subcomponent values. Found ${subcomponentValue.toString()}`);

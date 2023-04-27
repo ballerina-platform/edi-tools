@@ -1,15 +1,15 @@
 class SegmentWriter {
 
-    EDIMapping emap;
+    EDISchema schema;
     ComponentWriter componentSerializer;
 
-    function init(EDIMapping emap) {
-        self.emap = emap;
-        self.componentSerializer = new(emap);
+    function init(EDISchema schema) {
+        self.schema = schema;
+        self.componentSerializer = new(schema);
     }
 
-    function serialize(map<json> seg, EDISegMapping segMap, string[] ediText) returns error? {
-        string fd = self.emap.delimiters.'field;
+    function serialize(map<json> seg, EDISegSchema segMap, string[] ediText) returns error? {
+        string fd = self.schema.delimiters.'field;
         // string cd = self.emap.delimiters.component;
         string segLine = segMap.code;
         string[] fTags = seg.keys();
@@ -18,7 +18,7 @@ class SegmentWriter {
         }
         int fIndex = 0;
         while fIndex < segMap.fields.length() {
-            EDIFieldMapping fmap = segMap.fields[fIndex];
+            EDIFieldSchema fmap = segMap.fields[fIndex];
             if fIndex >= fTags.length() {
                 // Input segment is truncated. So all remaining feilds must be optional
                 if fmap.required {
@@ -51,7 +51,7 @@ class SegmentWriter {
                             continue;                                
                         }
                     }
-                    string rd = self.emap.delimiters.repetition;
+                    string rd = self.schema.delimiters.repetition;
                     string repeatingText = "";
                     if fmap.components.length() == 0 {
                         foreach json fdataElement in fdata {
@@ -74,7 +74,7 @@ class SegmentWriter {
                     if !(fdata is SimpleType) {
                         return error(string `Field "${fmap.tag}" of segment "${segMap.tag}" must be a primitive type value. Found: ${fdata.toString()}`);
                     }
-                    segLine += fd + serializeSimpleType(fdata, self.emap);
+                    segLine += fd + serializeSimpleType(fdata, self.schema);
                 }
                 fIndex += 1;
             } else {
@@ -85,7 +85,7 @@ class SegmentWriter {
                 }
             }
         }
-        segLine += self.emap.delimiters.segment;
+        segLine += self.schema.delimiters.segment;
         ediText.push(segLine);
     }
 }

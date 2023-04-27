@@ -1,6 +1,6 @@
 class SubcomponentGroupReader {
 
-    function read(string scGroupText, EDIMapping mapping, EDIComponentMapping emap) returns EDISubcomponentGroup|error? {
+    function read(string scGroupText, EDISchema mapping, EDIComponentSchema emap) returns EDISubcomponentGroup|error? {
         if scGroupText.trim().length() == 0 {
             // Composite value is not provided. Return null, which will cause this element to be not included.
             return null;
@@ -20,12 +20,12 @@ class SubcomponentGroupReader {
             return error(errMsg);
         }
 
-        EDISubcomponentMapping[] subMappings = emap.subcomponents;
+        EDISubcomponentSchema[] subMappings = emap.subcomponents;
         EDISubcomponentGroup scGroup = {};
         int subcomponentNumber = 0;
         while (subcomponentNumber < subcomponents.length()) {
             string subcomponent = subcomponents[subcomponentNumber];
-            EDISubcomponentMapping subMapping = subMappings[subcomponentNumber];
+            EDISubcomponentSchema subMapping = subMappings[subcomponentNumber];
             if subcomponent.trim().length() == 0 {
                 if subMapping.required {
                     return error(string `Required subcomponent ${subMapping.tag} is not provided.`);

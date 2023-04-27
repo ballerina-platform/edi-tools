@@ -5,7 +5,7 @@ class SegmentReader {
     RepetitionReader repetitionReader = new();
     ComponentGroupReader componentGroupReader = new();
 
-    function read(EDISegMapping segMapping, string[] fields, EDIMapping mapping, string segmentDesc)
+    function read(EDISegSchema segMapping, string[] fields, EDISchema mapping, string segmentDesc)
         returns EDISegment|error {
         log:printDebug(string `Reading ${printSegMap(segMapping)} | Seg text: ${segmentDesc}`);
         if segMapping.truncatable {
@@ -28,7 +28,7 @@ class SegmentReader {
                 [1] ${fields.toJsonString()}
                 [2] ${segMapping.toJsonString()}`);
             }
-            EDIFieldMapping fieldMapping = segMapping.fields[fieldNumber];
+            EDIFieldSchema fieldMapping = segMapping.fields[fieldNumber];
             string tag = fieldMapping.tag;
 
             // EDI segment starts with the segment name. So we have to skip the first field.

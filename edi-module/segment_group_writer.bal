@@ -1,20 +1,20 @@
 class SegmentGroupWriter {
 
-    EDIMapping emap;
+    EDISchema schema;
     SegmentWriter segmentSerializer;
 
-    function init(EDIMapping emap) {
-        self.emap = emap;
-        self.segmentSerializer = new(emap);
+    function init(EDISchema schema) {
+        self.schema = schema;
+        self.segmentSerializer = new(schema);
     }
 
-    function serialize(map<json> segGroup, EDISegGroupMapping|EDIMapping sgmap, string[] ediText) returns error? {
+    function serialize(map<json> segGroup, EDISegGroupSchema|EDISchema sgmap, string[] ediText) returns error? {
 
         string[] keys = segGroup.keys();
         int msgIndex = 0;
         int mapIndex = 0;
         while mapIndex < sgmap.segments.length() {
-            EDIUnitMapping umap = sgmap.segments[mapIndex];
+            EDIUnitSchema umap = sgmap.segments[mapIndex];
             if msgIndex >= keys.length() {
                 if umap.minOccurances > 0 {
                     return error(string `Mandatory segment ${umap.tag} not found in input message.`);
@@ -37,9 +37,9 @@ class SegmentGroupWriter {
                 if !(unit is map<json>) {
                     return error(string `Segment group "${sgmap.tag} must contain segments or segment groups. Found: ${unit.toString()}"`);
                 }
-                if umap is EDISegMapping {
+                if umap is EDISegSchema {
                     check self.segmentSerializer.serialize(unit, umap, ediText);
-                } else if umap is EDISegGroupMapping {
+                } else if umap is EDISegGroupSchema {
                     check self.serialize(unit, umap, ediText);
                 }
             } else if umap.maxOccurances > 1 || umap.maxOccurances == -1 {
@@ -51,9 +51,9 @@ class SegmentGroupWriter {
                         if !(u is map<json>) {
                             return error(string `Each item in ${umap.tag} must be a segment/segment group. Found: ${u.toString()}`);
                         }
-                        if umap is EDISegMapping {
+                        if umap is EDISegSchema {
                             check self.segmentSerializer.serialize(u, umap, ediText);
-                        } else if umap is EDISegGroupMapping {
+                        } else if umap is EDISegGroupSchema {
                             check self.serialize(u, umap, ediText);
                         }
                     }  

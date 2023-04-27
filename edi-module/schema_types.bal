@@ -1,7 +1,25 @@
 
-public type EDIUnitMapping EDISegMapping|EDISegGroupMapping;
-
-public type EDIMapping record {|
+# Record for representing EDI schema
+#
+# + name - Name of the schema. This will be used as the main record name by the code generation tool.  
+# 
+# + tag - Tag for the root element. Can be same as the name.  
+# 
+# + delimiters - Delimiters used to separate EDI segments, fields, components, etc.  
+# 
+# + ignoreSegments - List of segment schemas to be ignored when matching a EDI text. 
+#   For example, if it is necessary to process X12 transaction sets only, without ISA as GS segments,
+#   and if the schema contains ISA and GS segments as well, ISA and GS can be provided as ignoreSegments.
+# 
+# + preserveEmptyFields - Indicates how to process EDI fields, components and subcomponents containing empty values.
+#   true: Includes fields, components and subcomponents with empty values in the generated JSON.
+#   String values will be represented as empty strings. 
+#   Multi-value fields (i.e. repeats) will be represented as empty arrays.
+#   All other types will be represented as null.
+#   false: Omits fields, components and subcomponents with empty values.
+# 
+# + segments - Array of segment and segment group schemas
+public type EDISchema record {|
     string name;
     string tag = "Root mapping";
 
@@ -16,60 +34,47 @@ public type EDIMapping record {|
 
     string[] ignoreSegments = [];
 
-    boolean preserveEmptyFields = false;
+    boolean preserveEmptyFields = true;
 
-    EDIUnitMapping[] segments = [];
+    EDIUnitSchema[] segments = [];
 |};
 
-public type EDISegGroupMapping record {|
+public type EDIUnitSchema EDISegSchema|EDISegGroupSchema;
+
+public type EDISegGroupSchema record {|
     string tag;
     int minOccurances = 0;
     int maxOccurances = 1;
-    EDIUnitMapping[] segments = [];
+    EDIUnitSchema[] segments = [];
 |};
 
-public type EDISegMapping record {|
+public type EDISegSchema record {|
     string code;
     string tag;
     boolean truncatable = true;
     int minOccurances = 0;
     int maxOccurances = 1;
-    EDIFieldMapping[] fields = [];
+    EDIFieldSchema[] fields = [];
 |};
 
-public class SegSchema {
-    EDISegMapping segMap = {code: "", tag: ""};
-    
-    function init(EDISegMapping segMap) {
-        self.segMap = segMap;
-    }
-};
-
-public function createSegmentMaping(string code, string tag) returns EDISegMapping {
-    int minOccurs = 0;
-    int maxOccurs = 0;
-    EDISegMapping segMapping = {code: code, tag: tag, minOccurances: minOccurs, maxOccurances: maxOccurs};
-    return segMapping;
-}
-
-public type EDIFieldMapping record {|
+public type EDIFieldSchema record {|
     string tag;
     boolean repeat = false;
     boolean required = false;
     boolean truncatable = true;
     EDIDataType dataType = STRING;
-    EDIComponentMapping[] components = [];
+    EDIComponentSchema[] components = [];
 |};
 
-public type EDIComponentMapping record {|
+public type EDIComponentSchema record {|
     string tag;
     boolean required = false;
     boolean truncatable = true;
     EDIDataType dataType = STRING;
-    EDISubcomponentMapping[] subcomponents = [];
+    EDISubcomponentSchema[] subcomponents = [];
 |};
 
-public type EDISubcomponentMapping record {|
+public type EDISubcomponentSchema record {|
     string tag;
     boolean required = false;
     EDIDataType dataType = STRING;
