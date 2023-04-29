@@ -1,5 +1,5 @@
 [package]
-org = "ballerinax"
+org = "ballerina"
 name = "edi"
-version = "0.2.0"
+version = "0.2.1"
 distribution = "2201.4.1"
