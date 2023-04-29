@@ -1,5 +1,5 @@
 
-function readSubcomponentGroup(string scGroupText, EDISchema mapping, EDIComponentSchema emap) returns EDISubcomponentGroup|error? {
+function readSubcomponentGroup(string scGroupText, EDISchema mapping, EDIComponentSchema emap) returns EDISubcomponentGroup|Error? {
     if scGroupText.trim().length() == 0 {
         return ();
     }
@@ -8,14 +8,13 @@ function readSubcomponentGroup(string scGroupText, EDISchema mapping, EDICompone
     if emap.truncatable {
         int minFields = getMinimumSubcomponentFields(emap);
         if subcomponents.length() < minFields {
-            return error(string `Subcomponent group's mapping's field count does not match minimum field count of the truncatable field ${emap.tag}.
+            return error Error(string `Subcomponent group's mapping's field count does not match minimum field count of the truncatable field ${emap.tag}.
                 Required minimum field count: ${minFields}. Found ${subcomponents.length()} fields. 
                 Subcomponent group mapping: ${emap.toJsonString()} | Subcomponent group text: ${scGroupText}`);
         }
     } else if (emap.subcomponents.length() != subcomponents.length()) {
-        string errMsg = string `Subcomponent group mapping's subcomponent count does not match field ${emap.tag}. 
-                Subcomponent group mapping: ${emap.toJsonString()} | Subcomponent group text: ${scGroupText}`;
-        return error(errMsg);
+        return error Error(string `Subcomponent group mapping's subcomponent count does not match field ${emap.tag}. 
+                Subcomponent group mapping: ${emap.toJsonString()} | Subcomponent group text: ${scGroupText}`);
     }
 
     EDISubcomponentSchema[] subMappings = emap.subcomponents;
@@ -26,7 +25,7 @@ function readSubcomponentGroup(string scGroupText, EDISchema mapping, EDICompone
         EDISubcomponentSchema subMapping = subMappings[subcomponentNumber];
         if subcomponent.trim().length() == 0 {
             if subMapping.required {
-                return error(string `Required subcomponent ${subMapping.tag} is not provided.`);
+                return error Error(string `Required subcomponent ${subMapping.tag} is not provided.`);
             } else {
                 if mapping.preserveEmptyFields {
                     scGroup[subMapping.tag] = subMapping.dataType == STRING ? subcomponent : ();
@@ -40,10 +39,9 @@ function readSubcomponentGroup(string scGroupText, EDISchema mapping, EDICompone
         if value is SimpleType? {
             scGroup[subMapping.tag] = value;
         } else {
-            string errMsg = string `EDI field: ${subcomponent} cannot be converted to type: ${subMapping.dataType}.
+            return error Error(string `EDI field: ${subcomponent} cannot be converted to type: ${subMapping.dataType}.
                         Subcomponent group mapping: ${subMapping.toJsonString()} | Subcomponent group text: ${scGroupText}
-                        Error: ${value.message()}`;
-            return error(errMsg);
+                        Error: ${value.message()}`);
         }
         subcomponentNumber = subcomponentNumber + 1;
     }

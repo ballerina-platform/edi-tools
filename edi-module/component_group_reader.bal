@@ -1,6 +1,6 @@
 
 function readComponentGroup(string compositeText, EDISchema ediSchema, EDIFieldSchema fieldSchema)
-            returns EDIComponentGroup|error? {
+            returns EDIComponentGroup|Error? {
     if compositeText.trim().length() == 0 {
         return ();
     }
@@ -9,12 +9,12 @@ function readComponentGroup(string compositeText, EDISchema ediSchema, EDIFieldS
     if fieldSchema.truncatable {
         int minFields = getMinimumCompositeFields(fieldSchema);
         if components.length() < minFields {
-            return error(string `Composite mapping's field count does not match minimum field count of the truncatable field ${fieldSchema.tag}.
+            return error Error(string `Composite mapping's field count does not match minimum field count of the truncatable field ${fieldSchema.tag}.
                 Required minimum field count: ${minFields}. Found ${components.length()} fields. 
                 Composite mapping: ${fieldSchema.toJsonString()} | Composite text: ${compositeText}`);
         }
     } else if fieldSchema.components.length() != components.length() {
-        return error(string `Composite mapping's component count does not match field ${fieldSchema.tag}. 
+        return error Error(string `Composite mapping's component count does not match field ${fieldSchema.tag}. 
                 Composite mapping: ${fieldSchema.toJsonString()} | Composite text: ${compositeText}`);
     }
 
@@ -26,7 +26,7 @@ function readComponentGroup(string compositeText, EDISchema ediSchema, EDIFieldS
         EDIComponentSchema subMapping = subMappings[componentNumber];
         if component.trim().length() == 0 {
             if subMapping.required {
-                return error(string `Required component ${subMapping.tag} is not provided.`);
+                return error Error(string `Required component ${subMapping.tag} is not provided.`);
             }
             if ediSchema.preserveEmptyFields {
                 composite[subMapping.tag] = subMapping.dataType == STRING ? component : ();
@@ -45,10 +45,9 @@ function readComponentGroup(string compositeText, EDISchema ediSchema, EDIFieldS
             if value is SimpleType? {
                 composite[subMapping.tag] = value;
             } else {
-                string errMsg = string `EDI field: ${component} cannot be converted to type: ${subMapping.dataType}.
+                return error Error(string `EDI field: ${component} cannot be converted to type: ${subMapping.dataType}.
                             Composite mapping: ${subMapping.toJsonString()} | Composite text: ${compositeText}
-                            Error: ${value.message()}`;
-                return error(errMsg);
+                            Error: ${value.message()}`);
             }
         }
         componentNumber = componentNumber + 1;

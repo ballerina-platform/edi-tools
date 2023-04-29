@@ -1,13 +1,13 @@
 import ballerina/log;
 
 function readRepetition(string repeatText, string repeatDelimiter, EDISchema mapping, EDIFieldSchema fieldMapping)
-        returns SimpleArray|EDIComponentGroup[]|error {
+        returns SimpleArray|EDIComponentGroup[]|Error {
     string[] fields = split(repeatText, repeatDelimiter);
     SimpleArray|EDIComponentGroup[] repeatValues = getArray(fieldMapping.dataType);
     if (fields.length() == 0) {
         // None of the repeating values are provided. Return an empty array.
         if fieldMapping.required {
-            return error(string `Required field ${fieldMapping.tag} is not provided.`);
+            return error Error(string `Required field ${fieldMapping.tag} is not provided.`);
         }
         return repeatValues;
     }
@@ -29,7 +29,7 @@ function readRepetition(string repeatText, string repeatDelimiter, EDISchema map
             } else {
                 string errMsg = string `EDI field: ${'field} cannot be converted to type: ${fieldMapping.dataType}.
                         field mapping: ${fieldMapping.toJsonString()} | Repeat text: ${repeatText}\n${value.message()}`;
-                return error(errMsg);
+                return error Error(errMsg);
             }
         }
     }

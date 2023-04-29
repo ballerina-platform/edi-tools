@@ -1,25 +1,24 @@
 import ballerina/log;
 
 function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping, string segmentDesc)
-    returns EDISegment|error {
+    returns EDISegment|Error {
     log:printDebug(string `Reading ${printSegMap(segMapping)} | Seg text: ${segmentDesc}`);
     if segMapping.truncatable {
         int minFields = getMinimumFields(segMapping);
         if fields.length() < minFields + 1 {
-            return error(string `Segment mapping's field count does not match minimum field count of the truncatable segment ${fields[0]}.
+            return error Error(string `Segment mapping's field count does not match minimum field count of the truncatable segment ${fields[0]}.
                 Required minimum field count (excluding the segment code): ${minFields}. Found ${fields.length() - 1} fields. 
                 Segment mapping: ${segMapping.toJsonString()} | Segment text: ${segmentDesc}`);
         }
-    } else if (segMapping.fields.length() + 1 != fields.length()) {
-        string errMsg = string `Segment mapping's field count does not match segment ${fields[0]}. 
-                Segment mapping: ${segMapping.toJsonString()} | Segment text: ${segmentDesc}`;
-        return error(errMsg);
+    } else if segMapping.fields.length() + 1 != fields.length() {
+        return error Error(string `Segment mapping's field count does not match segment ${fields[0]}. 
+                Segment mapping: ${segMapping.toJsonString()} | Segment text: ${segmentDesc}`);
     }
     EDISegment ediRecord = {};
     int fieldNumber = 0;
     while fieldNumber < fields.length() - 1 {
         if fieldNumber >= segMapping.fields.length() {
-            return error(string `EDI segment [1] in the message containes more fields than the segment definition [2]
+            return error Error(string `EDI segment [1] in the message containes more fields than the segment definition [2]
             [1] ${fields.toJsonString()}
             [2] ${segMapping.toJsonString()}`);
         }
@@ -30,7 +29,7 @@ function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping
         string fieldText = fields[fieldNumber + 1];
         if fieldText.trim().length() == 0 {
             if fieldMapping.required {
-                return error(string `Required field ${fieldMapping.tag} of segment ${segMapping.code} is not provided.`);
+                return error Error(string `Required field ${fieldMapping.tag} of segment ${segMapping.code} is not provided.`);
             } else {
                 if mapping.preserveEmptyFields {
                     if fieldMapping.repeat {

@@ -7,7 +7,7 @@ type SegmentGroupContext record {|
     EDIUnitSchema[] unitSchemas;
 |};
 
-function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context, boolean rootGroup) returns EDISegmentGroup|error {
+function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context, boolean rootGroup) returns EDISegmentGroup|Error {
     SegmentGroupContext sgContext = {unitSchemas: currentUnitSchema};
     EDISchema ediSchema = context.schema;
     while context.rawIndex < context.ediText.length() {
@@ -38,7 +38,7 @@ function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context,
                 log:printDebug(string `Trying to match with segment group mapping ${printSegGroupMap(segSchema)}`);
                 EDIUnitSchema firstSegSchema = segSchema.segments[0];
                 if firstSegSchema is EDISegGroupSchema {
-                    return error("First item of segment group must be a segment. Found a segment group.\nSegment group: " + printSegGroupMap(segSchema));
+                    return error Error("First item of segment group must be a segment. Found a segment group.\nSegment group: " + printSegGroupMap(segSchema));
                 }
                 if firstSegSchema.code != fields[0] {
                     check ignoreSchema(segSchema, sgContext, context);
@@ -53,7 +53,7 @@ function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context,
             }
         }
         if !segmentMapped && rootGroup {
-            return error(string `Segment text: ${context.ediText[context.rawIndex]} is not matched with the mapping.
+            return error Error(string `Segment text: ${context.ediText[context.rawIndex]} is not matched with the mapping.
             Curren row: ${context.rawIndex}`);
         }
 
@@ -78,7 +78,7 @@ function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context,
 # + sgContext - Segment group parsing context  
 # + context - EDI parsing context
 # + return - Return error if the given mapping cannot be ignored.
-function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns error? {
+function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
 
     // If the current segment mapping is optional, we can ignore the current mapping and compare the 
     // current segment with the next mapping.
@@ -103,12 +103,12 @@ function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgContext, ED
         }
     }
 
-    return error(string `Mandatory unit ${printEDIUnitMapping(segSchema)} missing in the EDI.
+    return error Error(string `Mandatory unit ${printEDIUnitMapping(segSchema)} missing in the EDI.
     Current segment text: ${context.ediText[context.rawIndex]}
     Current mapping index: ${sgContext.schemaIndex}`);
 }
 
-function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns error? {
+function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
     if (segSchema.maxOccurances == 1) {
         // Current segment has matched with the current mapping AND current segment is not repeatable.
         // So we can move to the next mapping.
@@ -123,7 +123,7 @@ function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGrou
         var segments = sgContext.segmentGroup[segSchema.tag];
         if (segments is EDISegment[]) {
             if (segSchema.maxOccurances != -1 && segments.length() >= segSchema.maxOccurances) {
-                return error(string `${segSchema.code} is repeatable segment with maximum limit of ${segSchema.maxOccurances}.
+                return error Error(string `${segSchema.code} is repeatable segment with maximum limit of ${segSchema.maxOccurances}.
                 EDI document contains more such segments than the allowed limit. Current row: ${context.rawIndex}`);
             }
             segments.push(segment);
@@ -131,12 +131,12 @@ function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGrou
             segments = [segment];
             sgContext.segmentGroup[segSchema.tag] = segments;
         } else {
-            return error(string `${segSchema.code} must be a segment array.`);
+            return error Error(string `${segSchema.code} must be a segment array.`);
         }
     }
 }
 
-function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema segGroupSchema, SegmentGroupContext sgContext, EDIContext context) returns error? {
+function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema segGroupSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
     if segGroupSchema.maxOccurances == 1 {
         // This is a non-repeatable mapping. So we have to compare the next segment with the next mapping.
         log:printDebug(string `Completed reading non-repeating segment group ${printSegGroupMap(segGroupSchema)} | Current segment text: ${context.rawIndex < context.ediText.length() ? context.ediText[context.rawIndex] : "-- EOF --"}`);
@@ -148,7 +148,7 @@ function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema se
         var segmentGroups = sgContext.segmentGroup[segGroupSchema.tag];
         if segmentGroups is EDISegmentGroup[] {
             if segGroupSchema.maxOccurances != -1 && segmentGroups.length() >= segGroupSchema.maxOccurances {
-                return error(string `${printSegGroupMap(segGroupSchema)} is repeatable segment group with maximum limit of ${segGroupSchema.maxOccurances}.
+                return error Error(string `${printSegGroupMap(segGroupSchema)} is repeatable segment group with maximum limit of ${segGroupSchema.maxOccurances}.
                 EDI document contains more such segment groups than the allowed limit. Current row: ${context.rawIndex}`);
             }
             segmentGroups.push(segmentGroup);
@@ -156,13 +156,13 @@ function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema se
             segmentGroups = [segmentGroup];
             sgContext.segmentGroup[segGroupSchema.tag] = segmentGroups;
         } else {
-            return error(string `${segGroupSchema.tag} must be a segment group array.`);
+            return error Error(string `${segGroupSchema.tag} must be a segment group array.`);
         }
 
     }
 }
 
-function validateRemainingSchemas(SegmentGroupContext sgContext) returns error? {
+function validateRemainingSchemas(SegmentGroupContext sgContext) returns Error? {
     if sgContext.schemaIndex < sgContext.unitSchemas.length() - 1 {
         int i = sgContext.schemaIndex + 1;
         while i < sgContext.unitSchemas.length() {
@@ -174,7 +174,7 @@ function validateRemainingSchemas(SegmentGroupContext sgContext) returns error? 
                 minOccurs = umap.minOccurances;
             }
             if minOccurs > 0 {
-                return error(string `Mandatory segment ${printEDIUnitMapping(umap)} is not found.`);
+                return error Error(string `Mandatory segment ${printEDIUnitMapping(umap)} is not found.`);
             }
             i += 1;
         }
