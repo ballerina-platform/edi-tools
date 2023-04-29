@@ -4,15 +4,13 @@ import ballerina/test;
     dataProvider: segmentTestDataProvider
 }
 function testSegments(string testName) returns error? {
-    EDISchema schema = check getSchema(testName);
+    EDISchema schema = check getTestSchema(testName);
     schema.preserveEmptyFields = true;
-    EDIReader reader = check new (schema);
     string ediIn = check getEDIMessage(testName);
-    json message = check reader.readEDI(ediIn);
+    json message = check read(ediIn, schema);
     check saveJsonMessage(testName, message);
 
-    EDIWriter writer = check new (schema);
-    string ediOut = check writer.writeEDI(message);
+    string ediOut = check write(message, schema);
     check saveEDIMessage(testName, ediOut);
 
     ediOut = prepareEDI(ediOut, schema);
