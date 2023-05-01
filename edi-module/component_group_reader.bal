@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-function readComponentGroup(string compositeText, EDISchema ediSchema, EDIFieldSchema fieldSchema)
+isolated function readComponentGroup(string compositeText, EDISchema ediSchema, EDIFieldSchema fieldSchema)
             returns EDIComponentGroup|Error? {
     if compositeText.trim().length() == 0 {
         return ();

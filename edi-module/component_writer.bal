@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-function writeComponentGroup(json componentGroup, EDISegSchema segSchema, EDIFieldSchema fieldSchema, EDIContext context) returns string|Error {
+isolated function writeComponentGroup(json componentGroup, EDISegSchema segSchema, EDIFieldSchema fieldSchema, EDIContext context) returns string|Error {
     if componentGroup is () {
         if fieldSchema.required {
             return error Error(string `Mandatory composite field of a segment is not provided. Segment: ${segSchema.tag}, Field: ${fieldSchema.tag}`);
@@ -89,7 +89,7 @@ function writeComponentGroup(json componentGroup, EDISegSchema segSchema, EDIFie
     }
 }
 
-function writeSubcomponentGroup(json subcomponentGroup, EDISegSchema segSchema, EDIComponentSchema compSchema, EDIContext context) returns string|Error {
+isolated function writeSubcomponentGroup(json subcomponentGroup, EDISegSchema segSchema, EDIComponentSchema compSchema, EDIContext context) returns string|Error {
     string scd = context.schema.delimiters.subcomponent;
     if subcomponentGroup is map<json> {
         string[] sckeys = subcomponentGroup.keys();

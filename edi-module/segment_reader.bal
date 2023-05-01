@@ -16,7 +16,7 @@
 
 import ballerina/log;
 
-function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping, string segmentDesc)
+isolated function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping, string segmentDesc)
     returns EDISegment|Error {
     log:printDebug(string `Reading ${printSegMap(segMapping)} | Seg text: ${segmentDesc}`);
     if segMapping.truncatable {

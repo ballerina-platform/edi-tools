@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-function writeSegment(map<json> seg, EDISegSchema segMap, EDIContext context) returns Error? {
+isolated function writeSegment(map<json> seg, EDISegSchema segMap, EDIContext context) returns Error? {
     string fd = context.schema.delimiters.'field;
     string segLine = segMap.code;
     string[] fTags = seg.keys();

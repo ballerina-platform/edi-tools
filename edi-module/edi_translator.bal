@@ -27,7 +27,7 @@ type EDIContext record {|
 # + ediText - EDI text to be read
 # + schema - Schema of the EDI text
 # + return - JSON variable containing EDI data. Error if the reading fails.
-public function read(string ediText, EDISchema schema) returns json|Error {
+public isolated function read(string ediText, EDISchema schema) returns json|Error {
     EDIContext context = {schema: schema};
     EDIUnitSchema[] currentMapping = context.schema.segments;
     context.ediText = splitSegments(ediText, context.schema.delimiters.segment);
@@ -40,7 +40,7 @@ public function read(string ediText, EDISchema schema) returns json|Error {
 # + msg - JSON value to be written into EDI
 # + schema - Schema of the EDI text
 # + return - EDI text containing the data provided in the JSON variable. Error if the reading fails.
-public function write(json msg, EDISchema schema) returns string|Error {
+public isolated function write(json msg, EDISchema schema) returns string|Error {
     EDIContext context = {schema: schema};
     if !(msg is map<json>) {
         return error(string `Input is not compatible with the schema.`);

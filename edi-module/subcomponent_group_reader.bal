@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-function readSubcomponentGroup(string scGroupText, EDISchema schema, EDIComponentSchema compSchema) returns EDISubcomponentGroup|Error? {
+isolated function readSubcomponentGroup(string scGroupText, EDISchema schema, EDIComponentSchema compSchema) returns EDISubcomponentGroup|Error? {
     if scGroupText.trim().length() == 0 {
         return ();
     }

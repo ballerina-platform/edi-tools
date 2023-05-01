@@ -16,7 +16,7 @@
 
 import ballerina/regex;
 
-function convertToType(string value, EDIDataType dataType, string? decimalSeparator) returns SimpleType|error {
+isolated function convertToType(string value, EDIDataType dataType, string? decimalSeparator) returns SimpleType|error {
     match dataType {
         STRING => {
             return value;
@@ -31,7 +31,7 @@ function convertToType(string value, EDIDataType dataType, string? decimalSepara
     return error("Undefined type for value:" + value);
 }
 
-function getArray(EDIDataType dataType) returns SimpleArray|EDIComponentGroup[] {
+isolated function getArray(EDIDataType dataType) returns SimpleArray|EDIComponentGroup[] {
     match dataType {
         STRING => {
             string[] values = [];
@@ -69,13 +69,13 @@ public function getDataType(string typeString) returns EDIDataType {
     return STRING;
 }
 
-public function split(string text, string delimiter) returns string[] {
+isolated function split(string text, string delimiter) returns string[] {
     string preparedText = prepareToSplit(text, delimiter);
     string validatedDelimiter = validateDelimiter(delimiter);
     return regex:split(preparedText, validatedDelimiter);
 }
 
-function splitSegments(string text, string delimiter) returns string[] {
+isolated function splitSegments(string text, string delimiter) returns string[] {
     string validatedDelimiter = validateDelimiter(delimiter);
     string[] segmentLines = regex:split(text, validatedDelimiter);
     foreach int i in 0 ... (segmentLines.length() - 1) {
@@ -84,7 +84,7 @@ function splitSegments(string text, string delimiter) returns string[] {
     return segmentLines;
 }
 
-function validateDelimiter(string delimeter) returns string {
+isolated function validateDelimiter(string delimeter) returns string {
     match delimeter {
         "*" => {
             return "\\*";
@@ -102,7 +102,7 @@ function validateDelimiter(string delimeter) returns string {
     return delimeter;
 }
 
-function prepareToSplit(string content, string delimeter) returns string {
+isolated function prepareToSplit(string content, string delimeter) returns string {
     string preparedContent = content.trim();
     if (content.endsWith(delimeter)) {
         preparedContent = preparedContent + " ";
@@ -113,7 +113,7 @@ function prepareToSplit(string content, string delimeter) returns string {
     return preparedContent;
 }
 
-function printEDIUnitMapping(EDIUnitSchema smap) returns string {
+isolated function printEDIUnitMapping(EDIUnitSchema smap) returns string {
     if smap is EDISegSchema {
         return string `Segment ${smap.code} | Min: ${smap.minOccurances} | Max: ${smap.maxOccurances} | Trunc: ${smap.truncatable}`;
     } else {
@@ -129,11 +129,11 @@ function printEDIUnitMapping(EDIUnitSchema smap) returns string {
     }
 }
 
-function printSegMap(EDISegSchema smap) returns string {
+isolated function printSegMap(EDISegSchema smap) returns string {
     return string `Segment ${smap.code} | Min: ${smap.minOccurances} | Max: ${smap.maxOccurances} | Trunc: ${smap.truncatable}`;
 }
 
-function printSegGroupMap(EDISegGroupSchema sgmap) returns string {
+isolated function printSegGroupMap(EDISegGroupSchema sgmap) returns string {
     string sgcode = "";
     foreach EDIUnitSchema umap in sgmap.segments {
         if umap is EDISegSchema {
@@ -145,7 +145,7 @@ function printSegGroupMap(EDISegGroupSchema sgmap) returns string {
     return string `[Segment group: ${sgcode} ]`;
 }
 
-function getMinimumFields(EDISegSchema segmap) returns int {
+isolated function getMinimumFields(EDISegSchema segmap) returns int {
     int fieldIndex = segmap.fields.length() - 1;
     while fieldIndex > 0 {
         if segmap.fields[fieldIndex].required {
@@ -156,7 +156,7 @@ function getMinimumFields(EDISegSchema segmap) returns int {
     return fieldIndex;
 }
 
-function getMinimumCompositeFields(EDIFieldSchema emap) returns int {
+isolated function getMinimumCompositeFields(EDIFieldSchema emap) returns int {
     int fieldIndex = emap.components.length() - 1;
     while fieldIndex > 0 {
         if emap.components[fieldIndex].required {
@@ -167,7 +167,7 @@ function getMinimumCompositeFields(EDIFieldSchema emap) returns int {
     return fieldIndex;
 }
 
-function getMinimumSubcomponentFields(EDIComponentSchema emap) returns int {
+isolated function getMinimumSubcomponentFields(EDIComponentSchema emap) returns int {
     int fieldIndex = emap.subcomponents.length() - 1;
     while fieldIndex > 0 {
         if emap.subcomponents[fieldIndex].required {
@@ -178,7 +178,7 @@ function getMinimumSubcomponentFields(EDIComponentSchema emap) returns int {
     return fieldIndex;
 }
 
-function serializeSimpleType(SimpleType v, EDISchema schema) returns string {
+isolated function serializeSimpleType(SimpleType v, EDISchema schema) returns string {
     string sv = v.toString();
     if v is float {
         if sv.endsWith(".0") {

@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISchema sgmap, EDIContext context) returns Error? {
+isolated function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISchema sgmap, EDIContext context) returns Error? {
 
     string[] keys = segGroup.keys();
     int msgIndex = 0;

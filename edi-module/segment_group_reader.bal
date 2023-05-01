@@ -23,7 +23,7 @@ type SegmentGroupContext record {|
     EDIUnitSchema[] unitSchemas;
 |};
 
-function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context, boolean rootGroup) returns EDISegmentGroup|Error {
+isolated function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context, boolean rootGroup) returns EDISegmentGroup|Error {
     SegmentGroupContext sgContext = {unitSchemas: currentUnitSchema};
     EDISchema ediSchema = context.schema;
     while context.rawIndex < context.ediText.length() {
@@ -94,7 +94,7 @@ function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context,
 # + sgContext - Segment group parsing context  
 # + context - EDI parsing context
 # + return - Return error if the given mapping cannot be ignored.
-function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
+isolated function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
 
     // If the current segment mapping is optional, we can ignore the current mapping and compare the 
     // current segment with the next mapping.
@@ -123,7 +123,7 @@ function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgContext, ED
         Unit: ${printEDIUnitMapping(segSchema)}, Current segment text: ${context.ediText[context.rawIndex]}, Current mapping index: ${sgContext.schemaIndex}`);
 }
 
-function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
+isolated function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
     if (segSchema.maxOccurances == 1) {
         // Current segment has matched with the current mapping AND current segment is not repeatable.
         // So we can move to the next mapping.
@@ -151,7 +151,7 @@ function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGrou
     }
 }
 
-function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema segGroupSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
+isolated function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema segGroupSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
     if segGroupSchema.maxOccurances == 1 {
         // This is a non-repeatable mapping. So we have to compare the next segment with the next mapping.
         log:printDebug(string `Completed reading non-repeating segment group ${printSegGroupMap(segGroupSchema)} | Current segment text: ${context.rawIndex < context.ediText.length() ? context.ediText[context.rawIndex] : "-- EOF --"}`);
@@ -177,7 +177,7 @@ function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema se
     }
 }
 
-function validateRemainingSchemas(SegmentGroupContext sgContext) returns Error? {
+isolated function validateRemainingSchemas(SegmentGroupContext sgContext) returns Error? {
     if sgContext.schemaIndex < sgContext.unitSchemas.length() - 1 {
         int i = sgContext.schemaIndex + 1;
         while i < sgContext.unitSchemas.length() {
