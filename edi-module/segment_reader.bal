@@ -1,3 +1,19 @@
+// Copyright (c) 2023 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 import ballerina/log;
 
 function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping, string segmentDesc)
@@ -6,21 +22,21 @@ function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping
     if segMapping.truncatable {
         int minFields = getMinimumFields(segMapping);
         if fields.length() < minFields + 1 {
-            return error Error(string `Segment mapping's field count does not match minimum field count of the truncatable segment ${fields[0]}.
-                Required minimum field count (excluding the segment code): ${minFields}. Found ${fields.length() - 1} fields. 
+            return error Error(string `Segment schema's field count does not match minimum field count of the truncatable segment.
+                Segment: ${fields[0]}, Required minimum field count (excluding the segment code): ${minFields}. Available fields: ${fields.length() - 1}, 
                 Segment mapping: ${segMapping.toJsonString()} | Segment text: ${segmentDesc}`);
         }
     } else if segMapping.fields.length() + 1 != fields.length() {
-        return error Error(string `Segment mapping's field count does not match segment ${fields[0]}. 
-                Segment mapping: ${segMapping.toJsonString()} | Segment text: ${segmentDesc}`);
+        return error Error(string `Segment schema's field count does not match with the input segment.
+                Segment: ${fields[0]}, Segment schema: ${segMapping.toJsonString()}, Input segment: ${segmentDesc}`);
     }
     EDISegment ediRecord = {};
     int fieldNumber = 0;
     while fieldNumber < fields.length() - 1 {
         if fieldNumber >= segMapping.fields.length() {
-            return error Error(string `EDI segment [1] in the message containes more fields than the segment definition [2]
-            [1] ${fields.toJsonString()}
-            [2] ${segMapping.toJsonString()}`);
+            return error Error(string `Segment in the input message containes more fields than the segment schema.
+            Input segment: ${fields.toJsonString()},
+            Segment schema: ${segMapping.toJsonString()}`);
         }
         EDIFieldSchema fieldMapping = segMapping.fields[fieldNumber];
         string tag = fieldMapping.tag;
@@ -29,7 +45,7 @@ function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping
         string fieldText = fields[fieldNumber + 1];
         if fieldText.trim().length() == 0 {
             if fieldMapping.required {
-                return error Error(string `Required field ${fieldMapping.tag} of segment ${segMapping.code} is not provided.`);
+                return error Error(string `Required field is not provided. Field: ${fieldMapping.tag}, Segment: ${segMapping.code}`);
             } else {
                 if mapping.preserveEmptyFields {
                     if fieldMapping.repeat {
@@ -53,7 +69,7 @@ function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping
         } else if (fieldMapping.components.length() > 0) {
             // this is a composite field (but not a repeat)
             EDIComponentGroup? composite = check readComponentGroup(fieldText, mapping, fieldMapping);
-            if (composite is EDIComponentGroup || mapping.preserveEmptyFields) {
+            if composite is EDIComponentGroup || mapping.preserveEmptyFields {
                 ediRecord[tag] = composite;
             }
         } else {
@@ -62,9 +78,9 @@ function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping
             if value is SimpleType {
                 ediRecord[tag] = value;
             } else {
-                string errMsg = string `EDI field: ${fieldText} cannot be converted to type: ${fieldMapping.dataType}.
-                        Segment mapping: ${segMapping.toJsonString()} | Segment text: ${segmentDesc}|n${value.message()}`;
-                return error(errMsg);
+                return error Error(string `Input field cannot be converted to the type specified in the segment schema.
+                        Input field: ${fieldText}, Schema type: ${fieldMapping.dataType},
+                        Segment schema: ${segMapping.toJsonString()}, Segment text: ${segmentDesc}, Error: ${value.message()}`);
             }
         }
         fieldNumber = fieldNumber + 1;

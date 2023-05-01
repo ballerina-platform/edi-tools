@@ -1,3 +1,18 @@
+// Copyright (c) 2023 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
 function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISchema sgmap, EDIContext context) returns Error? {
 
@@ -8,7 +23,7 @@ function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISchema sgmap
         EDIUnitSchema umap = sgmap.segments[mapIndex];
         if msgIndex >= keys.length() {
             if umap.minOccurances > 0 {
-                return error Error(string `Mandatory segment ${umap.tag} not found in input message.`);
+                return error Error(string `Mandatory segment not found in input message. Segment: ${umap.tag}`);
             }
             mapIndex += 1;
             continue;
@@ -20,13 +35,13 @@ function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISchema sgmap
                 mapIndex += 1;
                 continue;
             } else {
-                return error Error(string `Mandatory segment ${umap.tag} not found in input message. Found ${unitKey}`);
+                return error Error(string `Mandatory segment not found in input message. Required segment: ${umap.tag}, Found ${unitKey}`);
             }
         }
 
         if umap.maxOccurances == 1 {
             if !(unit is map<json>) {
-                return error Error(string `Segment group "${sgmap.tag} must contain segments or segment groups. Found: ${unit.toString()}"`);
+                return error Error(string `Segment group must contain segments or segment groups. Segment group: ${sgmap.tag}, Found: ${unit.toString()}"`);
             }
             if umap is EDISegSchema {
                 check writeSegment(unit, umap, context);
@@ -35,12 +50,12 @@ function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISchema sgmap
             }
         } else if umap.maxOccurances > 1 || umap.maxOccurances == -1 {
             if !(unit is json[]) {
-                return error Error(string `Value of segment/segment group "${umap.tag}" must be an array. Found: ${unit.toString()}`);
+                return error Error(string `Value of multi-occurance segment/segment group must be an array. Segment group: ${umap.tag}, Found: ${unit.toString()}`);
             }
             if unit.length() >= umap.minOccurances && ((unit.length() <= umap.maxOccurances) || umap.maxOccurances < 0) {
                 foreach json u in unit {
                     if !(u is map<json>) {
-                        return error Error(string `Each item in ${umap.tag} must be a segment/segment group. Found: ${u.toString()}`);
+                        return error Error(string `Each item in segment group must be a segment/segment group. Segment group: ${umap.tag}, Found: ${u.toString()}`);
                     }
                     if umap is EDISegSchema {
                         check writeSegment(u, umap, context);
@@ -50,8 +65,9 @@ function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISchema sgmap
                 }
             }
         } else {
-            return error Error(string `Cardinality of input segment/segment group "${unitKey}" does not match with schema ${printEDIUnitMapping(umap)}.
-            Allowed min: ${umap.minOccurances}, Allowed max: ${umap.maxOccurances}, Found ${unit is EDIUnit[] ? unit.length() : 1}`);
+            return error Error(string `Cardinality of input segment/segment group does not match with the schema.
+            Segment/segment group: ${unitKey}, Allowed min: ${umap.minOccurances}, Allowed max: ${umap.maxOccurances}, Found ${unit is EDIUnit[] ? unit.length() : 1}
+            Schema: Schema: ${printEDIUnitMapping(umap)}`);
         }
         mapIndex += 1;
         msgIndex += 1;

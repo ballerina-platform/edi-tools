@@ -1,3 +1,19 @@
+// Copyright (c) 2023 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 import ballerina/log;
 import ballerina/regex;
 
@@ -53,8 +69,8 @@ function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context,
             }
         }
         if !segmentMapped && rootGroup {
-            return error Error(string `Segment text: ${context.ediText[context.rawIndex]} is not matched with the mapping.
-            Curren row: ${context.rawIndex}`);
+            return error Error(string `Segment text does not match with the schema. 
+                Segment: ${context.ediText[context.rawIndex]}, Curren row: ${context.rawIndex}`);
         }
 
         if sgContext.schemaIndex >= sgContext.unitSchemas.length() {
@@ -103,9 +119,8 @@ function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgContext, ED
         }
     }
 
-    return error Error(string `Mandatory unit ${printEDIUnitMapping(segSchema)} missing in the EDI.
-    Current segment text: ${context.ediText[context.rawIndex]}
-    Current mapping index: ${sgContext.schemaIndex}`);
+    return error Error(string `Mandatory unit is missing in the EDI.
+        Unit: ${printEDIUnitMapping(segSchema)}, Current segment text: ${context.ediText[context.rawIndex]}, Current mapping index: ${sgContext.schemaIndex}`);
 }
 
 function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
@@ -123,15 +138,15 @@ function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGrou
         var segments = sgContext.segmentGroup[segSchema.tag];
         if (segments is EDISegment[]) {
             if (segSchema.maxOccurances != -1 && segments.length() >= segSchema.maxOccurances) {
-                return error Error(string `${segSchema.code} is repeatable segment with maximum limit of ${segSchema.maxOccurances}.
-                EDI document contains more such segments than the allowed limit. Current row: ${context.rawIndex}`);
+                return error Error(string `Maximum allowed unit count of the repeatable unit is exceeded.
+                Unit: ${segSchema.code}, Maximum limit: ${segSchema.maxOccurances}, Current row: ${context.rawIndex}`);
             }
             segments.push(segment);
         } else if segments is () {
             segments = [segment];
             sgContext.segmentGroup[segSchema.tag] = segments;
         } else {
-            return error Error(string `${segSchema.code} must be a segment array.`);
+            return error Error(string `Segment must be a segment array. Segment: ${segSchema.code}`);
         }
     }
 }
@@ -148,15 +163,15 @@ function placeEDISegmentGroup(EDISegmentGroup segmentGroup, EDISegGroupSchema se
         var segmentGroups = sgContext.segmentGroup[segGroupSchema.tag];
         if segmentGroups is EDISegmentGroup[] {
             if segGroupSchema.maxOccurances != -1 && segmentGroups.length() >= segGroupSchema.maxOccurances {
-                return error Error(string `${printSegGroupMap(segGroupSchema)} is repeatable segment group with maximum limit of ${segGroupSchema.maxOccurances}.
-                EDI document contains more such segment groups than the allowed limit. Current row: ${context.rawIndex}`);
+                return error Error(string `Number of (multi-occurance) segment groups in the input exceeds the allowed maximum limit in the schema.
+                Allowed maximum: ${segGroupSchema.maxOccurances}, Occurances: ${segmentGroups.length()}, Current row: ${context.rawIndex}, Segment group schema: ${printSegGroupMap(segGroupSchema)}`);
             }
             segmentGroups.push(segmentGroup);
         } else if segmentGroups is () {
             segmentGroups = [segmentGroup];
             sgContext.segmentGroup[segGroupSchema.tag] = segmentGroups;
         } else {
-            return error Error(string `${segGroupSchema.tag} must be a segment group array.`);
+            return error Error(string `Segment group must be an array. Segment group: ${segGroupSchema.tag}`);
         }
 
     }
@@ -174,7 +189,7 @@ function validateRemainingSchemas(SegmentGroupContext sgContext) returns Error? 
                 minOccurs = umap.minOccurances;
             }
             if minOccurs > 0 {
-                return error Error(string `Mandatory segment ${printEDIUnitMapping(umap)} is not found.`);
+                return error Error(string `Mandatory segment/segment group is not found. Segment: ${printEDIUnitMapping(umap)}`);
             }
             i += 1;
         }
