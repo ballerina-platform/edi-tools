@@ -47,7 +47,7 @@ ITM*T-46*28
 Ballerina records for the above the EDI mapping in edi-mapping1.json can be generated as follows (generated Ballerina records will be saved in orderRecords.bal):
 
 ```
-java -jar edi.jar codegen edi-schema1.json orderRecords.bal
+java -jar editools.jar codegen edi-schema1.json orderRecords.bal
 ```
 
 Generated Ballerina records for the above mapping are shown below:
@@ -76,12 +76,12 @@ Below code reads the edi-sample1.edi into a json variable named "orderData" and 
 
 ````ballerina
 import ballerina/io;
-import balarinax/edi;
+import balarina/edi;
 
 public function main() returns error? {
-    EDIReader ediReader = check new(check io:fileReadJson("resources/edi-schema1.json"));
+	edi:EDISchema schema = check edi:getSchema(check io:fileReadJson("resources/edi-schema1.json"));
     string ediText = check io:fileReadString("resources/edi-sample1.edi");
-    json orderData = check ediReader.readEDI(ediText);
+    json orderData = check edi:read(ediText, schema);
     io:println(orderData.toJsonString());
 
     SimpleOrder order1 = check orderData.cloneWithType(SimpleOrder);
@@ -132,13 +132,8 @@ import balarinax/edi;
 
 public function main() returns error? {
     SimpleOrder order2 = {...};
-    EDIWriter ediWriter = check new(check io:fileReadJson("resources/edi-schema1.json"));
-    string orderEDI = check ediWriter.writeEDI(order2.toJson());
+	edi:EDISchema schema = check edi:getSchema(check io:fileReadJson("resources/edi-schema1.json"));
+    string orderEDI = check edi:write(order2.toJson(), schema);
     io:println(orderEDI);
 }
 ````
-
-A sample Ballerina project which uses the EDI library is given in [here](https://github.com/chathurace/ballerina-edi/tree/main/samples/simpleEDI)
-
-Also refer to [resources](https://github.com/chathurace/ballerina-edi/tree/main/edi/resources) section for example mapping files and edi samples.
-
