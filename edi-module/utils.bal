@@ -104,10 +104,10 @@ isolated function validateDelimiter(string delimeter) returns string {
 
 isolated function prepareToSplit(string content, string delimeter) returns string {
     string preparedContent = content.trim();
-    if (content.endsWith(delimeter)) {
+    if content.endsWith(delimeter) {
         preparedContent = preparedContent + " ";
     }
-    if (content.startsWith(delimeter)) {
+    if content.startsWith(delimeter) {
         preparedContent = " " + preparedContent;
     }
     return preparedContent;

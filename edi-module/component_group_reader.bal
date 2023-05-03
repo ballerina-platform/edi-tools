@@ -57,13 +57,12 @@ isolated function readComponentGroup(string compositeText, EDISchema ediSchema, 
             }
         } else {
             SimpleType|error value = convertToType(component, subMapping.dataType, ediSchema.delimiters.decimalSeparator);
-            if value is SimpleType? {
-                composite[subMapping.tag] = value;
-            } else {
+            if value is error {
                 return error Error(string `EDI field cannot be converted to schema type. 
                             EDI field: ${component}, Target type: ${subMapping.dataType}. Composite schema: ${subMapping.toJsonString()}.
                             Composite text: ${compositeText}. Error: ${value.message()}`);
             }
+            composite[subMapping.tag] = value;
         }
         componentNumber = componentNumber + 1;
     }
