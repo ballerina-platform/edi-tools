@@ -1,5 +1,5 @@
 [package]
 org = "ballerina"
 name = "edi"
-version = "0.2.1"
+version = "0.2.2"
 distribution = "2201.4.1"
