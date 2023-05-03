@@ -47,7 +47,7 @@ ITM*T-46*28
 Ballerina records for the above the EDI mapping in edi-mapping1.json can be generated as follows (generated Ballerina records will be saved in orderRecords.bal):
 
 ```
-java -jar edi.jar codegen edi-schema1.json orderRecords.bal
+java -jar editools.jar codegen edi-schema1.json orderRecords.bal
 ```
 
 Generated Ballerina records for the above mapping are shown below:
@@ -76,12 +76,12 @@ Below code reads the edi-sample1.edi into a json variable named "orderData" and 
 
 ````ballerina
 import ballerina/io;
-import balarinax/edi;
+import balarina/edi;
 
 public function main() returns error? {
-    EDIReader ediReader = check new(check io:fileReadJson("resources/edi-schema1.json"));
+	EDISchema schema = check edi:getSchema(check io:fileReadJson("resources/edi-schema1.json"));
     string ediText = check io:fileReadString("resources/edi-sample1.edi");
-    json orderData = check ediReader.readEDI(ediText);
+    json orderData = check edi:read(ediText, schema);
     io:println(orderData.toJsonString());
 
     SimpleOrder order1 = check orderData.cloneWithType(SimpleOrder);
@@ -132,47 +132,11 @@ import balarinax/edi;
 
 public function main() returns error? {
     SimpleOrder order2 = {...};
-    EDIWriter ediWriter = check new(check io:fileReadJson("resources/edi-schema1.json"));
-    string orderEDI = check ediWriter.writeEDI(order2.toJson());
+	EDISchema schema = check edi:getSchema(check io:fileReadJson("resources/edi-schema1.json"));
+    string orderEDI = check edi:write(order2.toJson(), schema);
     io:println(orderEDI);
 }
 ````
-
-A sample Ballerina project which uses the EDI library is given in [here](https://github.com/chathurace/ballerina-edi/tree/main/samples/simpleEDI)
-
-Also refer to [resources](https://github.com/chathurace/ballerina-edi/tree/main/edi/resources) section for example mapping files and edi samples.
-
-## Converting Smooks mapping files to Ballerina mappings
-
-Smooks library is commonly used for parsing EDI files. Therefore, many organizations have already created Smooks mappings for their EDIs. Ballerina EDI module can convert such Smooks mapping to Ballerina compatible mappings, so that organizations can start using Ballerina for EDI processing without redoing any mappings.
-
-Following command converts Smooks EDI mapping to Ballerina EDI mapping:
-
-```
-java -jar edi.jar smooksToBal <Smooks mapping xml file path> <Ballerina mapping json file path>
-```
-
-For example, the below command converts the Smooks mapping for EDIFACT [Invoice EDI](https://github.com/chathurace/ballerina-edi/blob/main/edi/resources/d3a-invoic-1/mapping.xml) to a Ballerina compatible json mapping:
-
-```
-java -jar edi.jar smooksToBal d3a-invoic-1/mapping.xml d3a-invoic-1/mapping.json
-```
-
-Generated json mapping is shown [here](https://github.com/chathurace/ballerina-edi/blob/main/edi/resources/d3a-invoic-1/mapping.json).
-
-Then we can use the generated json mapping to generate Ballerina records and to parse invoice EDIs as shown above.
-
-## Converting EDI Schema Language (ESL) files to Ballerina compatible mappings
-
-ESL is another format used in EDI mapping files. Ballerina EDI tool can convert ESL mappings into Ballerina compatible mappings, so that it is possible to generate Ballerina code and process EDIs defined in ESLs without having to rework on mappings.
-
-Following command converts ESL files to Ballerina EDI mappings. Note that segment definitions are given in a separate file, which is usually shared by multiple ESL mappings.
-
-```
-java -jar edi.jar eslToBal <ESL file path or directory> <ESL segment definitions path> <output json path or directory>
-```
-
-If a directory containing multiple ESL files are given as the input, all ESLs will be converted to Ballerina mappings and written into the output directory.
 
 ## Creating an EDI library
 
@@ -181,7 +145,7 @@ Usually, organizations have to work with many EDI formats, and integration devel
 Below command can be used to generate EDI libraries:
 
 ```
-java -jar edi.jar libgen <org name> <library name> <EDI mappings folder> <output folder>
+java -jar editools.jar libgen <org name> <library name> <EDI mappings folder> <output folder>
 ```
 
 Ballerina library project will be generated in the output folder. This library can be built and published by issuing "bal pack" and "bal push" commands from the output folder.
@@ -200,7 +164,7 @@ For example, if a library named "citymart" is generated with some X12 EDI schema
 
 ```
 curl --request POST \
-  --url http://localhost:9090/citymartEDIParser/834 \
+  --url http://localhost:9090/citymartEDI/reader/834 \
   --header 'Content-Type: text/plain' \
   --data 'ST*834*12345*005010X220A1~
 BGN*00*12456*20020601*1200****~
