@@ -35,7 +35,7 @@ function testComplexRecordGeneration() {
    r2.addField(r2, "subteams", true, true);
    r2.addField(BSTRING, "location", false, true);
 
-   string expected = "public type Team record {| string teamName; Person lead?; Person[] members = []; Team[] subteams = []; string location?;|};";
+   string expected = "public type Team record {| string teamName; Person? lead?; Person[] members = []; Team[] subteams = []; string location?;|};";
    string output = regex:replaceAll(r2.toString(), "\n", "");
    output = regex:replaceAll(output, "   ", " ");
    test:assertEquals(output, expected);

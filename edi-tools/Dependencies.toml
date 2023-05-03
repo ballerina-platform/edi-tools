@@ -8,6 +8,19 @@ dependencies-toml-version = "2"
 
 [[package]]
 org = "ballerina"
+name = "edi"
+version = "0.2.2"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "regex"}
+]
+modules = [
+	{org = "ballerina", packageName = "edi", moduleName = "edi"}
+]
+
+[[package]]
+org = "ballerina"
 name = "file"
 version = "1.6.0"
 dependencies = [
@@ -138,28 +151,15 @@ modules = [
 
 [[package]]
 org = "ballerinax"
-name = "edi"
-version = "0.1.0"
-dependencies = [
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "log"},
-	{org = "ballerina", name = "regex"}
-]
-modules = [
-	{org = "ballerinax", packageName = "edi", moduleName = "edi"}
-]
-
-[[package]]
-org = "ballerinax"
 name = "editools"
 version = "0.1.0"
 dependencies = [
+	{org = "ballerina", name = "edi"},
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "regex"},
 	{org = "ballerina", name = "test"},
-	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "edi"}
+	{org = "ballerinai", name = "observe"}
 ]
 modules = [
 	{org = "ballerinax", packageName = "editools", moduleName = "editools"},

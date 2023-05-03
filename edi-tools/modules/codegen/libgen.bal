@@ -1,219 +1,107 @@
-import ballerina/io;
 import ballerina/file;
-import ballerinax/edi;
+import ballerina/io;
+import ballerina/edi;
 
-# Generates a Ballerina library project containing:
-# - Record files for all provided schemas
-# - Utility functions to work with EDI files of given schemas
-# - REST connector to process EDI files of given schemas
-public class LibGen {
-
+public type LibData record {|
     string orgName = "";
     string libName = "";
     string outputPath = "";
     string schemaPath = "";
+
     string libPath = "";
     string importsBlock = "";
     string exportsBlock = "";
     string enumBlock = "";
-    string ediFunctions = "";
-    string selectionBlocks = "";
-    string token = "";
+    string readProcessors = "";
+    string writeProcessors = "";
     string[] ediNames = [];
+|};
 
-    public function init(string orgName, string libName, string outputPath, string schemaPath, string token) returns error? {
-        self.orgName = orgName;
-        self.libName = libName;
-        self.schemaPath = schemaPath;
-        self.outputPath = outputPath;
-        self.libPath =  check file:joinPath(outputPath, libName);
-        self.exportsBlock = "export=[\"" + libName + "\"";
-        self.token = token;
-    }
-
-    public function generateLibrary() returns error? {
-        check self.createLibStructure();
-        check self.generateCodeFromFileBasedSchemas();
-        check self.copyNonTemplatedFiles();
-        check self.createBalLib();
-    }
-
-    function generateCodeFromFileBasedSchemas() returns error? {
-        file:MetaData[] mappingFiles = check file:readDir(self.schemaPath);
-        foreach file:MetaData mappingFile in mappingFiles {
-            string ediName = check file:basename(mappingFile.absPath);
-            if ediName.endsWith(".json") {
-                ediName = ediName.substring(0, ediName.length() - ".json".length());
-            }
-            json mappingJson = check io:fileReadJson(mappingFile.absPath);
-            check self.generateEDIFileSpecificCode(ediName, mappingJson);
-        }
-    }
-
-    function createBalLib() returns error? {
-        string selectorCode = self.generateLibraryMainCode();
-        string mainBalName = check file:joinPath(self.libPath, self.libName + ".bal");
-        check io:fileWriteString(mainBalName, selectorCode, io:OVERWRITE);    
-
-        string restConnectorFilePath = check file:joinPath(self.libPath, "restConnector.bal");
-        check io:fileWriteString(restConnectorFilePath, generateRESTConnector(self.libName));    
-
-        // add export package names to the Ballerina.toml file
-        string ballerinaTomlPath = check file:joinPath(self.libPath, "Ballerina.toml");
-        self.exportsBlock += "]";
-        check io:fileWriteString(ballerinaTomlPath, self.exportsBlock, io:APPEND);
-    }
-
-    function copyNonTemplatedFiles() returns error? {
-        check self.writeLibFile(ediTrackerCode, "ediTracker.bal");
-        check self.writeLibFile(packageText, "Package.md");
-        check self.writeLibFile(ModuleMdText, "Module.md");
-
-        check file:createDir(check file:joinPath(self.outputPath, "secrets"), file:RECURSIVE);
-        check io:fileWriteString(check file:joinPath(self.outputPath, "secrets", "secrets.toml"), generateConfigText(self.libName));
-    }
-
-    function writeLibFile(string content, string targetName) returns error? {
-        error? e = io:fileWriteString(check file:joinPath(self.libPath, targetName), content, io:OVERWRITE);
-        if e is error {
-            return error("Failed to write non-templated file: '" + content.substring(0, 20) + "...' to " + targetName + ". " + e.message());
-        }
-    }
-
-    function generateEDIFileSpecificCode(string ediName, json mappingJson) returns error? {
-        self.ediNames.push(ediName);
-        edi:EDISchema ediMapping = check mappingJson.cloneWithType(edi:EDISchema);
-
-        string modulePath = check file:joinPath(self.libPath, "modules", "m" + ediName);
-        check file:createDir(modulePath, file:RECURSIVE);
-
-        string recordsPath = check file:joinPath(modulePath, "G_" + ediName + ".bal");
-        check generateCodeToFile(ediMapping, recordsPath);
-
-        string transformer = self.generateTransformerCode(ediName, ediMapping.name);
-        check io:fileWriteString(check file:joinPath(modulePath, "transformer.bal"), transformer);
-
-        self.ediFunctions += self.generateEDITypeFunctions(ediName, ediMapping.name);
-        self.selectionBlocks += self.generateEDISelectionBlock(ediName, ediMapping.name);
-        self.importsBlock += string `
-import ${self.libName}.m${ediName};`;
-        self.exportsBlock += ",\"" + self.libName + ".m" + ediName + "\"";
-        self.enumBlock += string `${self.enumBlock.length() > 0? ", ":""}EDI_${ediName} = "${ediName}"`;    
-    }
-
-    function generateLibraryMainCode() returns string {
-        string codeBlock = string `
-import chathurace/edi.core as edi;
-import ballerina/http;
-${self.importsBlock}
-
-configurable string partnerId = "${self.libName}";
-
-public enum EDI_NAMES {
-    ${self.enumBlock}
+# Generates a Ballerina library project containing:
+# - Ballerina records for all provided schemas
+# - Utility functions to work with EDI files of given schemas
+# - REST connector to process EDI files of given schemas
+#
+# + libdata - Data structure containing the following inputs for the library: orgName, libName, outputPath, schemaPath
+# + return - Returns error if library generation is not successful
+public function generateLibrary(LibData libdata) returns error? {
+    check createLibStructure(libdata);
+    check generateCodeFromFileBasedSchemas(libdata);
+    check createBalLib(libdata);
 }
 
-public class EDIReader {
-    string schemaURL = "";
-    string schemaAccessToken = "";
-
-    public function init(string schemaURL, string schemaAccessToken) {
-        self.schemaURL = schemaURL;
-        self.schemaAccessToken = schemaAccessToken;
+function createLibStructure(LibData libdata) returns error? {
+    libdata.libPath = check file:joinPath(libdata.outputPath, libdata.libName);
+    if check file:test(libdata.libPath, file:EXISTS) {
+        file:MetaData[] files = check file:readDir(libdata.libPath);
+        if files.length() > 0 {
+            return error(string `Target library path ${libdata.libPath} is not empty. Please provide an empty directory to create the library.`);
+        } 
+    } else {
+        check file:createDir(libdata.libPath, file:RECURSIVE);
     }
+    libdata.exportsBlock = "\"" + libdata.libName + "\"";
+    check copyNonTemplatedFiles(libdata);
+}
 
-    function parse(string ediText, string ediName) returns json|error {
-        string|error mappingText = self.getEDISchemaText(ediName);
-        if mappingText is error {
-            return error("Schema for the EDI " + ediName + " not found in URL " + self.schemaURL);
+function generateCodeFromFileBasedSchemas(LibData libdata) returns error? {
+    file:MetaData[] schemaFiles = check file:readDir(libdata.schemaPath);
+    foreach file:MetaData schemaFile in schemaFiles {
+        string ediName = check file:basename(schemaFile.absPath);
+        if ediName.endsWith(".json") {
+            ediName = ediName.substring(0, ediName.length() - ".json".length());
         }
-        edi:EDIMapping mapping = check edi:readMappingFromString(mappingText);
-        json jb = check edi:readEDIAsJson(ediText, mapping);
-        return jb;
-    }
-
-    ${self.ediFunctions}
-
-    public function readEDI(string ediText, EDI_NAMES ediName, string? ediFileName) returns anydata|error {
-        match ediName {
-            ${self.selectionBlocks}
-        }
-    }
-
-    public function getEDINames() returns string[] {
-        return ${self.ediNames.toString()};
-    }
-
-    function getEDISchemaText(string ediName) returns string|error {
-        http:Client sclient = check new(self.schemaURL);
-        string fileName = ediName + ".json";
-        string authHeader = "Bearer" + self.schemaAccessToken;
-        string schemaContent = check sclient->/[fileName]({
-            Authorization: authHeader, 
-            Accept: "application/vnd.github.raw"});
-        return schemaContent;
+        json schemaJson = check io:fileReadJson(schemaFile.absPath);
+        check generateEDIFileSpecificCode(ediName, schemaJson, libdata);
     }
 }
-        `;
-        return codeBlock;        
-    }
 
-    function generateEDITypeFunctions(string ediName, string mainRecordName) returns string {
-        string ediFunctions = string `
-    public function read_${ediName}(string ediText) returns m${ediName}:${mainRecordName}|error {
-        m${ediName}:${mainRecordName} b = check (check self.parse(ediText, "${ediName}")).cloneWithType(m${ediName}:${mainRecordName});
-        return m${ediName}:process(b);
-    }
+function createBalLib(LibData libdata) returns error? {
+    string mainCode = generateMainCode(libdata);
+    string mainBalName = check file:joinPath(libdata.libPath, libdata.libName + ".bal");
+    check io:fileWriteString(mainBalName, mainCode);    
 
-    public function readAndTransform_${ediName}(string ediText) returns anydata|error {
-        m${ediName}:${mainRecordName} b = check self.read_${ediName}(ediText);
-        return m${ediName}:transform(b);
-    }
-        `;
-        return ediFunctions;
-    }
+    string restConnectorFilePath = check file:joinPath(libdata.libPath, "rest_connector.bal");
+    check io:fileWriteString(restConnectorFilePath, generateRESTConnector(libdata.libName));  
 
-    function generateEDISelectionBlock(string ediName, string mainRecordName) returns string {
-        string block = string `EDI_${ediName} => { return self.readAndTransform_${ediName}(ediText); }
-            `;
-        return block;
-    }
-
-    function createLibStructure() returns error? {
-        self.libPath = check file:joinPath(self.outputPath, self.libName);
-        if check file:test(self.libPath, file:EXISTS) {
-            file:MetaData[] files = check file:readDir(self.libPath);
-            if files.length() > 0 {
-                return error(string `Target library path ${self.libPath} is not empty. Please provide an empty directory to create the library.`);
-            } 
-        } else {
-            check file:createDir(self.libPath, file:RECURSIVE);
-        }
-
-        string balTomlContent = string `
-[package]
-org = "${self.orgName}"
-name = "${self.libName}"
-version = "0.1.0"
-distribution = "2201.4.1"
-`;
-        string balTomlPath = check file:joinPath(self.libPath, "Ballerina.toml");
-        check io:fileWriteString(balTomlPath, balTomlContent);
-    }
-
-    function generateTransformerCode(string ediName, string mainRecordName) returns string {
-        string transformer = string `
-
-type TargetType ${mainRecordName};
-
-public function transform(${mainRecordName} data) returns TargetType => data;
-
-public function process(${mainRecordName} data) returns ${mainRecordName} {
-    // Implement EDI type specific processing code here
-
-    return data;
+    string balTomlPath = check file:joinPath(libdata.libPath, "Ballerina.toml");
+    check io:fileWriteString(balTomlPath, generateBallerinaToml(libdata));  
 }
-    `;
-        return transformer;
+
+function copyNonTemplatedFiles(LibData libdata) returns error? {
+    check writeLibFile(packageText, "Package.md", libdata);
+    check writeLibFile(ModuleMdText, "Module.md", libdata);
+
+    check file:createDir(check file:joinPath(libdata.outputPath, "secrets"), file:RECURSIVE);
+    check io:fileWriteString(check file:joinPath(libdata.outputPath, "secrets", "secrets.toml"), generateConfigText(libdata.libName));
+}
+
+function generateEDIFileSpecificCode(string ediName, json mappingJson, LibData libdata) returns error? {
+    libdata.ediNames.push(ediName);
+    edi:EDISchema ediMapping = check mappingJson.cloneWithType(edi:EDISchema);
+    ediMapping.name = "EDI_" + ediName + "_" + ediMapping.name;
+
+    string modulePath = check file:joinPath(libdata.libPath, "modules", "m" + ediName);
+    check file:createDir(modulePath, file:RECURSIVE);
+
+    string recordsPath = check file:joinPath(modulePath, "G_" + ediName + ".bal");
+    check generateCodeToFile(ediMapping, recordsPath);
+
+    string transformer = generateTransformerCode(ediName, ediMapping.name);
+    check io:fileWriteString(check file:joinPath(modulePath, "transformer.bal"), transformer);
+
+    libdata.importsBlock += "\n" + string `import ${libdata.libName}.m${ediName};`;
+    libdata.exportsBlock += ",\"" + libdata.libName + ".m" + ediName + "\"";
+    libdata.enumBlock += string `${libdata.enumBlock.length() > 0? ", ":""}EDI_${ediName} = "${ediName}"`;   
+    libdata.readProcessors += (libdata.readProcessors.length() > 0? ",\n" : "") +
+        string `    "${ediName}": m${ediName}:processRead${ediName}`; 
+    libdata.writeProcessors += (libdata.writeProcessors.length() > 0? ",\n" : "") +
+        string `    "${ediName}": m${ediName}:processWrite${ediName}`; 
+}
+
+function writeLibFile(string content, string targetName, LibData libdata) returns error? {
+    error? e = io:fileWriteString(check file:joinPath(libdata.libPath, targetName), content, io:OVERWRITE);
+    if e is error {
+        return error("Failed to write non-templated file: '" + content.substring(0, 20) + "...' to " + targetName + ". " + e.message());
     }
 }

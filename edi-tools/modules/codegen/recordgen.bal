@@ -1,5 +1,5 @@
 import ballerina/io;
-import ballerinax/edi;
+import ballerina/edi;
 
 map<BalType> ediToBalTypes = {
     "string": BSTRING,
@@ -175,7 +175,7 @@ class BalField {
             typeName = t.toString();
         }
         // string typeName = t is BalRecord? t.name : t.toString();
-        return string `${typeName}${self.array?"[]":""} ${self.name}${(self.optional && !self.array)?"?":""}${self.array?" = []":""};`;
+        return string `${typeName}${(self.optional && !self.array && self.btype != BSTRING)?"?":""}${self.array?"[]":""} ${self.name}${(self.optional && !self.array)?"?":""}${self.array?" = []":""};`;
     }
 }
 

@@ -1,10 +1,10 @@
 import ballerina/io;
-import ballerinax/edi;
+import ballerina/edi;
 import editools.codegen;
 
 public function main(string[] args) returns error? {
 
-    string usage = string `Usage:
+    string usage = string `Ballerina EDI tools -
         Ballerina code generation for edi mapping: java -jar edi.jar codegen <mapping json path> <output bal file path>
         Smooks to json mapping conversion: java -jar edi.jar smooksToBal <smooks mapping xml path> <mapping json path>
         ESL to json mapping conversion: java -jar edi.jar eslToBal <ESL file path or directory> <ESL segment definitions path> <output json path or directory>
@@ -29,12 +29,13 @@ public function main(string[] args) returns error? {
             io:println(usage);
             return;
         }
-        string orgName = args[1];
-        string libName = args[2];
-        string ediMappingFolder = args[3];
-        string outputPath = args[4];
-        codegen:LibGen g = check new(orgName, libName, outputPath, ediMappingFolder, "");
-        check g.generateLibrary();
+        codegen:LibData libdata = {
+            orgName: args[1],
+            libName: args[2],
+            schemaPath: args[3],
+            outputPath: args[4]
+        };
+        check codegen:generateLibrary(libdata);
     } else {
         io:println(usage);
     }
