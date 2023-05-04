@@ -1,5 +1,5 @@
 function generateTransformerCode(string ediName, string mainRecordName) returns string {
-        string transformer = string `
+    string transformer = string `
 type InternalType ${mainRecordName};
 
 public function processRead${ediName}(json content) returns anydata|error {
@@ -16,5 +16,5 @@ public function processWrite${ediName}(json content) returns anydata|error {
 
 function transformWrite(InternalType data) returns ${mainRecordName} => data;
     `;
-        return transformer;
+    return transformer;
 }

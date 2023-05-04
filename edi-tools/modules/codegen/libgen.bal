@@ -36,7 +36,7 @@ function createLibStructure(LibData libdata) returns error? {
         file:MetaData[] files = check file:readDir(libdata.libPath);
         if files.length() > 0 {
             return error(string `Target library path ${libdata.libPath} is not empty. Please provide an empty directory to create the library.`);
-        } 
+        }
     } else {
         check file:createDir(libdata.libPath, file:RECURSIVE);
     }
@@ -59,13 +59,13 @@ function generateCodeFromFileBasedSchemas(LibData libdata) returns error? {
 function createBalLib(LibData libdata) returns error? {
     string mainCode = generateMainCode(libdata);
     string mainBalName = check file:joinPath(libdata.libPath, libdata.libName + ".bal");
-    check io:fileWriteString(mainBalName, mainCode);    
+    check io:fileWriteString(mainBalName, mainCode);
 
     string restConnectorFilePath = check file:joinPath(libdata.libPath, "rest_connector.bal");
-    check io:fileWriteString(restConnectorFilePath, generateRESTConnector(libdata.libName));  
+    check io:fileWriteString(restConnectorFilePath, generateRESTConnector(libdata.libName));
 
     string balTomlPath = check file:joinPath(libdata.libPath, "Ballerina.toml");
-    check io:fileWriteString(balTomlPath, generateBallerinaToml(libdata));  
+    check io:fileWriteString(balTomlPath, generateBallerinaToml(libdata));
 }
 
 function copyNonTemplatedFiles(LibData libdata) returns error? {
@@ -92,11 +92,11 @@ function generateEDIFileSpecificCode(string ediName, json mappingJson, LibData l
 
     libdata.importsBlock += "\n" + string `import ${libdata.libName}.m${ediName};`;
     libdata.exportsBlock += ",\"" + libdata.libName + ".m" + ediName + "\"";
-    libdata.enumBlock += string `${libdata.enumBlock.length() > 0? ", ":""}EDI_${ediName} = "${ediName}"`;   
-    libdata.readProcessors += (libdata.readProcessors.length() > 0? ",\n" : "") +
-        string `    "${ediName}": m${ediName}:processRead${ediName}`; 
-    libdata.writeProcessors += (libdata.writeProcessors.length() > 0? ",\n" : "") +
-        string `    "${ediName}": m${ediName}:processWrite${ediName}`; 
+    libdata.enumBlock += string `${libdata.enumBlock.length() > 0 ? ", " : ""}EDI_${ediName} = "${ediName}"`;
+    libdata.readProcessors += (libdata.readProcessors.length() > 0 ? ",\n" : "") +
+        string `    "${ediName}": m${ediName}:processRead${ediName}`;
+    libdata.writeProcessors += (libdata.writeProcessors.length() > 0 ? ",\n" : "") +
+        string `    "${ediName}": m${ediName}:processWrite${ediName}`;
 }
 
 function writeLibFile(string content, string targetName, LibData libdata) returns error? {

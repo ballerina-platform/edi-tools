@@ -8,7 +8,7 @@ map<BalType> ediToBalTypes = {
 };
 
 type GenContext record {|
-    map<BalRecord> typeRecords = {};    
+    map<BalRecord> typeRecords = {};
     map<int> typeNumber = {};
 |};
 
@@ -32,7 +32,7 @@ public function generateCodeToFile(edi:EDISchema mapping, string outpath) return
 # + return - Returns an array of generated records. Error if the generation is not successfull
 public function generateCode(edi:EDISchema mapping) returns BalRecord[] {
     GenContext context = {};
-    _ = generateRecordForUnits(mapping.segments, mapping.name, context);    
+    _ = generateRecordForUnits(mapping.segments, mapping.name, context);
     return context.typeRecords.toArray();
 }
 
@@ -42,7 +42,7 @@ function generateRecordForSegmentGroup(edi:EDISegGroupSchema groupmap, GenContex
 }
 
 function generateRecordForUnits(edi:EDIUnitSchema[] umaps, string typeName, GenContext context) returns BalRecord {
-    BalRecord sgrec = new(typeName);
+    BalRecord sgrec = new (typeName);
     foreach edi:EDIUnitSchema umap in umaps {
         if umap is edi:EDISegSchema {
             BalRecord srec = generateRecordForSegment(umap, context);
@@ -63,16 +63,16 @@ function generateRecordForSegment(edi:EDISegSchema segmap, GenContext context) r
         return erec;
     }
 
-    BalRecord srec = new(sTypeName);
+    BalRecord srec = new (sTypeName);
     foreach edi:EDIFieldSchema emap in segmap.fields {
-        BalType? balType = ediToBalTypes[emap.dataType]; 
+        BalType? balType = ediToBalTypes[emap.dataType];
         if emap.dataType == edi:COMPOSITE {
             balType = generateRecordForComposite(emap, context);
-         }
+        }
 
-         if balType is BalType {
+        if balType is BalType {
             srec.addField(balType, emap.tag, emap.repeat, !emap.required);
-         }
+        }
     }
     context.typeRecords[sTypeName] = srec;
     return srec;
@@ -80,12 +80,12 @@ function generateRecordForSegment(edi:EDISegSchema segmap, GenContext context) r
 
 function generateRecordForComposite(edi:EDIFieldSchema emap, GenContext context) returns BalRecord {
     string cTypeName = generateTypeName(emap.tag, context);
-    BalRecord crec = new(cTypeName);
+    BalRecord crec = new (cTypeName);
     foreach edi:EDIComponentSchema submap in emap.components {
         BalType? balType = ediToBalTypes[submap.dataType];
         if balType is BalType {
             crec.addField(balType, submap.tag, false, !submap.required);
-        }        
+        }
     }
     context.typeRecords[cTypeName] = crec;
     return crec;
@@ -118,7 +118,7 @@ public class BalRecord {
     string name;
     BalField[] fields = [];
     boolean closed = true;
-    boolean publicRecord  = true;
+    boolean publicRecord = true;
 
     function init(string name) {
         self.name = name;
@@ -132,14 +132,14 @@ public class BalRecord {
         if anonymous.length() == 0 {
             anonymous.push(false);
         }
-        string recString = string `record {${self.closed?"|":""}` + "\n";
+        string recString = string `record {${self.closed ? "|" : ""}` + "\n";
         foreach BalField f in self.fields {
             recString += "   " + f.toString(anonymous[0]) + "\n";
         }
-        recString += string `${self.closed?"|":""}};` + "\n";
+        recString += string `${self.closed ? "|" : ""}};` + "\n";
 
         if !anonymous[0] {
-            recString = string `${self.publicRecord?"public":""} type ${self.name} ${recString}`; 
+            recString = string `${self.publicRecord ? "public" : ""} type ${self.name} ${recString}`;
         }
         return recString;
     }
@@ -175,7 +175,7 @@ class BalField {
             typeName = t.toString();
         }
         // string typeName = t is BalRecord? t.name : t.toString();
-        return string `${typeName}${(self.optional && !self.array && self.btype != BSTRING)?"?":""}${self.array?"[]":""} ${self.name}${(self.optional && !self.array)?"?":""}${self.array?" = []":""};`;
+        return string `${typeName}${(self.optional && !self.array && self.btype != BSTRING) ? "?" : ""}${self.array ? "[]" : ""} ${self.name}${(self.optional && !self.array) ? "?" : ""}${self.array ? " = []" : ""};`;
     }
 }
 
