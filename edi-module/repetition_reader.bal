@@ -30,7 +30,7 @@ isolated function readRepetition(string repeatText, string repeatDelimiter, EDIS
     foreach string 'field in fields {
         if (fieldMapping.dataType == COMPOSITE) {
             EDIComponentGroup? value = check readComponentGroup('field, mapping, fieldMapping);
-            if (value is EDIComponentGroup) {
+            if value is EDIComponentGroup {
                 repeatValues.push(value);
             } else {
                 log:printWarn(string `Repeat value not provided in ${repeatText}.`);
@@ -40,12 +40,11 @@ isolated function readRepetition(string repeatText, string repeatDelimiter, EDIS
                 continue;
             }
             SimpleType|error value = convertToType('field, fieldMapping.dataType, mapping.delimiters.decimalSeparator);
-            if (value is SimpleType) {
-                repeatValues.push(value);
-            } else {
+            if value is error {
                 return error Error(string `Input value does not match with the shema type.
-                Input value: ${'field}, Schema type: ${fieldMapping.dataType}, Field schema: ${fieldMapping.toJsonString()}, Repeat text: ${repeatText}, Error: ${value.message()}`);
+                    Input value: ${'field}, Schema type: ${fieldMapping.dataType}, Field schema: ${fieldMapping.toJsonString()}, Repeat text: ${repeatText}, Error: ${value.message()}`);
             }
+            repeatValues.push(value);
         }
     }
     return repeatValues;

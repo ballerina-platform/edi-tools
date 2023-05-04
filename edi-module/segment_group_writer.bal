@@ -31,12 +31,14 @@ isolated function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISch
         string unitKey = keys[msgIndex];
         json unit = segGroup.get(unitKey);
         if umap.tag != unitKey {
-            if umap.minOccurances == 0 {
-                mapIndex += 1;
-                continue;
-            } else {
+            if umap.minOccurances > 0 {
                 return error Error(string `Mandatory segment not found in input message. Required segment: ${umap.tag}, Found ${unitKey}`);
             }
+            mapIndex += 1;
+            continue;
+        }
+        if umap.maxOccurances == 0 {
+            return error Error(string `Maximum occurances must not be equal to zero. Segment/segment group: ${umap.tag}`);
         }
 
         if umap.maxOccurances == 1 {
@@ -45,33 +47,30 @@ isolated function writeSegmentGroup(map<json> segGroup, EDISegGroupSchema|EDISch
             }
             if umap is EDISegSchema {
                 check writeSegment(unit, umap, context);
-            } else if umap is EDISegGroupSchema {
+            } else {
                 check writeSegmentGroup(unit, umap, context);
             }
-        } else if umap.maxOccurances > 1 || umap.maxOccurances == -1 {
+        } else {
             if !(unit is json[]) {
                 return error Error(string `Value of multi-occurance segment/segment group must be an array. Segment group: ${umap.tag}, Found: ${unit.toString()}`);
             }
-            if unit.length() >= umap.minOccurances && ((unit.length() <= umap.maxOccurances) || umap.maxOccurances < 0) {
-                foreach json u in unit {
-                    if !(u is map<json>) {
-                        return error Error(string `Each item in segment group must be a segment/segment group. Segment group: ${umap.tag}, Found: ${u.toString()}`);
-                    }
-                    if umap is EDISegSchema {
-                        check writeSegment(u, umap, context);
-                    } else if umap is EDISegGroupSchema {
-                        check writeSegmentGroup(u, umap, context);
-                    }
+            if unit.length() < umap.minOccurances || ((unit.length() > umap.maxOccurances) && umap.maxOccurances > 0) {
+                return error Error(string `Cardinality of input segment/segment group does not match with the schema.
+                    Segment/segment group: ${unitKey}, Allowed min: ${umap.minOccurances}, Allowed max: ${umap.maxOccurances}, Found ${unit is EDIUnit[] ? unit.length() : 1}
+                    Schema: Schema: ${printEDIUnitMapping(umap)}`);
+            }
+            foreach json u in unit {
+                if !(u is map<json>) {
+                    return error Error(string `Each item in segment group must be a segment/segment group. Segment group: ${umap.tag}, Found: ${u.toString()}`);
+                }
+                if umap is EDISegSchema {
+                    check writeSegment(u, umap, context);
+                } else {
+                    check writeSegmentGroup(u, umap, context);
                 }
             }
-        } else {
-            return error Error(string `Cardinality of input segment/segment group does not match with the schema.
-            Segment/segment group: ${unitKey}, Allowed min: ${umap.minOccurances}, Allowed max: ${umap.maxOccurances}, Found ${unit is EDIUnit[] ? unit.length() : 1}
-            Schema: Schema: ${printEDIUnitMapping(umap)}`);
         }
         mapIndex += 1;
         msgIndex += 1;
     }
 }
-
-type EDIU map<json>;

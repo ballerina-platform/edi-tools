@@ -38,7 +38,7 @@ isolated function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext
         boolean segmentMapped = false;
         while sgContext.schemaIndex < sgContext.unitSchemas.length() {
             EDIUnitSchema? segSchema = currentUnitSchema[sgContext.schemaIndex];
-            if (segSchema is EDISegSchema) {
+            if segSchema is EDISegSchema {
                 log:printDebug(string `Trying to match with segment mapping ${printSegMap(segSchema)}`);
                 if segSchema.code != fields[0] {
                     check ignoreSchema(segSchema, sgContext, context);
@@ -109,7 +109,7 @@ isolated function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgCo
     // the next mapping.
     if segSchema.maxOccurances != 1 {
         var segments = sgContext.segmentGroup[segSchema.tag];
-        if (segments is EDISegment[]|EDISegmentGroup[]) {
+        if segments is EDISegment[]|EDISegmentGroup[] {
             if segments.length() > 0 {
                 // This repeatable segment has already occured at least once. So move to the next mapping.
                 sgContext.schemaIndex += 1;
@@ -124,11 +124,11 @@ isolated function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgCo
 }
 
 isolated function placeEDISegment(EDISegment segment, EDISegSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
-    if (segSchema.maxOccurances == 1) {
+    if segSchema.maxOccurances == 1 {
         // Current segment has matched with the current mapping AND current segment is not repeatable.
         // So we can move to the next mapping.
         log:printDebug(string `Completed reading non-repeatable segment: ${printSegMap(segSchema)}.
-        Segment text: ${context.ediText[context.rawIndex]}`);
+            Segment text: ${context.ediText[context.rawIndex]}`);
         sgContext.schemaIndex += 1;
         sgContext.segmentGroup[segSchema.tag] = segment;
     } else {
@@ -136,7 +136,7 @@ isolated function placeEDISegment(EDISegment segment, EDISegSchema segSchema, Se
         // Also we can't increment the mapping index here as next segment can also match with the current mapping
         // as the segment is repeatable.
         var segments = sgContext.segmentGroup[segSchema.tag];
-        if (segments is EDISegment[]) {
+        if segments is EDISegment[] {
             if (segSchema.maxOccurances != -1 && segments.length() >= segSchema.maxOccurances) {
                 return error Error(string `Maximum allowed unit count of the repeatable unit is exceeded.
                 Unit: ${segSchema.code}, Maximum limit: ${segSchema.maxOccurances}, Current row: ${context.rawIndex}`);

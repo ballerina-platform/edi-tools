@@ -9,7 +9,7 @@ dependencies-toml-version = "2"
 [[package]]
 org = "ballerina"
 name = "edi"
-version = "0.2.2"
+version = "0.8.0"
 dependencies = [
 	{org = "ballerina", name = "file"},
 	{org = "ballerina", name = "io"},

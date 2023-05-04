@@ -35,66 +35,60 @@ isolated function writeSegment(map<json> seg, EDISegSchema segMap, EDIContext co
             continue;
         }
         string fTag = fTags[fIndex];
-        if fmap.tag == fTag {
-            if !fmap.repeat && fmap.components.length() > 0 {
-                string|error componentGroupText = writeComponentGroup(seg.get(fTag), segMap, fmap, context);
-                if componentGroupText is string {
-                    segLine += fd + componentGroupText;
-                } else {
-                    return error Error(string `Failed to serialize component group. Segment: ${segMap.tag}, Field: ${fmap.toString()}, Input segment ${seg.toString()}
-                    ${componentGroupText.message()}`);
-                }
-            } else if fmap.repeat {
-                var fdata = seg.get(fTag);
-                if !(fdata is json[]) {
-                    return error Error(string `Repeatable field must contain an array as the value.
-                    Segment: ${segMap.code}, Field: ${fmap.tag}, Input value: ${fdata.toString()}`);
-                }
-                if fdata.length() == 0 {
-                    if fmap.required {
-                        return error Error(string `Mandatory field is not provided. Field: ${fmap.tag}, Segment: ${segMap.code}`);
-                    } else {
-                        segLine += fd + "";
-                        fIndex += 1;
-                        continue;
-                    }
-                }
-                string rd = context.schema.delimiters.repetition;
-                string repeatingText = "";
-                if fmap.components.length() == 0 {
-                    foreach json fdataElement in fdata {
-                        if !(fdataElement is SimpleType) {
-                            return error Error(string `Repeatable field value must be a primitive type array. 
-                                                        Field: ${fmap.tag}, Segment: ${segMap.tag}, Input value: ${fdata.toString()}`);
-                        }
-                        repeatingText += (repeatingText == "" ? "" : rd) + fdataElement.toString();
-                    }
-                } else if fmap.components.length() > 0 {
-                    foreach json g in fdata {
-                        string cgroupText = check writeComponentGroup(g, segMap, fmap, context);
-                        repeatingText += (repeatingText == "" ? "" : rd) + cgroupText;
-                    }
-                } else {
-                    return error Error(string `Repeatable field must contain an array value.
-                    Field: ${fmap.tag}, Segment: ${printSegMap(segMap)}, Input value: ${fdata.toString()}`);
-                }
-                segLine += fd + repeatingText;
-            } else {
-                var fdata = seg.get(fTag);
-                if !(fdata is SimpleType) {
-                    return error Error(string `Field must contain a primitive value.
-                    Field: ${fmap.tag}, Segment: ${segMap.tag}, Input value: ${fdata.toString()}`);
-                }
-                segLine += fd + serializeSimpleType(fdata, context.schema);
-            }
-            fIndex += 1;
-        } else {
-            if !fmap.required {
-                fIndex += 1;
-            } else {
+        if fmap.tag != fTag {
+            if fmap.required {
                 return error Error(string `Required field is not found in the input. Segment: ${segMap.tag}, Field: ${fmap.tag}`);
             }
+            fIndex += 1;
+            continue;
         }
+        if !fmap.repeat && fmap.components.length() > 0 {
+            string|error componentGroupText = writeComponentGroup(seg.get(fTag), segMap, fmap, context);
+            if componentGroupText is error {
+                return error Error(string `Failed to serialize component group. Segment: ${segMap.tag}, Field: ${fmap.toString()}, Input segment ${seg.toString()}
+                ${componentGroupText.message()}`);
+            }
+            segLine += fd + componentGroupText;
+        } else if fmap.repeat {
+            var fdata = seg.get(fTag);
+            if !(fdata is json[]) {
+                return error Error(string `Repeatable field must contain an array as the value.
+                Segment: ${segMap.code}, Field: ${fmap.tag}, Input value: ${fdata.toString()}`);
+            }
+            if fdata.length() == 0 {
+                if fmap.required {
+                    return error Error(string `Mandatory field is not provided. Field: ${fmap.tag}, Segment: ${segMap.code}`);
+                }
+                segLine += fd + "";
+                fIndex += 1;
+                continue;
+            }
+            string rd = context.schema.delimiters.repetition;
+            string repeatingText = "";
+            if fmap.components.length() == 0 {
+                foreach json fdataElement in fdata {
+                    if !(fdataElement is SimpleType) {
+                        return error Error(string `Repeatable field value must be a primitive type array. 
+                                                    Field: ${fmap.tag}, Segment: ${segMap.tag}, Input value: ${fdata.toString()}`);
+                    }
+                    repeatingText += (repeatingText == "" ? "" : rd) + fdataElement.toString();
+                }
+            } else {
+                foreach json g in fdata {
+                    string cgroupText = check writeComponentGroup(g, segMap, fmap, context);
+                    repeatingText += (repeatingText == "" ? "" : rd) + cgroupText;
+                }
+            }
+            segLine += fd + repeatingText;
+        } else {
+            var fdata = seg.get(fTag);
+            if !(fdata is SimpleType) {
+                return error Error(string `Field must contain a primitive value.
+                Field: ${fmap.tag}, Segment: ${segMap.tag}, Input value: ${fdata.toString()}`);
+            }
+            segLine += fd + serializeSimpleType(fdata, context.schema);
+        }
+        fIndex += 1;
     }
     segLine += context.schema.delimiters.segment;
     context.ediText.push(segLine);

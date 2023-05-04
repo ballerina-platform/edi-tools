@@ -60,13 +60,13 @@ isolated function readSegment(EDISegSchema segMapping, string[] fields, EDISchem
                 continue;
             }
         }
-        if (fieldMapping.repeat) {
+        if fieldMapping.repeat {
             // this is a repeating field (i.e. array). can be a repeat of composites as well.
             SimpleArray|EDIComponentGroup[] repeatValues = check readRepetition(fieldText, mapping.delimiters.repetition, mapping, fieldMapping);
             if repeatValues.length() > 0 || mapping.preserveEmptyFields {
                 ediRecord[tag] = repeatValues;
             }
-        } else if (fieldMapping.components.length() > 0) {
+        } else if fieldMapping.components.length() > 0 {
             // this is a composite field (but not a repeat)
             EDIComponentGroup? composite = check readComponentGroup(fieldText, mapping, fieldMapping);
             if composite is EDIComponentGroup || mapping.preserveEmptyFields {
@@ -75,13 +75,12 @@ isolated function readSegment(EDISegSchema segMapping, string[] fields, EDISchem
         } else {
             // this is a simple type field
             SimpleType|error value = convertToType(fieldText, fieldMapping.dataType, mapping.delimiters.decimalSeparator);
-            if value is SimpleType {
-                ediRecord[tag] = value;
-            } else {
+            if value is error {
                 return error Error(string `Input field cannot be converted to the type specified in the segment schema.
                         Input field: ${fieldText}, Schema type: ${fieldMapping.dataType},
                         Segment schema: ${segMapping.toJsonString()}, Segment text: ${segmentDesc}, Error: ${value.message()}`);
             }
+            ediRecord[tag] = value;
         }
         fieldNumber = fieldNumber + 1;
     }
