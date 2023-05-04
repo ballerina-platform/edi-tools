@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Record for representing EDI schema
+# Record for representing EDI schema.
 #
 # + name - Name of the schema. This will be used as the main record name by the code generation tool.  
 #

@@ -22,7 +22,7 @@ type EDIContext record {|
     int rawIndex = 0;
 |};
 
-# Reads the given EDI text according to the provided schema
+# Reads the given EDI text according to the provided schema.
 #
 # + ediText - EDI text to be read
 # + schema - Schema of the EDI text
@@ -35,7 +35,7 @@ public isolated function read(string ediText, EDISchema schema) returns json|Err
     return rootGroup.toJson();
 }
 
-# Writes the given JSON varibale into a EDI text according to the provided schema
+# Writes the given JSON varibale into a EDI text according to the provided schema.
 #
 # + msg - JSON value to be written into EDI
 # + schema - Schema of the EDI text
@@ -56,7 +56,7 @@ public isolated function write(json msg, EDISchema schema) returns string|Error 
 # Creates an EDI schema from a string or a JSON.
 #
 # + schema - Schema of the EDI type 
-# + return - Error is returned if the given schema is not valid.
+# + return - Error is returned if the given schema is not valid
 public isolated function getSchema(string|json schema) returns EDISchema|error {
     if schema is string {
         io:StringReader sr = new (schema);

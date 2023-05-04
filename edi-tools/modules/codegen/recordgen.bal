@@ -26,10 +26,10 @@ public function generateCodeToFile(edi:EDISchema mapping, string outpath) return
     _ = check io:fileWriteString(outpath, sRecords);
 }
 
-# Generates all Ballerina records required to represent EDI data in the given schema
+# Generates all Ballerina records required to represent EDI data in the given schema.
 #
 # + mapping - EDI schema for which records need to be generated
-# + return - Returns an array of generated records. Error if the generation is not successfull
+# + return - Returns an array of generated records. Error if the generation is not successfull.
 public function generateCode(edi:EDISchema mapping) returns BalRecord[] {
     GenContext context = {};
     _ = generateRecordForUnits(mapping.segments, mapping.name, context);

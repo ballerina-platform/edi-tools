@@ -93,7 +93,7 @@ isolated function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext
 # + segSchema - Segment schema or segment group schema to be ignored
 # + sgContext - Segment group parsing context  
 # + context - EDI parsing context
-# + return - Return error if the given mapping cannot be ignored.
+# + return - Return error if the given mapping cannot be ignored
 isolated function ignoreSchema(EDIUnitSchema segSchema, SegmentGroupContext sgContext, EDIContext context) returns Error? {
 
     // If the current segment mapping is optional, we can ignore the current mapping and compare the 
