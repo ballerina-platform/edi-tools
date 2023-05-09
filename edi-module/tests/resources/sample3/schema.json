@@ -1,0 +1,56 @@
+{
+    "name": "Sample3",
+    "delimiters": {
+        "segment": "~",
+        "field": "*", 
+        "component": ":", 
+        "repetition": "^"
+    },
+    "segments": [
+        {
+            "code": "HDR",
+            "tag": "header",
+            "fields": [
+                {"tag" : "code"}, 
+                {
+                    "tag": "orderId"
+                },
+                {
+                    "tag": "organization"
+                },
+                {
+                    "tag": "date"
+                }
+            ]
+        },
+        {
+            "tag": "items",
+            "minOccurances": 1,
+            "maxOccurances": -1,
+            "segments": [
+                {
+                    "code": "ITM",
+                    "tag": "items",
+                    "fields": [
+                        {"tag" : "code"}, 
+                        {
+                            "tag": "item"
+                        },
+                        {
+                            "tag": "quantity",
+                            "dataType": "int"
+                        }
+                    ]
+                },
+                {
+                    "code": "SUP",
+                    "tag": "supplier",
+                    "minOccurances": 0,
+                    "fields": [
+                        {"tag" : "code"}, {"tag": "supplierCode"}, {"tag": "promotionCode"}
+                    ]
+                }
+            ]
+        }
+    ]
+}

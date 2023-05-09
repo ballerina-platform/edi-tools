@@ -1,0 +1,33 @@
+{
+    "name" : "PartnerOrder",
+    "delimiters" : {"segment" : "~", "field" : "*", "component" : ":", "repetition" : "^"},
+    "preserveEmptyFields": true,
+    "includeSegmentCode": true,
+    "segments" : [ 
+        {
+            "code": "HDR",
+            "tag" : "header",
+            "fields" : [{"tag" : "code"}, {"tag" : "orderId"}, {"tag" : "date"}]
+        },
+        {
+            "code": "ORG",
+            "tag" : "organization",
+            "fields" : [
+                {"tag" : "code"}, 
+                {"tag" : "partnerCode"}, 
+                {"tag" : "name"}, 
+                {"tag" : "address", "components" : [{"tag" : "streetAddress"}, {"tag" : "city"}, {"tag" : "country"}]}, 
+                {"tag" : "contact", "repeat" : true}]
+        },
+        {
+            "code": "ITM",
+            "tag" : "items",
+            "maxOccurances" : -1,
+            "fields" : [
+                {"tag" : "code"}, 
+                {"tag" : "item"}, 
+                {"tag" : "quantity", "dataType" : "int"}, 
+                {"tag" : "comments", "repeat" : true, "dataType" : "composite", "components" : [{"tag" : "author"}, {"tag" : "text"}]}]
+        }
+    ]
+}

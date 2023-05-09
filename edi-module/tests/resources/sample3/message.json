@@ -1,0 +1,29 @@
+{
+    "header": {
+      "orderId": "ORDER_1201",
+      "organization": "ABC_Store",
+      "date": "2008-01-01"
+    },
+    "items": [
+      {
+        "items": {
+          "item": "A-250",
+          "quantity": 12
+        },
+        "supplier": {
+          "supplierCode": "S-10",
+          "promotionCode": "PROMO120"
+        }
+      },
+      {
+        "items": {
+          "item": "A-45",
+          "quantity": 100
+        },
+        "supplier": {
+          "supplierCode": "S-60",
+          "promotionCode": "PROMO130"
+        }
+      }
+    ]
+  }

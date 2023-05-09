@@ -1,0 +1,70 @@
+{
+    "name": "Sample5",
+    "delimiters": {
+        "segment": "~",
+        "field": "*", 
+        "component": ":", 
+        "repetition": "^"
+    },
+    "segments": [
+        {
+            "code": "HDR",
+            "tag": "header",
+            "fields": [
+                {"tag" : "code"},
+                {"tag": "orderId"},
+                {"tag": "organization"},
+                {"tag": "date"}
+            ]
+        },
+        {
+            "tag": "items",
+            "minOccurances": 1,
+            "maxOccurances": -1,
+            "segments": [
+                {
+                    "code": "ITM",
+                    "tag": "items",
+                    "fields": [
+                        {"tag" : "code"},
+                        {"tag": "item"},
+                        {"tag": "quantity", "dataType": "int"}
+                    ]
+                },
+                {
+                    "tag": "deliveries",
+                    "minOccurances": 0,
+                    "maxOccurances": 3,
+                    "segments": [
+                        {
+                            "code": "DES",
+                            "tag": "destination",
+                            "fields": [
+                                {"tag" : "code"},
+                                {"tag": "addressCode"},
+                                {"tag": "contact"}
+                            ]
+                        },
+                        {
+                            "code": "QTY",
+                            "tag": "destinationQuantity",
+                            "fields": [
+                                {"tag" : "code"},
+                                {"tag":"quantity", "dataType": "int"},
+                                {"tag":"deliverBy"}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "code": "SUP",
+                    "tag": "supplier",
+                    "minOccurances": 0,
+                    "fields": [
+                        {"tag" : "code"}, {"tag": "supplierCode"}, {"tag": "promotionCode"}
+                    ]
+                }                
+            ]
+        }
+    ]
+}

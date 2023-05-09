@@ -1,0 +1,22 @@
+#FLE214 FROM ALNK TO TRICOLINKS           230421 1003 5215
+SUBHTRICOLINKS
+139ALNK187676         JWK8251652                                               020383000060167001308CC            005800189882
+439_DTSDT202304201407
+439_IDRID214-187676-230421100304
+439REFSID857395857
+239SHHT_MART INC.                  120 GREENCHIPS DR.            New York A        PA18407    VHC021              XX                              USA
+239CNEASYGO LOGISTICS              70 MNTVIEW EXPRESSWAY         ChicagoB          PA18201    FREDLE              XX                              USA
+239BTCENTERLINK5 USA               INDUSTRY1 CENTER GREEN DRIVE  SanFranciso       MO63178    HTR002              XX                              USA
+339X3202304201345LTNew York A        PATRAC020B     0               7843         NS 00104000000000001             001041.57000N075.50000WHPL   UNK                      S000000
+239PUHT_MART INC.                  120 GREENCHIPS DR.            New York A        PA18407    VHC021              XX                              USA
+439REFQN 01
+339AF202304201410LTNew York A        PATRAC020B     0               7843         NS 00104000000000001             001041.57000N075.50000WHPL   UNK                      S000000
+239PUHT_MART INC.                  120 GREENCHIPS DR.            New York A        PA18407    VHC021              XX                              USA
+439REFQN 01
+339K2202304201535LTChicagoB          PATRAC020B     0               7843         NS 00202038300130899             001040.95000N075.98000WDRL   UNK                      S000000
+239DREASYGO LOGISTICS              70 MNTVIEW EXPRESSWAY         ChicagoB          PA18201    FREDLE              XX                              USA
+439REFQN 99
+339CD202304201540LTChicagoB          PATRAC020B     0               7843         NS 00202038300130899             001040.95000N075.98000WDRL   UNK                      S000000
+239DREASYGO LOGISTICS              70 MNTVIEW EXPRESSWAY         ChicagoB          PA18201    FREDLE              XX                              USA
+439REFQN 99
+#EOT 5215   20

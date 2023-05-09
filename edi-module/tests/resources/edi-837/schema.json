@@ -1,0 +1,1089 @@
+{
+    "name": "Segments",
+    "delimiters": {
+      "segment": "~",
+      "field": "*",
+      "component": "^",
+      "subcomponent": "`",
+      "repetition": "NOT_USED"
+    },
+    "ignoreSegments": [],
+    "preserveEmptyFields": false,
+    "segments": [
+      {
+        "code": "ISA",
+        "tag": "InterchangeControlHeader",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "AuthorizationInformationQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "AuthorizationInformation",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SecurityInformationQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SecurityInformation",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeIDQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeSenderID",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeIDQualifier_1",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeReceiverID",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeDate",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeTime",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeControlStandardsIdentifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeControlVersionNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InterchangeControlNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "AcknowledgmentRequested",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "UsageIndicator",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ComponentElementSeparator",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "GS",
+        "tag": "FunctionalGroupHeader",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "FunctionalIdentifierCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ApplicationSendersCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ApplicationReceiversCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "Date",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "Time",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "GroupControlNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ResponsibleAgencyCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "VersionReleaseIndustryIdentifierCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "ST",
+        "tag": "TransactionSetHeader",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "TransactionSetIdentifierCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "TransactionSetControlNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "BHT",
+        "tag": "BeginningOfHierarchicalTransaction",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "HierarchicalStructureCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "TransactionSetPurposeCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "OriginatorApplicationTransactionIdentifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "TransactionSetCreationDate",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "TransactionSetCreationTime",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ClaimOrEncounterIdentifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "NM1",
+        "tag": "SubmitterName",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "EntityIdentifierCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "EntityTypeQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SubmitterLastOrOrganizationName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SubmitterFirstName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SubmitterMiddleName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "IdentificationCodeQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SubmitterIdentifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "PER",
+        "tag": "SubmitterEDIContactInformation",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "ContactFunctionCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SubmitterContactName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CommunicationNumberQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CommunicationNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CommunicationNumberQualifier_1",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CommunicationNumber_1",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CommunicationNumberQualifier_2",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CommunicationNumber_2",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "NM1",
+        "tag": "ReceiverName",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "EntityIdentifierCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "EntityTypeQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ReceiverName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InformationReceiverIdentificationNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ReceiverPrimaryIdentifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "HL",
+        "tag": "HL_BillingPayToProviderHierarchicalLevel",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "HierarchicalIDNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "HierarchicalLevelCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "HierarchicalChildCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "NM1",
+        "tag": "BillingProviderName",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "EntityIdentifierCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "EntityTypeQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "BillingProviderLastOrOrganizationalName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "IdentificationCodeQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "BillingProviderIdentifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "N3",
+        "tag": "BillingProviderAddress",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "BillingProviderAddressLine",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "BillingProviderAddressLine_1",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "N4",
+        "tag": "BillingProviderCityStateZIPCode",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "BillingProviderCityName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "BillingProviderStateOrProvinceCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "BillingProviderPostalZoneOrZIPCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CountryCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "REF",
+        "tag": "BillingProviderSecondaryIdentification",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "ReferenceIdentificationQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "BillingProviderAdditionalIdentifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "HL",
+        "tag": "SubscriberHierarchicalLevel",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "HierarchicalIDNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "HierarchicalParentIDNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "HierarchicalLevelCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "HierarchicalChildCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "SBR",
+        "tag": "SubscriberInformation",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "PayerResponsibilitySequenceNumberCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "IndividualRelationshipCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InsuredGroupOrPolicyNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "InsuredGroupName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ClaimFilingIndicatorCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "tag": "SegmentGroup",
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "segments": [
+          {
+            "code": "NM1",
+            "tag": "SubscriberName",
+            "truncatable": true,
+            "minOccurances": 0,
+            "maxOccurances": 1,
+            "fields": [
+              {
+                "tag": "EntityIdentifierCode",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "EntityTypeQualifier",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "SubscriberLastName",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "SubscriberFirstName",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "SubscriberMiddleName",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "SubscriberNameSuffix",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "IdentificationCodeQualifier",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "SubscriberPrimaryIdentifier",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              }
+            ]
+          },
+          {
+            "code": "N3",
+            "tag": "SubscriberAddress",
+            "truncatable": true,
+            "minOccurances": 0,
+            "maxOccurances": 1,
+            "fields": [
+              {
+                "tag": "SubscriberAddressLine",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "SubscriberAddressLine_1",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              }
+            ]
+          },
+          {
+            "code": "N4",
+            "tag": "SubscriberCityStateZIPCode",
+            "truncatable": true,
+            "minOccurances": 0,
+            "maxOccurances": 1,
+            "fields": [
+              {
+                "tag": "SubscriberCityName",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "WPC837Q34030D_2010BA_N402_SubscriberStateCode",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "SubscriberPostalZoneOrZIPCode",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              },
+              {
+                "tag": "CountryCode",
+                "repeat": false,
+                "required": false,
+                "truncatable": true,
+                "dataType": "string",
+                "components": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "code": "DMG",
+        "tag": "SubscriberDemographicInformation",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "DateTimePeriodFormatQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SubscriberBirthDate",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "SubscriberGenderCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "NM1",
+        "tag": "CreditDebitCardAccountHolderName",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "EntityIdentifierCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "EntityTypeQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CreditOrDebitCardHolderLastOrOrganizationalName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CreditOrDebitCardHolderFirstName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CreditOrDebitCardHolderMiddleName",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CreditOrDebitCardHolderNameSuffix",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "IdentificationCodeQualifier",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "CreditOrDebitCardNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      },
+      {
+        "code": "CLM",
+        "tag": "CLM_CreditDebitCardAccountHolderName",
+        "truncatable": true,
+        "minOccurances": 0,
+        "maxOccurances": 1,
+        "fields": [
+          {
+            "tag": "PatientAccountNumber",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "TotalClaimChargeAmount",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ProviderOrSupplierSignatureIndicator",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "MedicareAssignmentCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "BenefitsAssignmentCertificationIndicator",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ReleaseOfInformationCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "ExplanationOfBenefitsIndicator",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "DelayReasonCode",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          },
+          {
+            "tag": "HealthCareServiceLocationInformation",
+            "repeat": false,
+            "required": false,
+            "truncatable": true,
+            "dataType": "string",
+            "components": []
+          }
+        ]
+      }
+    ]
+  }

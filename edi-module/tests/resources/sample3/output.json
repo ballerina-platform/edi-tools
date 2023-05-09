@@ -1,0 +1,1 @@
+{"header":{"code":"HDR", "orderId":"ORDER_1201", "organization":"ABC_Store", "date":"2008-01-01"}, "items":[{"items":{"code":"ITM", "item":"A-250", "quantity":12}, "supplier":{"code":"SUP", "supplierCode":"S-10", "promotionCode":"PROMO120"}}, {"items":{"code":"ITM", "item":"A-45", "quantity":100}, "supplier":{"code":"SUP", "supplierCode":"S-60", "promotionCode":"PROMO130"}}]}

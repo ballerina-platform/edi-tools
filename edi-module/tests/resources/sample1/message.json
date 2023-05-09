@@ -1,0 +1,29 @@
+{
+    "header": {
+      "orderId": "ORDER_1201",
+      "organization": "ABC_Store",
+      "date": "2008-01-01"
+    },
+    "items": [
+      {
+        "item": "A-250",
+        "quantity": 12
+      },
+      {
+        "item": "A-45",
+        "quantity": 100
+      },
+      {
+        "item": "D-10",
+        "quantity": 58
+      },
+      {
+        "item": "K-80",
+        "quantity": 250
+      },
+      {
+        "item": "T-46",
+        "quantity": 28
+      }
+    ]
+  }

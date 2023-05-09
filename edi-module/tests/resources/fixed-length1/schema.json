@@ -1,0 +1,506 @@
+{
+  "name": "ShipmentStatus",
+  "delimiters" : {"segment" : "\n", "field" : "FL", "component": ":", "repetition": "^"},
+  "segments": [
+      {"ref": "FLE"},
+      {"ref": "SUBH", "minOccurances": 1},
+      {"ref": "S1", "minOccurances": 1},
+      {"ref": "S4", "maxOccurances": -1},
+      {"ref": "S2", "maxOccurances": 3},
+      {
+          "tag": "Details",
+          "minOccurances": 1,
+          "maxOccurances": -1,
+          "segments": [
+              {"ref": "S3", "minOccurances": 1},   
+              {"ref": "S2", "minOccurances": 1},   
+              {"ref": "S4", "maxOccurances": -1}   
+          ]
+      },
+      {"ref": "EOT", "minOccurances": 0}
+  ],
+  "segmentDefinitions" : {
+      "FLE": {
+          "code": "#FLE",
+          "tag": "Trading_Partner_Main_Header",
+          "fields": [
+            {
+              "tag": "Record_ID",
+              "startIndex": 1,
+              "length": 4
+            },
+            {
+              "tag": "Document_Type",
+              "startIndex": 5,
+              "length": 3,
+              "dataType": "int"
+            },
+            {
+              "tag": "Space",
+              "startIndex": 8,
+              "length": 1
+            },
+            {
+              "tag": "Literal_FROM",
+              "startIndex": 9,
+              "length": 4
+            },
+            {
+              "tag": "Space_1",
+              "startIndex": 13,
+              "length": 1
+            },
+            {
+              "tag": "Sender_ID",
+              "startIndex": 14,
+              "length": 4
+            },
+            {
+              "tag": "Space_2",
+              "startIndex": 18,
+              "length": 1
+            },
+            {
+              "tag": "Literal_TO",
+              "startIndex": 19,
+              "length": 2
+            },
+            {
+              "tag": "Space_3",
+              "startIndex": 21,
+              "length": 1
+            },
+            {
+              "tag": "Receiver_ID",
+              "startIndex": 22,
+              "length": 20
+            },
+            {
+              "tag": "Space_4",
+              "startIndex": 42,
+              "length": 1
+            },
+            {
+              "tag": "Current_Date",
+              "startIndex": 43,
+              "length": 6,
+              "dataType": "int"
+            },
+            {
+              "tag": "Space_5",
+              "startIndex": 49,
+              "length": 1
+            },
+            {
+              "tag": "Current_Time",
+              "startIndex": 50,
+              "length": 4,
+              "dataType": "int"
+            },
+            {
+              "tag": "Space_6",
+              "startIndex": 54,
+              "length": 1
+            },
+            {
+              "tag": "Control_Number",
+              "startIndex": 55,
+              "length": 6,
+              "dataType": "int"
+            }
+          ]
+        },
+      "SUBH": {
+          "code": "SUBH",
+          "tag": "Trading_Partner_Sub_Header",
+          "fields": [
+              {
+                  "tag": "Record_ID",
+                  "startIndex": 1,
+                  "length": 4,
+                  "dataType": "string"
+              },
+              {
+                  "tag": "Receiver_ID",
+                  "startIndex": 5,
+                  "length": 20,
+                  "dataType": "string"
+              }
+          ]
+      },
+      "S1" :{
+          "code": "1",
+          "tag": "Shipment_header",
+          "fields": [
+            {
+              "tag": "Record_Id",
+              "startIndex": 1,
+              "length": 1
+            },
+            {
+              "tag": "Version",
+              "startIndex": 2,
+              "length": 2
+            },
+            {
+              "tag": "SCAC_code",
+              "startIndex": 4,
+              "length": 4
+            },
+            {
+              "tag": "Carrier_number",
+              "startIndex": 8,
+              "length": 15
+            },
+            {
+              "tag": "Master_bill_of_landing",
+              "startIndex": 23,
+              "length": 30
+            },
+            {
+              "tag": "Master_PO_code",
+              "startIndex": 53,
+              "length": 15
+            },
+            {
+              "tag": "Store_plant_number",
+              "startIndex": 68,
+              "length": 12
+            },
+            {
+              "tag": "Total_weight",
+              "startIndex": 80,
+              "length": 6
+            },
+            {
+              "tag": "Total_amount",
+              "startIndex": 86,
+              "length": 9
+            },
+            {
+              "tag": "Total_quantity",
+              "startIndex": 95,
+              "length": 6
+            },
+            {
+              "tag": "Terms",
+              "startIndex": 101,
+              "length": 2
+            },
+            {
+              "tag": "Signature",
+              "startIndex": 103,
+              "length": 12
+            },
+            {
+              "tag": "Miles",
+              "startIndex": 115,
+              "length": 4
+            },
+            {
+              "tag": "Manifest_number",
+              "startIndex": 119,
+              "length": 8
+            },
+            {
+              "tag": "User_defined_field",
+              "startIndex": 127,
+              "length": 20
+            },
+            {
+              "tag": "Shipment_number",
+              "startIndex": 147,
+              "length": 30
+            }
+          ]
+        },
+        "S2": {
+          "code": "2",
+          "tag": "Company_Record",
+          "fields": [
+            {
+              "tag": "Record_Id",
+              "startIndex": 1,
+              "length": 1
+            },
+            {
+              "tag": "Version",
+              "startIndex": 2,
+              "length": 2
+            },
+            {
+              "tag": "Record_Type",
+              "startIndex": 4,
+              "length": 2
+            },
+            {
+              "tag": "Company_Name",
+              "startIndex": 6,
+              "length": 30
+            },
+            {
+              "tag": "Company_Address",
+              "startIndex": 36,
+              "length": 30
+            },
+            {
+              "tag": "City",
+              "startIndex": 66,
+              "length": 18
+            },
+            {
+              "tag": "State_province_abbr",
+              "startIndex": 84,
+              "length": 2
+            },
+            {
+              "tag": "Zip",
+              "startIndex": 86,
+              "length": 9
+            },
+            {
+              "tag": "Dispatch_system_Id",
+              "startIndex": 95,
+              "length": 10
+            },
+            {
+              "tag": "Store_location_Id",
+              "startIndex": 105,
+              "length": 10
+            },
+            {
+              "tag": "Store_location_type",
+              "startIndex": 115,
+              "length": 2
+            },
+            {
+              "tag": "Company_address_2",
+              "startIndex": 117,
+              "length": 30
+            },
+            {
+              "tag": "Company_country",
+              "startIndex": 147,
+              "length": 3
+            },
+            {
+              "tag": "Long_location_code",
+              "startIndex": 150,
+              "length": 30
+            }
+          ]
+        },
+        "S3": {
+          "code": "3",
+          "tag": "Status_Record",
+          "fields": [
+            {
+              "tag": "Record_ID",
+              "startIndex": 1,
+              "length": 1,
+              "dataType": "int"
+            },
+            {
+              "tag": "Version",
+              "startIndex": 2,
+              "length": 2,
+              "dataType": "int"
+            },
+            {
+              "tag": "Status_Code",
+              "startIndex": 4,
+              "length": 2
+            },
+            {
+              "tag": "Status_Date",
+              "startIndex": 6,
+              "length": 8,
+              "dataType": "int"
+            },
+            {
+              "tag": "Status_Time",
+              "startIndex": 14,
+              "length": 4,
+              "dataType": "int"
+            },
+            {
+              "tag": "Time_Zone",
+              "startIndex": 18,
+              "length": 2
+            },
+            {
+              "tag": "Status_City",
+              "startIndex": 20,
+              "length": 18
+            },
+            {
+              "tag": "Status_State_Province",
+              "startIndex": 38,
+              "length": 2
+            },
+            {
+              "tag": "Tractor_ID",
+              "startIndex": 40,
+              "length": 13
+            },
+            {
+              "tag": "Mobile_Com_ID",
+              "startIndex": 53,
+              "length": 12
+            },
+            {
+              "tag": "Trailer_Owner",
+              "startIndex": 65,
+              "length": 4
+            },
+            {
+              "tag": "Trailer_ID",
+              "startIndex": 69,
+              "length": 13
+            },
+            {
+              "tag": "Status_Reason_Code",
+              "startIndex": 82,
+              "length": 3
+            },
+            {
+              "tag": "Stop_Number",
+              "startIndex": 85,
+              "length": 3,
+              "dataType": "int"
+            },
+            {
+              "tag": "Stop_Weight",
+              "startIndex": 88,
+              "length": 6,
+              "dataType": "int"
+            },
+            {
+              "tag": "Stop_Quantity",
+              "startIndex": 94,
+              "length": 6,
+              "dataType": "int"
+            },
+            {
+              "tag": "Stop_Reference_Number",
+              "startIndex": 100,
+              "length": 15
+            },
+            {
+              "tag": "Alternate_Stop_Number",
+              "startIndex": 115,
+              "length": 3,
+              "dataType": "int"
+            },
+            {
+              "tag": "Stop_Latitude",
+              "startIndex": 118,
+              "length": 10
+            },
+            {
+              "tag": "Stop_Longitude",
+              "startIndex": 128,
+              "length": 10
+            },
+            {
+              "tag": "App_Event_Code",
+              "startIndex": 138,
+              "length": 6
+            },
+            {
+              "tag": "App_Reason_Late_Code",
+              "startIndex": 144,
+              "length": 6
+            },
+            {
+              "tag": "App_Triggering",
+              "startIndex": 150,
+              "length": 6
+            },
+            {
+              "tag": "Trailer_Two",
+              "startIndex": 156,
+              "length": 13
+            },
+            {
+              "tag": "Team_Single_Indicator",
+              "startIndex": 169,
+              "length": 1
+            },
+            {
+              "tag": "Count_2",
+              "startIndex": 170,
+              "length": 6,
+              "dataType": "int"
+            }
+          ]
+        },
+        "S4": {
+          "code": "4",
+          "tag": "Miscellaneous",
+          "fields": [
+            {
+              "tag": "Record_ID",
+              "startIndex": 1,
+              "length": 1,
+              "dataType": "int"
+            },
+            {
+              "tag": "Version",
+              "startIndex": 2,
+              "length": 2,
+              "dataType": "int"
+            },
+            {
+              "tag": "Miscellaneous_Type",
+              "startIndex": 4,
+              "length": 3
+            },
+            {
+              "tag": "Miscellaneous_Qualifier",
+              "startIndex": 7,
+              "length": 3
+            },
+            {
+              "tag": "Miscellaneous_Data",
+              "startIndex": 10,
+              "length": 76
+            }
+          ]
+      },
+      "EOT": {
+          "code": "#EOT",
+          "tag": "Main_Trailer",
+          "fields": [
+            {
+              "tag": "Record_ID",
+              "startIndex": 1,
+              "length": 4
+            },
+            {
+              "tag": "Space",
+              "startIndex": 5,
+              "length": 1
+            },
+            {
+              "tag": "Control_Number",
+              "startIndex": 6,
+              "length": 6,
+              "dataType": "int"
+            },
+            {
+              "tag": "Space_1",
+              "startIndex": 12,
+              "length": 1
+            },
+            {
+              "tag": "Detail_Line_Count",
+              "startIndex": 13,
+              "length": 6,
+              "dataType": "int"
+            }
+          ]
+      }
+            
+  }
+}
