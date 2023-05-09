@@ -5,7 +5,7 @@ import ballerina/file;
 function getTestSchema(string testName) returns EDISchema|error {
     string schemaPath = check file:joinPath("tests", "resources", testName, "schema.json");
     json schemaJson = check io:fileReadJson(schemaPath);
-    EDISchema schema = check schemaJson.cloneWithType(EDISchema);
+    EDISchema schema = check getSchema(schemaJson);
     return schema;
 }
 

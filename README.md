@@ -20,12 +20,12 @@ A simple EDI mapping is shown below (let's assume that this is saved in edi-mapp
     "segments" : {
         "HDR": {
             "tag" : "header",
-            "fields" : [{"tag" : "orderId"}, {"tag" : "organization"}, {"tag" : "date"}]
+            "fields" : [{"tag" : "code"}, {"tag" : "orderId"}, {"tag" : "organization"}, {"tag" : "date"}]
         },
         "ITM": {
             "tag" : "items",
             "maxOccurances" : -1,
-            "fields" : [{"tag" : "item"}, {"tag" : "quantity", "dataType" : "int"}]
+            "fields" : [{"tag" : "code"}, {"tag" : "item"}, {"tag" : "quantity", "dataType" : "int"}]
         }
     }
 }
@@ -54,12 +54,14 @@ Generated Ballerina records for the above mapping are shown below:
 
 ```ballerina
 type Header_Type record {|
+   string code?;
    string orderId?;
    string organization?;
    string date?;
 |};
 
 type Items_Type record {|
+   string code?;
    string item?;
    int quantity?;
 |};
@@ -93,28 +95,34 @@ public function main() returns error? {
 ````json
 {
   "header": {
+	"code": "HDR",
     "orderId": "ORDER_1201",
     "organization": "ABC_Store",
     "date": "2008-01-01"
   },
   "items": [
     {
+	  "code": "ITM",
       "item": "A-250",
       "quantity": 12
     },
     {
+	  "code": "ITM",
       "item": "A-45",
       "quantity": 100
     },
     {
+	  "code": "ITM",
       "item": "D-10",
       "quantity": 58
     },
     {
+	  "code": "ITM",
       "item": "K-80",
       "quantity": 250
     },
     {
+	  "code": "ITM",
       "item": "T-46",
       "quantity": 28
     }

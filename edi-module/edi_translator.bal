@@ -32,7 +32,7 @@ public isolated function read(string ediText, EDISchema schema) returns json|Err
     EDIUnitSchema[] currentMapping = context.schema.segments;
     context.ediText = splitSegments(ediText, context.schema.delimiters.segment);
     EDISegmentGroup rootGroup = check readSegmentGroup(currentMapping, context, true);
-    return rootGroup.toJson();
+    return rootGroup;
 }
 
 # Writes the given JSON varibale into a EDI text according to the provided schema.
@@ -41,10 +41,10 @@ public isolated function read(string ediText, EDISchema schema) returns json|Err
 # + schema - Schema of the EDI text
 # + return - EDI text containing the data provided in the JSON variable. Error if the reading fails.
 public isolated function write(json msg, EDISchema schema) returns string|Error {
-    EDIContext context = {schema};
     if !(msg is map<json>) {
         return error(string `Input is not compatible with the schema.`);
     }
+    EDIContext context = {schema};
     check writeSegmentGroup(msg, schema, context);
     string ediOutput = "";
     foreach string s in context.ediText {
@@ -58,13 +58,18 @@ public isolated function write(json msg, EDISchema schema) returns string|Error 
 # + schema - Schema of the EDI type 
 # + return - Error is returned if the given schema is not valid
 public isolated function getSchema(string|json schema) returns EDISchema|error {
+    if !(schema is map<json> || schema is string) {
+        return error("Schema is not valid.");
+    }
+    json schemaJson;
     if schema is string {
         io:StringReader sr = new (schema);
-        json schemaJson = check sr.readJson();
-        return schemaJson.cloneWithType(EDISchema);
+        schemaJson = check sr.readJson();
     } else {
-        return schema.cloneWithType(EDISchema);
+        schemaJson = schema;
     }
+    check denormalizeSchema(schemaJson);
+    return schemaJson.cloneWithType(EDISchema);
 }
 
 # Represents EDI module related errors

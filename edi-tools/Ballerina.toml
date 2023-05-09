@@ -10,5 +10,5 @@ observabilityIncluded = true
 [[dependency]]
 org = "ballerina"
 name= "edi"
-version= "0.2.2"
+version= "0.8.1"
 repository= "local"

@@ -32,11 +32,13 @@
 # Multi-value fields (i.e. repeats) will be represented as empty arrays.
 # All other types will be represented as null.
 # false: Omits fields, components and subcomponents with empty values.
+# 
+# + includeSegmentCode - Indicates whether or not to include the segment code as a field in output JSON values.
 #
 # + segments - Array of segment and segment group schemas
 public type EDISchema record {|
     string name;
-    string tag = "Root mapping";
+    string tag = "Root_mapping";
 
     record {|
         string segment;
@@ -50,6 +52,7 @@ public type EDISchema record {|
     string[] ignoreSegments = [];
 
     boolean preserveEmptyFields = true;
+    boolean includeSegmentCode = true;
 
     EDIUnitSchema[] segments = [];
 |};
@@ -78,6 +81,8 @@ public type EDIFieldSchema record {|
     boolean required = false;
     boolean truncatable = true;
     EDIDataType dataType = STRING;
+    int startIndex = -1;
+    int length = -1;
     EDIComponentSchema[] components = [];
 |};
 

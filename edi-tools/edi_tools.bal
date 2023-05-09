@@ -21,8 +21,8 @@ public function main(string[] args) returns error? {
             io:println(usage);
             return;
         }
-        json mappingText = check io:fileReadJson(args[1].trim());
-        edi:EDISchema mapping = check mappingText.cloneWithType(edi:EDISchema);
+        json mappingJson = check io:fileReadJson(args[1].trim());
+        edi:EDISchema mapping = check edi:getSchema(mappingJson);
         check codegen:generateCodeToFile(mapping, args[2].trim());
     } else if mode == "libgen" {
         if args.length() != 5 {

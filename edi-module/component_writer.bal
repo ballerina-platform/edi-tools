@@ -58,7 +58,7 @@ isolated function writeComponentGroup(json componentGroup, EDISegSchema segSchem
             return error Error(string `Component does not match with the schema.
             Segment: ${segSchema.tag}, Field: ${fieldSchema.tag}, Component schema tag: ${cmap.tag}, Component index: ${cindex}, Component tag: ${ckey}`);
         }
-        var componentValue = componentGroup.get(ckey);
+        json componentValue = componentGroup.get(ckey);
         if componentValue is string && componentValue.trim().length() == 0 {
             if cmap.required {
                 return error Error(string `Mandatory component not found. Segment: ${segSchema.code}, Field: ${fieldSchema.tag}, Component: ${cmap.tag}, Component group: ${componentGroup.toString()}`);
@@ -71,7 +71,7 @@ isolated function writeComponentGroup(json componentGroup, EDISegSchema segSchem
             if !(componentValue is SimpleType) {
                 return error Error(string `Component must contain a primitive value. Segment: ${segSchema.code}, Field: ${fieldSchema.tag}, Component: ${cmap.tag}, Component value: ${componentValue.toString()}`);
             }
-            cGroupText += (cindex == 0 ? "" : cd) + serializeSimpleType(componentValue, context.schema);
+            cGroupText += (cindex == 0 ? "" : cd) + serializeSimpleType(componentValue, context.schema, -1);
             cindex += 1;
         } else {
             string|error scGroupText = writeSubcomponentGroup(componentValue, segSchema, cmap, context);
@@ -132,11 +132,11 @@ isolated function writeSubcomponentGroup(json subcomponentGroup, EDISegSchema se
             return error Error(string `Subcomponent does not match with the schema.
             Segment: ${segSchema.tag}, Component: ${compSchema.tag}, Subcomponent: ${scmap.tag}, Subcomponent index: ${scindex}, Input subcomponent tag: ${sckey}`);
         }
-        var subcomponentValue = subcomponentGroup.get(sckey);
+        json subcomponentValue = subcomponentGroup.get(sckey);
         if !(subcomponentValue is SimpleType) {
             return error Error(string `Only primitive types are supported as subcomponent values. Found ${subcomponentValue.toString()}`);
         }
-        scGroupText += (scGroupText == "" ? "" : scd) + serializeSimpleType(subcomponentValue, context.schema);
+        scGroupText += (scGroupText == "" ? "" : scd) + serializeSimpleType(subcomponentValue, context.schema, -1);
         scindex += 1;
     }
     return scGroupText;

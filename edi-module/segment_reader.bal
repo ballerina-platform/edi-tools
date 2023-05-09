@@ -16,7 +16,7 @@
 
 import ballerina/log;
 
-isolated function readSegment(EDISegSchema segMapping, string[] fields, EDISchema mapping, string segmentDesc)
+isolated function readSegment(EDISegSchema segMapping, string[] fields, EDISchema schema, string segmentDesc)
     returns EDISegment|Error {
     log:printDebug(string `Reading ${printSegMap(segMapping)} | Seg text: ${segmentDesc}`);
     if segMapping.truncatable {
@@ -30,9 +30,10 @@ isolated function readSegment(EDISegSchema segMapping, string[] fields, EDISchem
         return error Error(string `Segment schema's field count does not match with the input segment.
                 Segment: ${fields[0]}, Segment schema: ${segMapping.toJsonString()}, Input segment: ${segmentDesc}`);
     }
-    EDISegment ediRecord = {};
-    int fieldNumber = 0;
-    while fieldNumber < fields.length() - 1 {
+    EDISegment segment = {};
+    int fieldNumber = schema.includeSegmentCode? 0 : 1;
+    // while fieldNumber < fields.length() - 1 {
+    while fieldNumber < fields.length() {
         if fieldNumber >= segMapping.fields.length() {
             return error Error(string `Segment in the input message containes more fields than the segment schema.
             Input segment: ${fields.toJsonString()},
@@ -42,18 +43,19 @@ isolated function readSegment(EDISegSchema segMapping, string[] fields, EDISchem
         string tag = fieldMapping.tag;
 
         // EDI segment starts with the segment name. So we have to skip the first field.
-        string fieldText = fields[fieldNumber + 1];
+        // string fieldText = fields[fieldNumber + 1];
+        string fieldText = fields[fieldNumber];
         if fieldText.trim().length() == 0 {
             if fieldMapping.required {
                 return error Error(string `Required field is not provided. Field: ${fieldMapping.tag}, Segment: ${segMapping.code}`);
             } else {
-                if mapping.preserveEmptyFields {
+                if schema.preserveEmptyFields {
                     if fieldMapping.repeat {
-                        ediRecord[tag] = getArray(fieldMapping.dataType);
+                        segment[tag] = getArray(fieldMapping.dataType);
                     } else if fieldMapping.dataType == STRING {
-                        ediRecord[tag] = fieldText;
+                        segment[tag] = fieldText.trim();
                     } else {
-                        ediRecord[tag] = ();
+                        segment[tag] = ();
                     }
                 }
                 fieldNumber = fieldNumber + 1;
@@ -62,27 +64,27 @@ isolated function readSegment(EDISegSchema segMapping, string[] fields, EDISchem
         }
         if fieldMapping.repeat {
             // this is a repeating field (i.e. array). can be a repeat of composites as well.
-            SimpleArray|EDIComponentGroup[] repeatValues = check readRepetition(fieldText, mapping.delimiters.repetition, mapping, fieldMapping);
-            if repeatValues.length() > 0 || mapping.preserveEmptyFields {
-                ediRecord[tag] = repeatValues;
+            SimpleArray|EDIComponentGroup[] repeatValues = check readRepetition(fieldText, schema.delimiters.repetition, schema, fieldMapping);
+            if repeatValues.length() > 0 || schema.preserveEmptyFields {
+                segment[tag] = repeatValues;
             }
         } else if fieldMapping.components.length() > 0 {
             // this is a composite field (but not a repeat)
-            EDIComponentGroup? composite = check readComponentGroup(fieldText, mapping, fieldMapping);
-            if composite is EDIComponentGroup || mapping.preserveEmptyFields {
-                ediRecord[tag] = composite;
+            EDIComponentGroup? composite = check readComponentGroup(fieldText, schema, fieldMapping);
+            if composite is EDIComponentGroup || schema.preserveEmptyFields {
+                segment[tag] = composite;
             }
         } else {
             // this is a simple type field
-            SimpleType|error value = convertToType(fieldText, fieldMapping.dataType, mapping.delimiters.decimalSeparator);
+            SimpleType|error value = convertToType(fieldText, fieldMapping.dataType, schema.delimiters.decimalSeparator);
             if value is error {
                 return error Error(string `Input field cannot be converted to the type specified in the segment schema.
                         Input field: ${fieldText}, Schema type: ${fieldMapping.dataType},
                         Segment schema: ${segMapping.toJsonString()}, Segment text: ${segmentDesc}, Error: ${value.message()}`);
             }
-            ediRecord[tag] = value;
+            segment[tag] = value;
         }
         fieldNumber = fieldNumber + 1;
     }
-    return ediRecord;
+    return segment;
 }

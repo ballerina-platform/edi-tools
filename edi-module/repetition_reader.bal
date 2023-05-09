@@ -20,7 +20,7 @@ isolated function readRepetition(string repeatText, string repeatDelimiter, EDIS
         returns SimpleArray|EDIComponentGroup[]|Error {
     string[] fields = split(repeatText, repeatDelimiter);
     SimpleArray|EDIComponentGroup[] repeatValues = getArray(fieldMapping.dataType);
-    if (fields.length() == 0) {
+    if fields.length() == 0 {
         // None of the repeating values are provided. Return an empty array.
         if fieldMapping.required {
             return error Error(string `Required (multi-value) field is not provided. Field: ${fieldMapping.tag}`);
@@ -28,7 +28,7 @@ isolated function readRepetition(string repeatText, string repeatDelimiter, EDIS
         return repeatValues;
     }
     foreach string 'field in fields {
-        if (fieldMapping.dataType == COMPOSITE) {
+        if fieldMapping.dataType == COMPOSITE {
             EDIComponentGroup? value = check readComponentGroup('field, mapping, fieldMapping);
             if value is EDIComponentGroup {
                 repeatValues.push(value);

@@ -26,56 +26,55 @@ type SegmentGroupContext record {|
 isolated function readSegmentGroup(EDIUnitSchema[] currentUnitSchema, EDIContext context, boolean rootGroup) returns EDISegmentGroup|Error {
     SegmentGroupContext sgContext = {unitSchemas: currentUnitSchema};
     EDISchema ediSchema = context.schema;
-    while context.rawIndex < context.ediText.length() {
+    while sgContext.schemaIndex < sgContext.unitSchemas.length() && context.rawIndex < context.ediText.length() {
+        EDIUnitSchema? segSchema = currentUnitSchema[sgContext.schemaIndex];
+        if segSchema is () {
+            return error Error("Segment schema cannot be empty.");
+        }
         string sDesc = context.ediText[context.rawIndex];
         string segmentDesc = regex:replaceAll(sDesc, "\n", "");
-        string[] fields = split(segmentDesc, ediSchema.delimiters.'field);
+        string[] fields = check splitFields(segmentDesc, ediSchema.delimiters.'field, segSchema);
         if ediSchema.ignoreSegments.indexOf(fields[0], 0) != () {
             context.rawIndex += 1;
             continue;
         }
-
-        boolean segmentMapped = false;
-        while sgContext.schemaIndex < sgContext.unitSchemas.length() {
-            EDIUnitSchema? segSchema = currentUnitSchema[sgContext.schemaIndex];
-            if segSchema is EDISegSchema {
-                log:printDebug(string `Trying to match with segment mapping ${printSegMap(segSchema)}`);
-                if segSchema.code != fields[0] {
-                    check ignoreSchema(segSchema, sgContext, context);
-                    continue;
-                }
-                EDISegment ediRecord = check readSegment(segSchema, fields, ediSchema, segmentDesc);
-                check placeEDISegment(ediRecord, segSchema, sgContext, context);
-                context.rawIndex += 1;
-                segmentMapped = true;
-                break;
-
-            } else if segSchema is EDISegGroupSchema {
-                log:printDebug(string `Trying to match with segment group mapping ${printSegGroupMap(segSchema)}`);
-                EDIUnitSchema firstSegSchema = segSchema.segments[0];
-                if firstSegSchema is EDISegGroupSchema {
-                    return error Error("First item of segment group must be a segment. Found a segment group.\nSegment group: " + printSegGroupMap(segSchema));
-                }
-                if firstSegSchema.code != fields[0] {
-                    check ignoreSchema(segSchema, sgContext, context);
-                    continue;
-                }
-                EDISegmentGroup segmentGroup = check readSegmentGroup(segSchema.segments, context, false);
-                if segmentGroup.length() > 0 {
-                    check placeEDISegmentGroup(segmentGroup, segSchema, sgContext, context);
-                }
-                segmentMapped = true;
-                break;
+        
+        if segSchema is EDISegSchema {
+            log:printDebug(string `Trying to match with segment mapping ${printSegMap(segSchema)}`);
+            if segSchema.code != fields[0] {
+                check ignoreSchema(segSchema, sgContext, context);
+                continue;
             }
-        }
-        if !segmentMapped && rootGroup {
-            return error Error(string `Segment text does not match with the schema. 
-                Segment: ${context.ediText[context.rawIndex]}, Curren row: ${context.rawIndex}`);
-        }
+            EDISegment ediRecord = check readSegment(segSchema, fields, ediSchema, segmentDesc);
+            check placeEDISegment(ediRecord, segSchema, sgContext, context);
+            context.rawIndex += 1;
+            continue;
 
-        if sgContext.schemaIndex >= sgContext.unitSchemas.length() {
-            // We have completed mapping with this segment group.
-            break;
+        } else {
+            log:printDebug(string `Trying to match with segment group mapping ${printSegGroupMap(segSchema)}`);
+            EDIUnitSchema firstSegSchema = segSchema.segments[0];
+            if firstSegSchema is EDISegGroupSchema {
+                return error Error("First item of segment group must be a segment. Found a segment group.\nSegment group: " + printSegGroupMap(segSchema));
+            }
+            if firstSegSchema.code != fields[0] {
+                check ignoreSchema(segSchema, sgContext, context);
+                continue;
+            }
+            EDISegmentGroup segmentGroup = check readSegmentGroup(segSchema.segments, context, false);
+            if segmentGroup.length() > 0 {
+                check placeEDISegmentGroup(segmentGroup, segSchema, sgContext, context);
+            }
+            continue;
+        }
+    }
+    if rootGroup && ediSchema.delimiters.'field != "FL" {
+        foreach int i in context.rawIndex...(context.ediText.length() - 1) {
+            string unmatchedRaw = context.ediText[context.rawIndex];
+            string[] unmatchedSegFields = split(unmatchedRaw, ediSchema.delimiters.'field);
+            if ediSchema.ignoreSegments.indexOf(unmatchedSegFields[0], 0) == () {
+               return error Error(string `Segment text does not match with the schema. 
+                    Segment: ${context.ediText[context.rawIndex]}, Curren row: ${context.rawIndex}`);
+            }
         }
     }
     check validateRemainingSchemas(sgContext);
@@ -182,13 +181,7 @@ isolated function validateRemainingSchemas(SegmentGroupContext sgContext) return
         int i = sgContext.schemaIndex + 1;
         while i < sgContext.unitSchemas.length() {
             EDIUnitSchema umap = sgContext.unitSchemas[i];
-            int minOccurs = 1;
-            if umap is EDISegSchema {
-                minOccurs = umap.minOccurances;
-            } else {
-                minOccurs = umap.minOccurances;
-            }
-            if minOccurs > 0 {
+            if umap.minOccurances > 0 {
                 return error Error(string `Mandatory segment/segment group is not found. Segment: ${printEDIUnitMapping(umap)}`);
             }
             i += 1;
