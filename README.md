@@ -139,26 +139,26 @@ The generated Ballerina library will look like below:
 ````bash
 |-- CityMart
     |--lib
-	   |--porder
-	      |--modules
-		     |--m850
-			    |--G_850.bal
-				|--transformer.bal
-			 |--m810
-			    |--G_810.bal
-				|--transformer.bal
-			 |--m820
-			    |--G_820.bal
-				|--transformer.bal
-			 |--m855
-			    |--G_855.bal
-				|--transformer.bal
-		  |--Ballerina.toml
-		  |--Module.md
-		  |--Package.md
-		  |--porder.bal
-		  |--rest_connector.bal
-
+	|  |--porder
+	|     |--modules
+	|	  |   |--m850
+	|	  |	  |  |--G_850.bal
+    |     |   |  |--transformer.bal
+	|	  |	  |--m810
+	|	  |	  |  |--G_810.bal
+    |     |   |  |--transformer.bal
+	|	  |	  |--m820
+	|	  |	  |  |--G_820.bal
+    |     |   |  |--transformer.bal
+	|	  |	  |--m855
+	|	  |	    |--G_855.bal
+    |     |     |--transformer.bal
+	|	  |--Ballerina.toml
+	|	  |--Module.md
+	|	  |--Package.md
+	|	  |--porder.bal
+	|	  |--rest_connector.bal
+    |
     |--schemas
 	   |--850.json
 	   |--810.json
