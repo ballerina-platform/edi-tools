@@ -1,14 +1,13 @@
 import ballerina/io;
-import ballerina/edi;
 import editools.codegen;
 
 public function main(string[] args) returns error? {
 
     string usage = string `Ballerina EDI tools -
-        Ballerina code generation for edi mapping: java -jar edi.jar codegen <mapping json path> <output bal file path>
-        Smooks to json mapping conversion: java -jar edi.jar smooksToBal <smooks mapping xml path> <mapping json path>
-        ESL to json mapping conversion: java -jar edi.jar eslToBal <ESL file path or directory> <ESL segment definitions path> <output json path or directory>
-        EDI library generation: java -jar edi.jar libgen <org name> <library name> <EDI mappings folder> <output folder>`;
+        Ballerina code generation for edi schema: java -jar edi.jar codegen <schema json path> <output bal file path>
+        Smooks to json schema conversion: java -jar edi.jar smooksToBal <smooks mapping xml path> <schema json path>
+        ESL to json schema conversion: java -jar edi.jar eslToBal <ESL file path or directory> <ESL segment definitions path> <output json path or directory>
+        EDI library generation: java -jar edi.jar libgen <org name> <library name> <EDI schema folder> <output folder>`;
 
     if args.length() == 0 {
         io:println(usage);
@@ -22,8 +21,7 @@ public function main(string[] args) returns error? {
             return;
         }
         json mappingJson = check io:fileReadJson(args[1].trim());
-        edi:EDISchema mapping = check edi:getSchema(mappingJson);
-        check codegen:generateCodeToFile(mapping, args[2].trim());
+        check codegen:generateCodeForSchema(mappingJson, args[2].trim());
     } else if mode == "libgen" {
         if args.length() != 5 {
             io:println(usage);
