@@ -126,10 +126,10 @@ For example, let's assume that an organization named "CityMart" needs to work wi
 |-- CityMart
     |--lib
     |--schemas
-	   |--850.json
-	   |--810.json
-	   |--820.json
-	   |--855.json
+       |--850.json
+       |--810.json
+       |--820.json
+       |--855.json
 ````
 Then the libgen command can be used to generate a Ballerina library as shown below:
 ````
@@ -138,32 +138,32 @@ java -jar editools.jar libgen citymart porder CityMart/schemas CityMart/lib
 The generated Ballerina library will look like below:
 ````bash
 |-- CityMart
-    |--lib
-	|  |--porder
-	|     |--modules
-	|	  |   |--m850
-	|	  |	  |  |--G_850.bal
+    |--lib  
+    |--porder
+    |     |--modules
+    |	  |   |--m850
+    |	  |	  |  |--G_850.bal
     |     |   |  |--transformer.bal
-	|	  |	  |--m810
-	|	  |	  |  |--G_810.bal
+    |	  |	  |--m810
+    |	  |	  |  |--G_810.bal
     |     |   |  |--transformer.bal
-	|	  |	  |--m820
-	|	  |	  |  |--G_820.bal
+    |	  |	  |--m820
+    |	  |	  |  |--G_820.bal
     |     |   |  |--transformer.bal
-	|	  |	  |--m855
-	|	  |	    |--G_855.bal
+    |	  |	  |--m855
+    |	  |	    |--G_855.bal
     |     |     |--transformer.bal
-	|	  |--Ballerina.toml
-	|	  |--Module.md
-	|	  |--Package.md
-	|	  |--porder.bal
-	|	  |--rest_connector.bal
+    |	  |--Ballerina.toml
+    |	  |--Module.md
+    |	  |--Package.md
+    |	  |--porder.bal
+    |	  |--rest_connector.bal
     |
     |--schemas
-	   |--850.json
-	   |--810.json
-	   |--820.json
-	   |--855.json
+       |--850.json
+       |--810.json
+       |--820.json
+       |--855.json
 ````
 As seen in the above project structure, code for each EDI schema is generated into a separate module, in order to prevent possible conflicts. Now it is possible to build the above project using the ```bal pack``` command and publish it into the central repository using the ```bal push``` command. Then any Ballerina project can import this package and use it to work with purchase order related EDI files. An example of using this library for reading a 850 file and writing a 855 file is shown below:
 
@@ -175,10 +175,10 @@ import citymart/porder.m855;
 public function main() returns error? {
     string orderText = check io:fileReadString("orders/d15_05_2023/order10.edi");
     m850:Purchase_Order purchaseOrder = check m850:fromEdiString(orderText);
-	...
-	m855:Purchase_Order_Acknowledgement orderAck = {...};
-	string orderAckText = check m855:toEdiString(orderAck);
-	check io:fileWriteString("acks/d15_05_2023/ack10.edi", orderAckText);
+    ...
+    m855:Purchase_Order_Acknowledgement orderAck = {...};
+    string orderAckText = check m855:toEdiString(orderAck);
+    check io:fileWriteString("acks/d15_05_2023/ack10.edi", orderAckText);
 }
 ````
 It is quite common for different trading partners to use variations of standard EDI formats. In such case, it is possible to create partner specific schemas and generate a partner specific Ballerina library for processing interactions with the particular partner.
@@ -212,121 +212,121 @@ Above REST call will return a JSON response as below:
 
 ```
 {
-	"Transaction_Set_Header": {
-		"Transaction_Set_Identifier_Code": "834",
-		"Transaction_Set_Control_Number": "12345",
-		"Implementation_Convention_Reference": "005010X220A1"
-	},
-	"Beginning_Segment": {
-		"Transaction_Set_Purpose_Code": "00",
-		"Reference_Identification": "12456",
-		"Date": "20020601",
-		"Time": "1200"
-	},
-	"Reference_Information": [
-		{
-			"Reference_Identification_Qualifier": "38",
-			"Reference_Identification": "ABCD012354"
-		}
-	],
-	"Date_or_Time_or_Period": [],
-	"Monetary_Amount_Information": [
-		{
-			"Amount_Qualifier_Code": "cc payment",
-			"Monetary_Amount": 467.34
-		}
-	],
-	"Quantity_Information": [],
-	"A_1000_Loop": [
-		{
-			"Party_Identification": {
-				"Entity_Identifier_Code": "P5",
-				"Identification_Code_Qualifier": "FI",
-				"Identification_Code": "999888777"
-			},
-			"Additional_Name_Information": [],
-			"Party_Location": [],
-			"Administrative_Communications_Contact": [],
-			"A_1100_Loop": []
-		},
-		{
-			"Party_Identification": {
-				"Entity_Identifier_Code": "IN",
-				"Identification_Code_Qualifier": "FI",
-				"Identification_Code": "654456654"
-			},
-			"Additional_Name_Information": [],
-			"Party_Location": [],
-			"Administrative_Communications_Contact": [],
-			"A_1100_Loop": []
-		}
-	],
-	"A_2000_Loop": [
-		{
-			"Insured_Benefit": {
-				"Yes_No_Condition_or_Response_Code": "Y",
-				"Individual_Relationship_Code": "18",
-				"Maintenance_Type_Code": "025",
-				"Benefit_Status_Code": "A",
-				"Employment_Status_Code": "FT"
-			},
-			"Reference_Information_2": [
-				{
-					"Reference_Identification_Qualifier": "0F",
-					"Reference_Identification": "202443307"
-				},
-				{
-					"Reference_Identification_Qualifier": "1L",
-					"Reference_Identification": "123456001"
-				}
-			],
-			"Date_or_Time_or_Period_2": [],
-			"A_2100_Loop": [
-				{
-					"Individual_or_Organizational_Name": {
-						"Entity_Identifier_Code": "IL",
-						"Entity_Type_Qualifier": "1",
-						"Name_Last_or_Organization_Name": "SMITH",
-						"Name_First": "WILLIAM",
-						"Identification_Code_Qualifier": "ZZ",
-						"Identification_Code": "202443307"
-					},
-					"Employment_Class": [],
-					"Monetary_Amount_Information_2": [],
-					"Health_Care_Information_Codes": [],
-					"Language_Use": []
-				}
-			],
-			"A_2200_Loop": [],
-			"A_2300_Loop": [
-				{
-					"Health_Coverage": {
-						"Maintenance_Type_Code": "025",
-						"Insurance_Line_Code": "DEN"
-					},
-					"Date_or_Time_or_Period_4": [
-						{
-							"Date_Time_Qualifier": "348",
-							"Date_Time_Period_Format_Qualifier": "D8",
-							"Date_Time_Period": "20020701"
-						}
-					],
-					"Monetary_Amount_Information_3": [],
-					"Reference_Information_3": [],
-					"Identification_Card": [],
-					"A_2310_Loop": [],
-					"A_2320_Loop": []
-				}
-			],
-			"A_2400_Loop": [],
-			"A_2500_Loop": [],
-			"A_2600_Loop": []
-		}
-	],
-	"Transaction_Set_Trailer": {
-		"Number_of_Included_Segments": 12,
-		"Transaction_Set_Control_Number": "12345"
-	}
+    "Transaction_Set_Header": {
+        "Transaction_Set_Identifier_Code": "834",
+        "Transaction_Set_Control_Number": "12345",
+        "Implementation_Convention_Reference": "005010X220A1"
+    },
+    "Beginning_Segment": {
+        "Transaction_Set_Purpose_Code": "00",
+        "Reference_Identification": "12456",
+        "Date": "20020601",
+        "Time": "1200"
+    },
+    "Reference_Information": [
+        {
+            "Reference_Identification_Qualifier": "38",
+            "Reference_Identification": "ABCD012354"
+        }
+    ],
+    "Date_or_Time_or_Period": [],
+    "Monetary_Amount_Information": [
+        {
+            "Amount_Qualifier_Code": "cc payment",
+            "Monetary_Amount": 467.34
+        }
+    ],
+    "Quantity_Information": [],
+    "A_1000_Loop": [
+        {
+            "Party_Identification": {
+                "Entity_Identifier_Code": "P5",
+                "Identification_Code_Qualifier": "FI",
+                "Identification_Code": "999888777"
+            },
+            "Additional_Name_Information": [],
+            "Party_Location": [],
+            "Administrative_Communications_Contact": [],
+            "A_1100_Loop": []
+        },
+        {
+            "Party_Identification": {
+                "Entity_Identifier_Code": "IN",
+                "Identification_Code_Qualifier": "FI",
+                "Identification_Code": "654456654"
+            },
+            "Additional_Name_Information": [],
+            "Party_Location": [],
+            "Administrative_Communications_Contact": [],
+            "A_1100_Loop": []
+        }
+    ],
+    "A_2000_Loop": [
+        {
+            "Insured_Benefit": {
+                "Yes_No_Condition_or_Response_Code": "Y",
+                "Individual_Relationship_Code": "18",
+                "Maintenance_Type_Code": "025",
+                "Benefit_Status_Code": "A",
+                "Employment_Status_Code": "FT"
+            },
+            "Reference_Information_2": [
+                {
+                    "Reference_Identification_Qualifier": "0F",
+                    "Reference_Identification": "202443307"
+                },
+                {
+                    "Reference_Identification_Qualifier": "1L",
+                    "Reference_Identification": "123456001"
+                }
+            ],
+            "Date_or_Time_or_Period_2": [],
+            "A_2100_Loop": [
+                {
+                    "Individual_or_Organizational_Name": {
+                        "Entity_Identifier_Code": "IL",
+                        "Entity_Type_Qualifier": "1",
+                        "Name_Last_or_Organization_Name": "SMITH",
+                        "Name_First": "WILLIAM",
+                        "Identification_Code_Qualifier": "ZZ",
+                        "Identification_Code": "202443307"
+                    },
+                    "Employment_Class": [],
+                    "Monetary_Amount_Information_2": [],
+                    "Health_Care_Information_Codes": [],
+                    "Language_Use": []
+                }
+            ],
+            "A_2200_Loop": [],
+            "A_2300_Loop": [
+                {
+                    "Health_Coverage": {
+                        "Maintenance_Type_Code": "025",
+                        "Insurance_Line_Code": "DEN"
+                    },
+                    "Date_or_Time_or_Period_4": [
+                        {
+                            "Date_Time_Qualifier": "348",
+                            "Date_Time_Period_Format_Qualifier": "D8",
+                            "Date_Time_Period": "20020701"
+                        }
+                    ],
+                    "Monetary_Amount_Information_3": [],
+                    "Reference_Information_3": [],
+                    "Identification_Card": [],
+                    "A_2310_Loop": [],
+                    "A_2320_Loop": []
+                }
+            ],
+            "A_2400_Loop": [],
+            "A_2500_Loop": [],
+            "A_2600_Loop": []
+        }
+    ],
+    "Transaction_Set_Trailer": {
+        "Number_of_Included_Segments": 12,
+        "Transaction_Set_Control_Number": "12345"
+    }
 }
 ```
 
