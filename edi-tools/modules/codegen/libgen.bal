@@ -12,8 +12,8 @@ public type LibData record {|
     string importsBlock = "";
     string exportsBlock = "";
     string enumBlock = "";
-    string readProcessors = "";
-    string writeProcessors = "";
+    string ediDeserializers = "";
+    string ediSerializers = "";
     string[] ediNames = [];
 |};
 
@@ -26,7 +26,7 @@ public type LibData record {|
 # + return - Returns error if library generation is not successful
 public function generateLibrary(LibData libdata) returns error? {
     check createLibStructure(libdata);
-    check generateCodeFromFileBasedSchemas(libdata);
+    check generateCodeFromSchemas(libdata);
     check createBalLib(libdata);
 }
 
@@ -44,7 +44,7 @@ function createLibStructure(LibData libdata) returns error? {
     check copyNonTemplatedFiles(libdata);
 }
 
-function generateCodeFromFileBasedSchemas(LibData libdata) returns error? {
+function generateCodeFromSchemas(LibData libdata) returns error? {
     file:MetaData[] schemaFiles = check file:readDir(libdata.schemaPath);
     foreach file:MetaData schemaFile in schemaFiles {
         string ediName = check file:basename(schemaFile.absPath);
@@ -71,21 +71,18 @@ function createBalLib(LibData libdata) returns error? {
 function copyNonTemplatedFiles(LibData libdata) returns error? {
     check writeLibFile(packageText, "Package.md", libdata);
     check writeLibFile(ModuleMdText, "Module.md", libdata);
-
-    check file:createDir(check file:joinPath(libdata.outputPath, "secrets"), file:RECURSIVE);
-    check io:fileWriteString(check file:joinPath(libdata.outputPath, "secrets", "secrets.toml"), generateConfigText(libdata.libName));
 }
 
 function generateEDIFileSpecificCode(string ediName, json mappingJson, LibData libdata) returns error? {
     libdata.ediNames.push(ediName);
-    edi:EDISchema ediMapping = check mappingJson.cloneWithType(edi:EDISchema);
+    edi:EdiSchema ediMapping = check mappingJson.cloneWithType(edi:EdiSchema);
     ediMapping.name = "EDI_" + ediName + "_" + ediMapping.name;
 
     string modulePath = check file:joinPath(libdata.libPath, "modules", "m" + ediName);
     check file:createDir(modulePath, file:RECURSIVE);
 
     string recordsPath = check file:joinPath(modulePath, "G_" + ediName + ".bal");
-    check generateCodeToFile(ediMapping, recordsPath);
+    check generateCodeForSchema(ediMapping, recordsPath);
 
     string transformer = generateTransformerCode(ediName, ediMapping.name);
     check io:fileWriteString(check file:joinPath(modulePath, "transformer.bal"), transformer);
@@ -93,10 +90,10 @@ function generateEDIFileSpecificCode(string ediName, json mappingJson, LibData l
     libdata.importsBlock += "\n" + string `import ${libdata.libName}.m${ediName};`;
     libdata.exportsBlock += ",\"" + libdata.libName + ".m" + ediName + "\"";
     libdata.enumBlock += string `${libdata.enumBlock.length() > 0 ? ", " : ""}EDI_${ediName} = "${ediName}"`;
-    libdata.readProcessors += (libdata.readProcessors.length() > 0 ? ",\n" : "") +
-        string `    "${ediName}": m${ediName}:processRead${ediName}`;
-    libdata.writeProcessors += (libdata.writeProcessors.length() > 0 ? ",\n" : "") +
-        string `    "${ediName}": m${ediName}:processWrite${ediName}`;
+    libdata.ediDeserializers += (libdata.ediDeserializers.length() > 0 ? ",\n" : "") +
+        string `    "${ediName}": m${ediName}:transformFromEdiString`;
+    libdata.ediSerializers += (libdata.ediSerializers.length() > 0 ? ",\n" : "") +
+        string `    "${ediName}": m${ediName}:transformToEdiString`;
 }
 
 function writeLibFile(string content, string targetName, LibData libdata) returns error? {
