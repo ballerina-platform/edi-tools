@@ -3,7 +3,7 @@
 EDI tools provide the below set of command line tools to work with EDI files in Ballerina.
 
 - **Code generation**: Generate Ballerina records and parsing functions for a given EDI schema
-- **Library generation**: Generates Ballerina records, parsing functions, utility methods and a REST connector for a given collection of EDI schemas and organize those as a Ballerina library
+- **Library generation**: Generates Ballerina records, parsing functions, utility methods, and a REST connector for a given collection of EDI schemas and organizes those as a Ballerina library
 
 ## Compatibility
 
@@ -18,7 +18,7 @@ Usage:
 ```
 bal edi codegen <EDI schema path> <output path>
 ```
-Above command generates all Ballerina records and parsing functions required for working with data in the given EDI schema and writes those in to the file specified in "output path". Generated parsing function (i.e. fromEdiString(...)) can read EDI text files into generated records, which can be accessed from Ballerina code similar to accessing any other Ballerina record. Similarly, generated serialization function (i.e. toEdiString(...)) can serialize Generated Ballerina records into EDI text.
+The above command generates all Ballerina records and parsing functions required for working with data in the given EDI schema and writes those into the file specified in the `output path`. Generated parsing function (i.e. `fromEdiString(...)`) can read EDI text files into generated records, which can be accessed from Ballerina code similar to accessing any other Ballerina record. Similarly, generated serialization function (i.e. `toEdiString(...)`) can serialize Generated Ballerina records into EDI text.
 
 ### Example
 
@@ -42,7 +42,7 @@ A simple EDI schema is shown below (let's assume that this is saved in edi-schem
 }
 ````
 
-Above schema can be used to parse EDI documents with one HDR segment (mapped to "header") and any number of ITM segments (mapped to "items"). HDR segment contains three fields, which are mapped to "orderId", "organization" and "date". Each ITM segment contains two fields mapped to "item" and "quantity". Below is a sample EDI document that can be parsed using the above schema (let's assume that below EDI is saved in edi-sample1.edi file):
+Above schema can be used to parse EDI documents with one HDR segment (mapped to "header") and any number of ITM segments (mapped to "items"). HDR segment contains three fields, which are mapped to "orderId", "organization" and "date". Each ITM segment contains two fields mapped to "item" and "quantity". Below is a sample EDI document that can be parsed using the above schema (let's assume that the below EDI is saved in `edi-sample1.edi` file):
 
 ````edi
 HDR*ORDER_1201*ABC_Store*2008-01-01~
@@ -53,7 +53,7 @@ ITM*K-80*250
 ITM*T-46*28
 ````
 
-Ballerina records for the EDI schema in edi-schema.json can be generated as follows (generated Ballerina records will be saved in orderRecords.bal):
+Ballerina records for the EDI schema in the `edi-schema.json` can be generated as follows (generated Ballerina records will be saved in `orderRecords.bal`):
 
 ```
 java -jar editools.jar codegen resources/edi-schema1.json modules/hmartOrder/orderRecords.bal
@@ -83,7 +83,7 @@ type SimpleOrder record {|
 
 ### Reading EDI files
 
-Generated ```fromEdiString``` function can be used to read EDI text files into the generated Ballerina record as shown below. Note that any data item in the EDI can be accessed using record's fields as shown in the example code.
+Generated ```fromEdiString``` function can be used to read EDI text files into the generated Ballerina record as shown below. Note that any data item in the EDI can be accessed using the record's fields, as shown in the example code.
 
 ````ballerina
 import ballerina/io;
@@ -97,7 +97,7 @@ public function main() returns error? {
 
 ### Writing EDI files
 
-Generated ```toEdiString``` function can be used to serialize ```SimpleOrder`` records into EDI text as shown below:
+Generated ```toEdiString``` function can be used to serialize ```SimpleOrder``` records into EDI text as shown below:
 
 ````ballerina
 import ballerina/io;
@@ -111,9 +111,9 @@ public function main() returns error? {
 
 ## Creating an EDI library
 
-Usually, organizations have to work with many EDI formats, and integration developers need to have a convenient way to work on EDI data with minimum effort. Ballerina EDI libraries facilitate this by allowing organizations to pack all EDI processing code for to thier EDI collections in to an importable library. Therefore, integration developers can simply import those libraries and convert EDI messages into Ballerin records in a single line of code.
+Usually, organizations have to work with many EDI formats, and integration developers need to have a convenient way to work on EDI data with minimum effort. Ballerina EDI libraries facilitate this by allowing organizations to pack all EDI processing code for to their EDI collections into an importable library. Therefore, integration developers can simply import those libraries and convert EDI messages into Ballerin records in a single line of code.
 
-Below command can be used to generate EDI libraries:
+The below command can be used to generate EDI libraries:
 
 ```
 java -jar editools.jar libgen <org name> <library name> <EDI mappings folder> <output folder>
