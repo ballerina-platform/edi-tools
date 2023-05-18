@@ -10,7 +10,7 @@ distribution-version = "2201.5.0"
 [[package]]
 org = "ballerina"
 name = "edi"
-version = "0.8.1"
+version = "1.0.0"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "log"},
@@ -18,6 +18,23 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "edi", moduleName = "edi"}
+]
+
+[[package]]
+org = "ballerina"
+name = "editools"
+version = "1.0.0"
+dependencies = [
+	{org = "ballerina", name = "edi"},
+	{org = "ballerina", name = "file"},
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "test"},
+	{org = "ballerinai", name = "observe"}
+]
+modules = [
+	{org = "ballerina", packageName = "editools", moduleName = "editools"},
+	{org = "ballerina", packageName = "editools", moduleName = "editools.codegen"}
 ]
 
 [[package]]
@@ -109,7 +126,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "regex"
-version = "1.4.2"
+version = "1.4.3"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.string"}
@@ -148,22 +165,5 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerinai", packageName = "observe", moduleName = "observe"}
-]
-
-[[package]]
-org = "ballerinax"
-name = "editools"
-version = "0.1.0"
-dependencies = [
-	{org = "ballerina", name = "edi"},
-	{org = "ballerina", name = "file"},
-	{org = "ballerina", name = "io"},
-	{org = "ballerina", name = "regex"},
-	{org = "ballerina", name = "test"},
-	{org = "ballerinai", name = "observe"}
-]
-modules = [
-	{org = "ballerinax", packageName = "editools", moduleName = "editools"},
-	{org = "ballerinax", packageName = "editools", moduleName = "editools.codegen"}
 ]
 

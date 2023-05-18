@@ -75,7 +75,7 @@ function copyNonTemplatedFiles(LibData libdata) returns error? {
 
 function generateEDIFileSpecificCode(string ediName, json mappingJson, LibData libdata) returns error? {
     libdata.ediNames.push(ediName);
-    edi:EDISchema ediMapping = check mappingJson.cloneWithType(edi:EDISchema);
+    edi:EdiSchema ediMapping = check mappingJson.cloneWithType(edi:EdiSchema);
     ediMapping.name = "EDI_" + ediName + "_" + ediMapping.name;
 
     string modulePath = check file:joinPath(libdata.libPath, "modules", "m" + ediName);
