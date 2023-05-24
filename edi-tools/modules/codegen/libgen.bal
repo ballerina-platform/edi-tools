@@ -8,6 +8,7 @@ public type LibData record {|
     string outputPath = "";
     string schemaPath = "";
 
+    boolean versioned;
     string libPath = "";
     string importsBlock = "";
     string exportsBlock = "";
@@ -26,7 +27,11 @@ public type LibData record {|
 # + return - Returns error if library generation is not successful
 public function generateLibrary(LibData libdata) returns error? {
     check createLibStructure(libdata);
-    check generateCodeFromSchemas(libdata);
+    if libdata.versioned {
+        check generateCodeFromFolders(libdata);
+    } else {
+        check generateCodeFromSchemas(libdata, "", ());
+    }
     check createBalLib(libdata);
 }
 
@@ -44,15 +49,27 @@ function createLibStructure(LibData libdata) returns error? {
     check copyNonTemplatedFiles(libdata);
 }
 
-function generateCodeFromSchemas(LibData libdata) returns error? {
-    file:MetaData[] schemaFiles = check file:readDir(libdata.schemaPath);
+function generateCodeFromFolders(LibData libdata) returns error? {
+    file:MetaData[] schemaFolders = check file:readDir(libdata.schemaPath);
+    foreach file:MetaData schemaFolder in schemaFolders {
+        string schemaFolderName = check file:basename(schemaFolder.absPath);
+        if !schemaFolder.dir {
+            return error(string `Schema path must only contain folders. Path: ${libdata.schemaPath}. Item: ${schemaFolderName}`);
+        }
+        file:MetaData[] schemaFiles = check file:readDir(schemaFolder.absPath);
+        check generateCodeFromSchemas(libdata, schemaFolderName, schemaFiles);
+    }    
+}
+
+function generateCodeFromSchemas(LibData libdata, string ediVersion, file:MetaData[]? schemaItems) returns error? {
+    file:MetaData[] schemaFiles = schemaItems != ()? schemaItems : check file:readDir(libdata.schemaPath);
     foreach file:MetaData schemaFile in schemaFiles {
         string ediName = check file:basename(schemaFile.absPath);
         if ediName.endsWith(".json") {
             ediName = ediName.substring(0, ediName.length() - ".json".length());
         }
         json schemaJson = check io:fileReadJson(schemaFile.absPath);
-        check generateEDIFileSpecificCode(ediName, schemaJson, libdata);
+        check generateEDIFileSpecificCode(ediName, ediVersion, schemaJson, libdata);
     }
 }
 
@@ -73,12 +90,14 @@ function copyNonTemplatedFiles(LibData libdata) returns error? {
     check writeLibFile(ModuleMdText, "Module.md", libdata);
 }
 
-function generateEDIFileSpecificCode(string ediName, json mappingJson, LibData libdata) returns error? {
-    libdata.ediNames.push(ediName);
+function generateEDIFileSpecificCode(string ediName, string ediVersion, json mappingJson, LibData libdata) returns error? {
+    string completeEdiName = ediVersion == ""? ediName : ediVersion + "_" + ediName;
+    string moduleName = ediVersion == ""? "m" + ediName : "m" + ediVersion + ".m" + ediName;
+    libdata.ediNames.push(completeEdiName);
     edi:EdiSchema ediMapping = check mappingJson.cloneWithType(edi:EdiSchema);
-    ediMapping.name = "EDI_" + ediName + "_" + ediMapping.name;
+    ediMapping.name = "EDI_" + completeEdiName + "_" + ediMapping.name;
 
-    string modulePath = check file:joinPath(libdata.libPath, "modules", "m" + ediName);
+    string modulePath = check file:joinPath(libdata.libPath, "modules", moduleName);
     check file:createDir(modulePath, file:RECURSIVE);
 
     string recordsPath = check file:joinPath(modulePath, "G_" + ediName + ".bal");
@@ -87,13 +106,13 @@ function generateEDIFileSpecificCode(string ediName, json mappingJson, LibData l
     string transformer = generateTransformerCode(ediName, ediMapping.name);
     check io:fileWriteString(check file:joinPath(modulePath, "transformer.bal"), transformer);
 
-    libdata.importsBlock += "\n" + string `import ${libdata.libName}.m${ediName};`;
-    libdata.exportsBlock += ",\"" + libdata.libName + ".m" + ediName + "\"";
-    libdata.enumBlock += string `${libdata.enumBlock.length() > 0 ? ", " : ""}EDI_${ediName} = "${ediName}"`;
+    libdata.importsBlock += "\n" + string `import ${libdata.libName}.${moduleName};`;
+    libdata.exportsBlock += ",\"" + libdata.libName + "." + moduleName + "\"";
+    libdata.enumBlock += string `${libdata.enumBlock.length() > 0 ? ", " : ""}EDI_${completeEdiName} = "${completeEdiName}"`;
     libdata.ediDeserializers += (libdata.ediDeserializers.length() > 0 ? ",\n" : "") +
-        string `    "${ediName}": m${ediName}:transformFromEdiString`;
+        string `    "${completeEdiName}": ${moduleName}:transformFromEdiString`;
     libdata.ediSerializers += (libdata.ediSerializers.length() > 0 ? ",\n" : "") +
-        string `    "${ediName}": m${ediName}:transformToEdiString`;
+        string `    "${completeEdiName}": ${moduleName}:transformToEdiString`;
 }
 
 function writeLibFile(string content, string targetName, LibData libdata) returns error? {
