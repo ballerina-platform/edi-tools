@@ -62,7 +62,7 @@ function generateCodeFromFolders(LibData libdata) returns error? {
 }
 
 function generateCodeFromSchemas(LibData libdata, string ediVersion, file:MetaData[]? schemaItems) returns error? {
-    file:MetaData[] schemaFiles = schemaItems != ()? schemaItems : check file:readDir(libdata.schemaPath);
+    file:MetaData[] schemaFiles = schemaItems != () ? schemaItems : check file:readDir(libdata.schemaPath);
     foreach file:MetaData schemaFile in schemaFiles {
         string ediName = check file:basename(schemaFile.absPath);
         if ediName.endsWith(".json") {
@@ -91,8 +91,8 @@ function copyNonTemplatedFiles(LibData libdata) returns error? {
 }
 
 function generateEDIFileSpecificCode(string ediName, string ediVersion, json mappingJson, LibData libdata) returns error? {
-    string completeEdiName = ediVersion == ""? ediName : ediVersion + "_" + ediName;
-    string moduleName = ediVersion == ""? "m" + ediName : "m" + ediVersion + ".m" + ediName;
+    string completeEdiName = ediVersion == "" ? ediName : ediVersion + "_" + ediName;
+    string moduleName = ediVersion == "" ? "m" + ediName : "m" + ediVersion + ".m" + ediName;
     libdata.ediNames.push(completeEdiName);
     edi:EdiSchema ediMapping = check mappingJson.cloneWithType(edi:EdiSchema);
     ediMapping.name = "EDI_" + completeEdiName + "_" + ediMapping.name;

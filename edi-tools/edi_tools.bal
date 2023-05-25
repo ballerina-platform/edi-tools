@@ -30,7 +30,7 @@ public function main(string[] args) returns error? {
             libName: args[2],
             schemaPath: args[3],
             outputPath: args[4],
-            versioned: args.length() == 6? true : false
+            versioned: args.length() == 6 ? true : false
         };
         check codegen:generateLibrary(libdata);
     } else {
