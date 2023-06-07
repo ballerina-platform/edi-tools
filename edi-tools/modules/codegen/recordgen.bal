@@ -1,4 +1,5 @@
 import ballerina/io;
+import ballerina/log;
 import ballerina/edi;
 
 map<BalType> ediToBalTypes = {
@@ -105,6 +106,9 @@ function generateTypeName(string tag, GenContext context) returns string {
     int? num = context.typeNumber[tag];
     if num is int {
         int newNum = num + 1;
+        log:printWarn(string `Entity name occurs multiple times. Modifying the name of the corresponding generated type to avoid conflicts.
+            However, this could result in issues when mapping the EDI type to generated records.
+            Entity: ${tag}, Occurances: ${newNum}`);
         context.typeNumber[tag] = newNum;
         return startWithUppercase(string `${tag}${newNum}_GType`);
     } else {
