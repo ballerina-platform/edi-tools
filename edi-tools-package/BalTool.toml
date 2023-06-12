@@ -1,0 +1,5 @@
+[tool]
+id = "edi"
+
+[[dependency]]
+path = "resources/edi-cli-1.0.jar"
