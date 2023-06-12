@@ -1,8 +1,8 @@
 [package]
 org = "ballerina"
-name = "editools"
+name = "editool"
 version = "1.0.1"
+authors = ["Ballerina"]
+keywords = ["edi"]
+license = ["Apache-2.0"]
 distribution = "2201.6.0"
-
-[build-options]
-observabilityIncluded = true
