@@ -9,17 +9,6 @@ distribution-version = "2201.5.0"
 
 [[package]]
 org = "ballerina"
-name = "editoolspackage"
-version = "1.0.2"
-dependencies = [
-	{org = "ballerina", name = "io"}
-]
-modules = [
-	{org = "ballerina", packageName = "editoolspackage", moduleName = "editoolspackage"}
-]
-
-[[package]]
-org = "ballerina"
 name = "io"
 version = "1.4.1"
 dependencies = [
@@ -41,5 +30,16 @@ name = "lang.value"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "hmart"
+name = "editoolspackage"
+version = "1.0.2"
+dependencies = [
+	{org = "ballerina", name = "io"}
+]
+modules = [
+	{org = "hmart", packageName = "editoolspackage", moduleName = "editoolspackage"}
 ]
 

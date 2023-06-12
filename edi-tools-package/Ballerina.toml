@@ -1,5 +1,5 @@
 [package]
-org = "ballerina"
+org = "hmart"
 name = "editoolspackage"
 version = "1.0.2"
 authors = ["Ballerina"]
