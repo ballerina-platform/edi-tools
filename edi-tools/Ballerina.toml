@@ -1,6 +1,6 @@
 [package]
 org = "ballerina"
-name = "editool"
+name = "editools"
 version = "1.0.1"
 authors = ["Ballerina"]
 keywords = ["edi"]
