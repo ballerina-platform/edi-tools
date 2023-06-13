@@ -23,7 +23,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "editools"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
 	{org = "ballerina", name = "edi"},
 	{org = "ballerina", name = "file"},
@@ -72,7 +72,6 @@ version = "0.0.0"
 org = "ballerina"
 name = "lang.regexp"
 version = "0.0.0"
-scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -81,7 +80,6 @@ dependencies = [
 org = "ballerina"
 name = "lang.string"
 version = "0.0.0"
-scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.regexp"}
