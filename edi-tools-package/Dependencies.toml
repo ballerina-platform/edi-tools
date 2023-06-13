@@ -35,7 +35,7 @@ dependencies = [
 [[package]]
 org = "hmart"
 name = "editoolspackage"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
 	{org = "ballerina", name = "io"}
 ]
