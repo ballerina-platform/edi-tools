@@ -23,7 +23,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "editools"
-version = "1.0.41"
+version = "1.0.42"
 dependencies = [
 	{org = "ballerina", name = "edi"},
 	{org = "ballerina", name = "file"},
