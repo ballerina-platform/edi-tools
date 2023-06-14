@@ -1,7 +1,7 @@
 [package]
 org = "hmart"
 name = "editoolspackage"
-version = "1.0.43"
+version = "1.0.44"
 authors = ["Ballerina"]
 keywords = ["edi"]
 license = ["Apache-2.0"]
