@@ -47,8 +47,8 @@ public class CodegenCmd implements BLauncherCmd {
                     "java", "-jar", tempFile.toAbsolutePath().toString(), "codegen", schemaPath, outputPath);
             Process process = processBuilder.start();
             process.waitFor();
-            java.io.InputStream is=process.getInputStream();
-            byte b[]=new byte[is.available()];
+            java.io.InputStream is = process.getInputStream();
+            byte b[] = new byte[is.available()];
             is.read(b,0,b.length);
             printStream.println(new String(b));
         } catch (Exception e) {

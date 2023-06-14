@@ -2,8 +2,8 @@ plugins {
     id 'java'
 }
 
-group 'ballerina.edi'
-version '1.0'
+// group 'ballerina.edi'
+version stripBallerinaExtensionVersion("${project.version}")
 
 repositories {
     mavenLocal()
@@ -31,6 +31,22 @@ dependencies {
     implementation 'org.ballerinalang:ballerina-cli:2201.5.0'
     implementation 'info.picocli:picocli:4.0.1'
 }
+
+task copyEdiToolsJar {
+    doLast {
+        copy {
+            from "../edi-tools/target/cache/ballerina/editools/${version}/java11/ballerina-editools-${version}.jar"
+            from "../edi-tools/target/bin/editools.jar"
+            into "src/main/resources"
+            include "*.jar"
+            // rename "ballerina-editools-${version}.jar", "editools.jar"
+        }
+    }
+}
+
+copyEdiToolsJar.dependsOn ":edi-tools:build"
+build.dependsOn copyEdiToolsJar
+// evaluationDependsOn(':edi-tools')
 
 test {
     useJUnitPlatform()

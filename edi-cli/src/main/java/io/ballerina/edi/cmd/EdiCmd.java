@@ -38,18 +38,25 @@ public class EdiCmd implements BLauncherCmd {
     @Override
     public void execute() {
         try {
+            printStream.println("EDI without params");
             URL res = EdiCmd.class.getClassLoader().getResource(EDI_TOOL);
+            printStream.println("Loaded the jar. " + res.toString());
             Path tempFile = Files.createTempFile(null, null);
+            printStream.println("Temp file created. " + tempFile.toString());
             try (InputStream in = res.openStream()) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
+                printStream.println("Jar copied to temp file.");
             }
             ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", tempFile.toAbsolutePath().toString());
             Process process = processBuilder.start();
+            printStream.println("Process started.");
             process.waitFor();
+            printStream.println("Process completed.");
             java.io.InputStream is=process.getInputStream();
             byte b[]=new byte[is.available()];
             is.read(b,0,b.length);
             printStream.println(new String(b));
+            printStream.println("Printed process output");
         } catch (Exception e) {
             printStream.println("Error in executing EDI CLI commands. " + e.getMessage());
             e.printStackTrace();
