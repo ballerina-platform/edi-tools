@@ -107,7 +107,7 @@ task prepare {
     dependsOn deleteTarget
     dependsOn updateTomlFiles
     doLast{
-        println "Inside build"
+        println "Preparing the project for build"
     }
 }
 

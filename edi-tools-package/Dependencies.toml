@@ -8,6 +8,17 @@ dependencies-toml-version = "2"
 distribution-version = "2201.6.0"
 
 [[package]]
+org = "b2btools"
+name = "editoolspackage"
+version = "0.6.1"
+dependencies = [
+	{org = "ballerina", name = "io"}
+]
+modules = [
+	{org = "b2btools", packageName = "editoolspackage", moduleName = "editoolspackage"}
+]
+
+[[package]]
 org = "ballerina"
 name = "io"
 version = "1.4.1"
@@ -30,16 +41,5 @@ name = "lang.value"
 version = "0.0.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-
-[[package]]
-org = "hmart"
-name = "editoolspackage"
-version = "1.0.451"
-dependencies = [
-	{org = "ballerina", name = "io"}
-]
-modules = [
-	{org = "hmart", packageName = "editoolspackage", moduleName = "editoolspackage"}
 ]
 

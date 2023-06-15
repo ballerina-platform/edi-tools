@@ -3,11 +3,9 @@ import editools.codegen;
 
 public function main(string[] args) returns error? {
 
-    io:println("Ballerina EDI tool..");
-
     string usage = string `Ballerina EDI tools -
-        Ballerina code generation for edi schema: java -jar edi.jar codegen <schema json path> <output bal file path>
-        EDI library generation: java -jar edi.jar libgen <org name> <library name> <EDI schema folder> <output folder>`;
+        Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>
+        EDI library generation: bal edi libgen -O <org name> -n <library name> -s <EDI schema folder> -o <output folder>`;
 
     if args.length() == 0 {
         io:println(usage);

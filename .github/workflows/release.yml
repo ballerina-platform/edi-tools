@@ -33,7 +33,7 @@ jobs:
                   ./gradlew prepare
 
             - name: Build edi-tools project as an executable jar using Ballerina
-              uses: ballerina-platform/ballerina-action@2201.3.1
+              uses: ballerina-platform/ballerina-action/@2201.3.1
               with:
                   args: build ./edi-tools
               env:

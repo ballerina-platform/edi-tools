@@ -1,5 +1,5 @@
 [package]
-org = "hmart"
+org = "b2btools"
 name = "editoolspackage"
 version = "@toml.version@"
 authors = ["Ballerina"]
