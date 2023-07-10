@@ -19,7 +19,7 @@ type GenContext record {|
 # + outpath - Path of the file to write generated records. This should be a .bal file.
 # + return - Returns error if the record generation is not successfull
 public function generateCodeToFile(edi:EdiSchema mapping, string outpath) returns error? {
-    BalRecord[] records = generateCode(mapping);
+    BalRecord[] records = check generateCode(mapping);
     string sRecords = "";
     foreach BalRecord rec in records {
         sRecords += rec.toString() + "\n";
@@ -31,25 +31,28 @@ public function generateCodeToFile(edi:EdiSchema mapping, string outpath) return
 #
 # + mapping - EDI schema for which records need to be generated
 # + return - Returns an array of generated records. Error if the generation is not successfull.
-public function generateCode(edi:EdiSchema mapping) returns BalRecord[] {
+public function generateCode(edi:EdiSchema mapping) returns BalRecord[]|error {
     GenContext context = {};
-    _ = generateRecordForUnits(mapping.segments, mapping.name, context);
+    _ = check generateRecordForUnits(mapping.segments, mapping.name, context);
     return context.typeRecords.toArray();
 }
 
-function generateRecordForSegmentGroup(edi:EdiSegGroupSchema groupmap, GenContext context) returns BalRecord {
+function generateRecordForSegmentGroup(edi:EdiSegGroupSchema groupmap, GenContext context) returns BalRecord|error {
     string sgTypeName = generateTypeName(groupmap.tag, context);
-    return generateRecordForUnits(groupmap.segments, sgTypeName, context);
+    return check generateRecordForUnits(groupmap.segments, sgTypeName, context);
 }
 
-function generateRecordForUnits(edi:EdiUnitSchema[] umaps, string typeName, GenContext context) returns BalRecord {
+function generateRecordForUnits(edi:EdiUnitSchema[] umaps, string typeName, GenContext context) returns BalRecord|error {
     BalRecord sgrec = new (typeName);
     foreach edi:EdiUnitSchema umap in umaps {
+        if umap is edi:EdiUnitRef {
+            return error("Segment reference is not supported for this operation.");
+        }
         if umap is edi:EdiSegSchema {
             BalRecord srec = generateRecordForSegment(umap, context);
             sgrec.addField(srec, umap.tag, umap.maxOccurances != 1, umap.minOccurances == 0);
         } else {
-            BalRecord srec = generateRecordForSegmentGroup(umap, context);
+            BalRecord srec = check generateRecordForSegmentGroup(umap, context);
             sgrec.addField(srec, umap.tag, umap.maxOccurances != 1, umap.minOccurances == 0);
         }
     }
@@ -106,8 +109,7 @@ function generateTypeName(string tag, GenContext context) returns string {
     int? num = context.typeNumber[tag];
     if num is int {
         int newNum = num + 1;
-        log:printWarn(string `Entity name occurs multiple times. Modifying the name of the corresponding generated type to avoid conflicts.
-            However, this could result in issues when mapping the EDI type to generated records.
+        log:printDebug(string `Entity name occurs multiple times. Modifying the name of the corresponding generated type to avoid conflicts.
             Entity: ${tag}, Occurances: ${newNum}`);
         context.typeNumber[tag] = newNum;
         return startWithUppercase(string `${tag}${newNum}_GType`);

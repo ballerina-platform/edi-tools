@@ -10,7 +10,7 @@ distribution-version = "2201.6.0"
 [[package]]
 org = "b2btools"
 name = "editoolspackage"
-version = "0.6.1"
+version = "0.6.3"
 dependencies = [
 	{org = "ballerina", name = "io"}
 ]

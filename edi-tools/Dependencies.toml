@@ -10,7 +10,7 @@ distribution-version = "2201.6.0"
 [[package]]
 org = "ballerina"
 name = "edi"
-version = "1.0.1"
+version = "1.0.4"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "log"},
@@ -23,7 +23,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "editools"
-version = "0.6.1"
+version = "0.6.3"
 dependencies = [
 	{org = "ballerina", name = "edi"},
 	{org = "ballerina", name = "file"},
@@ -34,7 +34,8 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerina", packageName = "editools", moduleName = "editools"},
-	{org = "ballerina", packageName = "editools", moduleName = "editools.codegen"}
+	{org = "ballerina", packageName = "editools", moduleName = "editools.codegen"},
+	{org = "ballerina", packageName = "editools", moduleName = "editools.x12xsd"}
 ]
 
 [[package]]

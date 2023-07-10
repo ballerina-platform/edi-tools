@@ -1,3 +1,4 @@
+import ballerina/regex;
 
 function generateRESTConnector(string libName) returns string {
     string restConCode = string `
@@ -5,7 +6,7 @@ import ballerina/http;
 
 configurable int restConnectorPort = 9090;
 
-service /${libName}Parser on new http:Listener(restConnectorPort) {
+service /${regex:replaceAll(libName, "[.]", "_")}Parser on new http:Listener(restConnectorPort) {
 
     isolated resource function post edis/[string ediType](@http:Payload string ediData) returns json|error {
         EDI_NAME|error ediTypeName = ediType.ensureType();

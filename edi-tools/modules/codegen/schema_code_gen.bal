@@ -3,7 +3,7 @@ import ballerina/io;
 
 public function generateCodeForSchema(json schema, string outputPath) returns error? {
     edi:EdiSchema ediSchema = check edi:getSchema(schema);
-    BalRecord[] records = generateCode(ediSchema);
+    BalRecord[] records = check generateCode(ediSchema);
     string recordsString = "";
     foreach BalRecord rec in records {
         recordsString += rec.toString() + "\n";

@@ -35,7 +35,7 @@ dependencies {
 task copyEdiToolsJar {
     doLast {
         copy {
-            from "../edi-tools/target/cache/ballerina/editools/${version}/java11/ballerina-editools-${version}.jar"
+            // from "../edi-tools/target/cache/ballerina/editools/${version}/java11/ballerina-editools-${version}.jar"
             from "../edi-tools/target/bin/editools.jar"
             into "src/main/resources"
             include "*.jar"
