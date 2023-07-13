@@ -49,7 +49,7 @@ function generateRecordForUnits(edi:EdiUnitSchema[] umaps, string typeName, GenC
             return error("Segment reference is not supported for this operation.");
         }
         if umap is edi:EdiSegSchema {
-            BalRecord srec = generateRecordForSegment(umap, context);
+            BalRecord srec = check generateRecordForSegment(umap, context);
             sgrec.addField(srec, umap.tag, umap.maxOccurances != 1, umap.minOccurances == 0);
         } else {
             BalRecord srec = check generateRecordForSegmentGroup(umap, context);
@@ -60,7 +60,7 @@ function generateRecordForUnits(edi:EdiUnitSchema[] umaps, string typeName, GenC
     return sgrec;
 }
 
-function generateRecordForSegment(edi:EdiSegSchema segmap, GenContext context) returns BalRecord {
+function generateRecordForSegment(edi:EdiSegSchema segmap, GenContext context) returns BalRecord|error {
     string sTypeName = startWithUppercase(segmap.tag + "_Type");
     BalRecord? erec = context.typeRecords[sTypeName];
     if erec is BalRecord {
@@ -70,12 +70,20 @@ function generateRecordForSegment(edi:EdiSegSchema segmap, GenContext context) r
     BalRecord srec = new (sTypeName);
     foreach edi:EdiFieldSchema emap in segmap.fields {
         BalType? balType = ediToBalTypes[emap.dataType];
+        string? defaultValue = ();
+        if emap.tag == "code" {
+            if balType !is BSTRING {
+                return error("Code field must be of type string. Segment: " + segmap.toString());
+            }
+            defaultValue = segmap.code;
+        }
+
         if emap.dataType == edi:COMPOSITE {
             balType = generateRecordForComposite(emap, context);
         }
 
         if balType is BalType {
-            srec.addField(balType, emap.tag, emap.repeat, !emap.required);
+            srec.addField(balType, emap.tag, emap.repeat, !emap.required, defaultValue);
         }
     }
     context.typeRecords[sTypeName] = srec;
@@ -120,6 +128,8 @@ function generateTypeName(string tag, GenContext context) returns string {
     }
 }
 
+type ValueType string|int|float|decimal|boolean;
+
 public class BalRecord {
     string name;
     BalField[] fields = [];
@@ -130,8 +140,8 @@ public class BalRecord {
         self.name = name;
     }
 
-    function addField(BalType btype, string name, boolean array, boolean optional) {
-        self.fields.push(new BalField(btype, name, array, optional));
+    function addField(BalType btype, string name, boolean array, boolean optional, ValueType? defaultValue = ()) {
+        self.fields.push(new BalField(btype, name, array, optional, defaultValue));
     }
 
     function toString(boolean... anonymous) returns string {
@@ -154,12 +164,14 @@ public class BalRecord {
 class BalField {
     string name;
     BalType btype;
+    ValueType? defaultValue;
     boolean array = false;
     boolean optional = true;
 
-    function init(BalType btype, string name, boolean array, boolean optional) {
+    function init(BalType btype, string name, boolean array, boolean optional, ValueType? defaultValue = ()) {
         self.btype = btype;
         self.name = name;
+        self.defaultValue = defaultValue;
         self.array = array;
         self.optional = optional;
     }
@@ -181,7 +193,8 @@ class BalField {
             typeName = t.toString();
         }
         // string typeName = t is BalRecord? t.name : t.toString();
-        return string `${typeName}${(self.optional && !self.array && self.btype != BSTRING) ? "?" : ""}${self.array ? "[]" : ""} ${self.name}${(self.optional && !self.array) ? "?" : ""}${self.array ? " = []" : ""};`;
+        string assignment = self.defaultValue is () ? (self.array ? " = []" : "") : string ` = ${self.defaultValue is string ? "\"" : ""}${self.defaultValue.toString()}${self.defaultValue is string ? "\"" : ""}`;
+        return string `${typeName}${(self.optional && !self.array && self.btype != BSTRING) ? "?" : ""}${self.array ? "[]" : ""} ${self.name}${(self.optional && !self.array) ? "?" : ""}${assignment};`;
     }
 }
 

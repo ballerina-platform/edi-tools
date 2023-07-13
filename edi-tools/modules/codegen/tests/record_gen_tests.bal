@@ -6,11 +6,17 @@ function testFieldGeneration() {
     BalField b1 = new (BSTRING, "firstName", false, true);
     test:assertEquals(b1.toString(false), "string firstName?;");
 
+    BalField b12 = new (BSTRING, "firstName", false, false, "Mark");
+    test:assertEquals(b12.toString(false), "string firstName = \"Mark\";");
+
     BalField b2 = new (BSTRING, "employeeNames", true, true);
     test:assertEquals(b2.toString(false), "string[] employeeNames = [];");
 
     BalField b3 = new (BINT, "age", false, false);
     test:assertEquals(b3.toString(false), "int age;");
+
+    BalField b4 = new (BINT, "age", false, false, 30);
+    test:assertEquals(b4.toString(false), "int age = 30;");
 }
 
 @test:Config {}
