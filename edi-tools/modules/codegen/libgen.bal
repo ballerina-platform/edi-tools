@@ -94,7 +94,7 @@ function generateEDIFileSpecificCode(string ediName, string ediVersion, json map
     string completeEdiName = ediVersion == "" ? ediName : ediVersion + "_" + ediName;
     string moduleName = ediVersion == "" ? "m" + ediName : "m" + ediVersion + ".m" + ediName;
     libdata.ediNames.push(completeEdiName);
-    edi:EdiSchema ediMapping = check mappingJson.cloneWithType(edi:EdiSchema);
+    edi:EdiSchema ediMapping = check edi:getSchema(mappingJson);
     ediMapping.name = "EDI_" + completeEdiName + "_" + ediMapping.name;
 
     string modulePath = check file:joinPath(libdata.libPath, "modules", moduleName);

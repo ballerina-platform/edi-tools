@@ -12,20 +12,20 @@ public function generateCodeForSchema(json schema, string outputPath) returns er
     string schemaCode = string `
 import ballerina/edi;
 
-public function fromEdiString(string ediText) returns ${ediSchema.name}|error {
+public isolated function fromEdiString(string ediText) returns ${ediSchema.name}|error {
     edi:EdiSchema ediSchema = check edi:getSchema(schemaJson);
     json dataJson = check edi:fromEdiString(ediText, ediSchema);
     return dataJson.cloneWithType();
 }
 
-public function toEdiString(${ediSchema.name} data) returns string|error {
+public isolated function toEdiString(${ediSchema.name} data) returns string|error {
     edi:EdiSchema ediSchema = check edi:getSchema(schemaJson);
     return edi:toEdiString(data, ediSchema);    
 }
 
 ${recordsString}
 
-json schemaJson = ${schema.toJsonString()};
+final readonly & json schemaJson = ${schema.toJsonString()};
     `;
 
     check io:fileWriteString(outputPath, schemaCode);

@@ -2,8 +2,8 @@ function generateMainCode(LibData libdata) returns string {
     return string `
 ${libdata.importsBlock}
 
-type EdiSerialize function (anydata) returns string|error;
-type EdiDeserialize function (string) returns anydata|error;
+type EdiSerialize isolated function (anydata) returns string|error;
+type EdiDeserialize isolated function (string) returns anydata|error;
 
 public enum EDI_NAME {
     ${libdata.enumBlock}
