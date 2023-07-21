@@ -1,6 +1,7 @@
 import ballerina/io;
 import editools.x12xsd;
 import ballerina/file;
+import editools.esl;
 import editools.codegen;
 
 public function main(string[] args) returns error? {
@@ -36,6 +37,12 @@ public function main(string[] args) returns error? {
             versioned: args.length() == 6 ? true : false
         };
         check codegen:generateLibrary(libdata);
+
+    } else if mode == "convertESL" {
+        string eslPath = args[1].trim();
+        string basedefPath = args[2].trim();
+        string outputPath = args[3].trim();
+        check esl:convertEsl(eslPath, basedefPath, outputPath);
 
     } else if mode == "convertX12Schema" {
         string inputPath = args[1].trim();

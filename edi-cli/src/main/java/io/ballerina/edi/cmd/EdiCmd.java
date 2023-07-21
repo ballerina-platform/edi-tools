@@ -20,7 +20,8 @@ import java.nio.file.StandardCopyOption;
                 "Service.",
         subcommands = {
             CodegenCmd.class,
-            LibgenCmd.class
+            LibgenCmd.class,
+            EslCmd.class
         }
 )
 public class EdiCmd implements BLauncherCmd {
@@ -70,6 +71,7 @@ public class EdiCmd implements BLauncherCmd {
         stringBuilder.append("Ballerina EDI tools -\n");
         stringBuilder.append("Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>\n");
         stringBuilder.append("EDI library generation: bal edi libgen -O <org name> -l <library name> -s <EDI schema folder> -o <output folder>\n");
+        stringBuilder.append("ESL to Ballerina EDI schema conversion: bal edi convertESL -b <Segment definitions file path> -s <ESL schema file/folder> -o <output file/folder>\n");
     }
 
     @Override
