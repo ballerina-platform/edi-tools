@@ -1,0 +1,42 @@
+task prepareTests {
+    doLast {
+        file('resources').listFiles().each { sampleFile ->
+            if (sampleFile.name == 'common') {
+                return
+            }
+            println sampleFile.name
+            def sampleName = sampleFile.name
+            mkdir "modules/${sampleName}/tests"
+            exec {
+                commandLine 'java', '-jar', '../edi-tools/target/bin/editools.jar', 'codegen', "resources/${sampleName}/schema.json", "modules/${sampleName}/gen_code.bal"
+            }
+            copy {
+                from 'resources/common/codegen_test.bal'
+                into "modules/${sampleName}/tests"
+            }
+            def fileToReplace = file("modules/${sampleName}/tests/codegen_test.bal")
+            def replacedText = fileToReplace.text.replaceAll('<sample-name>', sampleName)
+            fileToReplace.write(replacedText)
+        }
+    }
+}
+
+// task prepareTests {
+//     doLast {
+//         files('resources').each { file ->
+//             if file.name == 'common' {
+//                 return
+//             }
+//             println file.name
+//             def sampleName = file.name
+//             mkdir ('modules/' + sampleName + '/tests')
+//             copy {
+//                 from 'resources/common/codegen_test.bal'
+//                 into to 'modules/' + sampleName + "/tests'
+//             }
+//             def file = file('modules/${sampleName}/tests/codegen_test.bal')
+//             def replacedText = file.text.replaceAll('<sample-name>', 'sample1')
+//             file.write(replacedText)
+//         }
+//     }
+// }

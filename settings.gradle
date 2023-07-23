@@ -24,6 +24,7 @@ include ':checkstyle'
 include 'edi-tools'
 include 'edi-cli'
 include 'edi-tools-package'
+include 'codegen-tests'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
 // project(':edi-tools').projectDir = file('edi-tools')
