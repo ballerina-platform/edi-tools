@@ -69,7 +69,7 @@ public function readEslSchema(json eslSchema, map<edi:EdiSegSchema> segmentDefs)
     rootSegmentGroup["count"] = 1;
     edi:EdiSegGroupSchema rootSegGroupSchema = check readSegmentGroup(rootSegmentGroup, segmentDefs);
     edi:EdiSchema ediSchema = {
-        name: "root",
+        name: check rootSegmentGroup.groupId,
         delimiters: {segment: "'", 'field: "+", component: ":"},
         segments: rootSegGroupSchema.segments,
         segmentDefinitions: segmentDefs

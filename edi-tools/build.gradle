@@ -111,6 +111,12 @@ task prepare {
     }
 }
 
+task generateCode {
+    doLast {
+        
+    }
+}
+
 task build {
     doLast {
         println "This needs to be built outside of gradle."

@@ -9,7 +9,7 @@ EDI tools provide the below set of command line tools to work with EDI files in 
 
 |                                   | Version               |
 |:---------------------------------:|:---------------------:|
-| Ballerina Language                | 2201.5.0              |
+| Ballerina Language                | 2201.7.0              |
 | Java Development Kit (JDK)        | 11                    |
 
 ## Code generation
@@ -56,7 +56,7 @@ ITM*T-46*28
 Ballerina records for the EDI schema in the `edi-schema.json` can be generated as follows (generated Ballerina records will be saved in `orderRecords.bal`):
 
 ```
-java -jar editools.jar codegen resources/edi-schema1.json modules/hmartOrder/orderRecords.bal
+bal edi codegen -s resources/edi-schema1.json -o modules/hmartOrder/orderRecords.bal
 ```
 
 Generated Ballerina records for the above schema are shown below:
@@ -116,7 +116,7 @@ Usually, organizations have to work with many EDI formats, and integration devel
 The below command can be used to generate EDI libraries:
 
 ```
-java -jar editools.jar libgen <org name> <library name> <EDI mappings folder> <output folder>
+bal edi libgen -O <org name> -n <library name> -s <EDI schema folder> -o <output folder>
 ```
 
 Ballerina library project will be generated in the output folder. This library can be built and published by issuing "bal pack" and "bal push" commands from the output folder. Then the generated library can be imported into any Ballerina project and generated utility functions of the library can be invoked to parse EDI messages into Ballerin records. 
@@ -133,7 +133,7 @@ For example, let's assume that an organization named "CityMart" needs to work wi
 ````
 Then the libgen command can be used to generate a Ballerina library as shown below:
 ````
-java -jar editools.jar libgen citymart porder CityMart/schemas CityMart/lib
+bal edi libgen -O citymart -n porder -s CityMart/schemas -o CityMart/lib
 ````
 The generated Ballerina library will look like below:
 ````bash
@@ -329,5 +329,3 @@ Above REST call will return a JSON response as below:
     }
 }
 ```
-
-
