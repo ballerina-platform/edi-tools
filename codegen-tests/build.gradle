@@ -6,6 +6,7 @@ task prepareTests {
             }
             println sampleFile.name
             def sampleName = sampleFile.name
+            delete "modules/${sampleName}"
             mkdir "modules/${sampleName}/tests"
             exec {
                 commandLine 'java', '-jar', '../edi-tools/target/bin/editools.jar', 'codegen', "resources/${sampleName}/schema.json", "modules/${sampleName}/gen_code.bal"

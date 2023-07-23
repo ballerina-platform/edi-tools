@@ -6,6 +6,6 @@ function testGenerateCode() returns error? {
     string ediText = check io:fileReadString("resources/<sample-name>/message.edi");
     anydata|error generatedRecord = fromEdiString(ediText);
     if generatedRecord is error {
-        test:assertFail("Generated record is not compatible with the schema.");
+        test:assertFail("Generated code is not compatible with the schema. " + generatedRecord.message());
     }
 }

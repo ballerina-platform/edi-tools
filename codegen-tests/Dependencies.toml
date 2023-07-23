@@ -136,6 +136,7 @@ dependencies = [
 ]
 modules = [
 	{org = "chath", packageName = "codegen_tests", moduleName = "codegen_tests"},
+	{org = "chath", packageName = "codegen_tests", moduleName = "codegen_tests.d96aORDERS"},
 	{org = "chath", packageName = "codegen_tests", moduleName = "codegen_tests.sample2"}
 ]
 
