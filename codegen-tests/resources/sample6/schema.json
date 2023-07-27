@@ -43,7 +43,7 @@
                         {"tag" : "code", "required" : true}, 
                         {"tag": "supplierCode"}, 
                         {"tag": "promotionCode"},
-                        {"tag": "address", "dataType": "composite", "components": [{"tag": "street_name"}, {"tag": "city"}]}
+                        {"tag": "address", "dataType": "composite", "components": [{"tag": "street"}, {"tag": "city"}]}
                     ]
                 }
             ]

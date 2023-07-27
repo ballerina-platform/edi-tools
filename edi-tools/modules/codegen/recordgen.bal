@@ -91,6 +91,27 @@ function generateRecordForSegment(edi:EdiSegSchema segmap, GenContext context) r
 }
 
 function generateRecordForComposite(edi:EdiFieldSchema emap, GenContext context) returns BalRecord {
+    BalRecord newRec = new (emap.tag);
+    foreach edi:EdiComponentSchema submap in emap.components {
+        BalType? balType = ediToBalTypes[submap.dataType];
+        if balType is BalType {
+            newRec.addField(balType, submap.tag, false, !submap.required);
+        }
+    }
+    int? num = context.typeNumber[emap.tag];
+    if num is int {
+        foreach int i in 1...num {
+            string index = i == 1 ? "" : i.toString();
+            string cTypeName = startWithUppercase(string `${emap.tag}${index}_GType`);
+            BalRecord? crec = context.typeRecords[cTypeName];
+            if crec is BalRecord {
+                newRec.name = cTypeName;
+                if newRec.isEqual(crec) {
+                    return crec;
+                }
+            }
+        }
+    }
     string cTypeName = generateTypeName(emap.tag, context);
     BalRecord crec = new (cTypeName);
     foreach edi:EdiComponentSchema submap in emap.components {
@@ -159,6 +180,29 @@ public class BalRecord {
         }
         return recString;
     }
+
+    function isEqual(BalRecord other) returns boolean {
+        if self.name != other.name {
+            return false;
+        }
+        if self.publicRecord != other.publicRecord {
+            return false;
+        }
+        if self.closed != other.closed {
+            return false;
+        }
+        if self.fields.length() != other.fields.length() {
+            return false;
+        }
+        foreach int i in 0...self.fields.length() - 1 {
+            BalField f1 = self.fields[i];    
+            BalField f2 = other.fields[i];
+            if !f1.isEqual(f2) {
+                return false;
+            }    
+        }
+        return true;
+    }
 }
 
 class BalField {
@@ -174,6 +218,20 @@ class BalField {
         self.defaultValue = defaultValue;
         self.array = array;
         self.optional = optional;
+    }
+
+    function isEqual(BalField other) returns boolean {
+        if self.btype is BalRecord {
+            return false;
+        }
+        if  other.btype is BalRecord {
+            return false;
+        }
+        return self.name == other.name && 
+            compareBalTypes(self.btype, other.btype) && 
+            self.array == other.array && 
+            self.defaultValue == other.defaultValue &&
+            self.optional == other.optional;
     }
 
     function toString(boolean... anonymous) returns string {
@@ -202,4 +260,14 @@ public type BalType BalBasicType|BalRecord;
 
 public enum BalBasicType {
     BSTRING = "string", BINT = "int", BFLOAT = "float", BBOOLEAN = "boolean"
+}
+
+function compareBalTypes(BalType t1, BalType t2) returns boolean {
+    if t1 is BalRecord && t2 is BalRecord {
+        return t1.isEqual(t2);
+    }
+    if t1 is BalBasicType && t2 is BalBasicType {
+        return t1 == t2;
+    }
+    return false;
 }

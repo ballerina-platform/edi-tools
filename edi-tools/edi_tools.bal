@@ -4,6 +4,12 @@ import ballerina/file;
 import editools.esl;
 import editools.codegen;
 
+// public function main() returns error? {
+//     string spath = "/home/chathura/projects/edi/code/edi-tools/codegen-tests/resources/sample6/schema.json";
+//     string opath = "/home/chathura/projects/edi/code/edi-tools/codegen-tests/modules/sample6/gen.bal";
+//     check main2(["codegen", spath, opath]);
+// }
+
 public function main(string[] args) returns error? {
 
     string usage = string `Ballerina EDI tools -
