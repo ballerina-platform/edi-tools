@@ -57,6 +57,7 @@ function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema
     xml segElement = check getUnitElement(segmentName, x12xsd);
     string[] nameParts = regex:split(segmentName, "_");
     edi:EdiSegSchema segSchema = {code: nameParts[0], tag: nameParts[1]};
+    segSchema.fields.push({tag: "code", required: true});
     xml fieldElements = segElement/<xs:complexType>/<xs:sequence>/<xs:element>;
     foreach xml fieldElement in fieldElements {
         string|error fieldName = fieldElement.name;
