@@ -5,12 +5,12 @@
 
 [ballerina]
 dependencies-toml-version = "2"
-distribution-version = "2201.7.0"
+distribution-version = "2201.7.2"
 
 [[package]]
 org = "b2btools"
 name = "editoolspackage"
-version = "0.6.7"
+version = "0.6.8"
 dependencies = [
 	{org = "ballerina", name = "io"}
 ]
