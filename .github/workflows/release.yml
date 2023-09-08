@@ -1,4 +1,4 @@
-name: Deployment
+name: Release
 
 on:
     workflow_dispatch:
@@ -33,7 +33,7 @@ jobs:
                   ./gradlew prepare
 
             - name: Build edi-tools project as an executable jar using Ballerina
-              uses: ballerina-platform/ballerina-action/@2201.3.1
+              uses: ballerina-platform/ballerina-action/@2201.7.0
               with:
                   args: build ./edi-tools
               env:
@@ -44,14 +44,14 @@ jobs:
                 ./gradlew clean build
 
             - name: Build the final EDI tools package using Ballerina
-              uses: ballerina-platform/ballerina-action/@2201.3.1
+              uses: ballerina-platform/ballerina-action/@2201.7.0
               with:
                   args: pack ./edi-tools-package
               env:
                   JAVA_HOME: /usr/lib/jvm/default-jvm
 
             - name: Ballerina Push
-              uses: ballerina-platform/ballerina-action/@2201.3.1
+              uses: ballerina-platform/ballerina-action/@2201.7.0
               with:
                   args: push
               env:
