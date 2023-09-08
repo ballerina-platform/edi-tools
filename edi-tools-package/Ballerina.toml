@@ -1,5 +1,5 @@
 [package]
-org = "b2btools"
+org = "ballerina"
 name = "editoolspackage"
 version = "0.6.8"
 authors = ["Ballerina"]
