@@ -1,0 +1,18 @@
+{
+    "name": "SimpleOrder",
+    "delimiters" : {"segment" : "~", "field" : "*", "component": ":", "repetition": "^"},
+    "preserveEmptyFields" : false,
+    "segments" : [
+        {
+            "code": "HDR",
+            "tag" : "header",
+            "fields" : [{"tag": "code", "required" : true}, {"tag" : "orderId"}, {"tag" : "organization"}, {"tag" : "date"}]
+        },
+        {
+            "code": "ITM",
+            "tag" : "items",
+            "maxOccurances" : -1,
+            "fields" : [{"tag": "code", "required" : true}, {"tag" : "item"}, {"tag" : "quantity", "dataType" : "int"}]
+        }
+    ]
+}

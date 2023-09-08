@@ -1,11 +1,30 @@
+// Copyright (c) 2023 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
 import ballerina/io;
+import editools.x12xsd;
+import ballerina/file;
+import editools.esl;
 import editools.codegen;
 
 public function main(string[] args) returns error? {
 
     string usage = string `Ballerina EDI tools -
-        Ballerina code generation for edi schema: java -jar edi.jar codegen <schema json path> <output bal file path>
-        EDI library generation: java -jar edi.jar libgen <org name> <library name> <EDI schema folder> <output folder>`;
+        Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>
+        EDI library generation: bal edi libgen -O <org name> -n <library name> -s <EDI schema folder> -o <output folder>`;
 
     if args.length() == 0 {
         io:println(usage);
@@ -20,6 +39,7 @@ public function main(string[] args) returns error? {
         }
         json mappingJson = check io:fileReadJson(args[1].trim());
         check codegen:generateCodeForSchema(mappingJson, args[2].trim());
+
     } else if mode == "libgen" {
         if !(args.length() == 5 || args.length() == 6) {
             io:println(usage);
@@ -33,6 +53,33 @@ public function main(string[] args) returns error? {
             versioned: args.length() == 6 ? true : false
         };
         check codegen:generateLibrary(libdata);
+
+    } else if mode == "convertESL" {
+        string eslPath = args[1].trim();
+        string basedefPath = args[2].trim();
+        string outputPath = args[3].trim();
+        check esl:convertEsl(eslPath, basedefPath, outputPath);
+
+    } else if mode == "convertX12Schema" {
+        string inputPath = args[1].trim();
+        string outputPath = args[2].trim();
+        boolean inputDir = check file:test(inputPath, file:IS_DIR);
+        boolean outputDir = check file:test(outputPath, file:IS_DIR);
+
+        if inputDir && outputDir {
+            file:MetaData[] inFiles = check file:readDir(inputPath);
+            foreach file:MetaData inFile in inFiles {
+                string ediName = check file:basename(inFile.absPath);
+                if ediName.endsWith(".xsd") {
+                    ediName = ediName.substring(0, ediName.length() - ".xsd".length());
+                }
+                check x12xsd:convertFromX12XsdAndWrite(inFile.absPath, check file:joinPath(outputPath, ediName + ".json"));
+            }
+        } else if !inputDir && !outputDir {
+            check x12xsd:convertFromX12XsdAndWrite(inputPath, outputPath);
+        } else {
+            io:println("Both input and output should be either directories or files");
+        }
     } else {
         io:println(usage);
     }

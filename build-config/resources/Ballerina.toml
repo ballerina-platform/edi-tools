@@ -1,0 +1,8 @@
+[package]
+org = "ballerina"
+name = "editools"
+version = "@toml.version@"
+authors = ["Ballerina"]
+keywords = ["edi"]
+license = ["Apache-2.0"]
+distribution = "2201.7.0"

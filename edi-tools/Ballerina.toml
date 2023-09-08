@@ -1,14 +1,8 @@
 [package]
 org = "ballerina"
 name = "editools"
-version = "1.0.0"
-distribution = "2201.5.0"
-
-[build-options]
-observabilityIncluded = true
-
-[[dependency]]
-org = "ballerina"
-name= "edi"
-version= "1.0.0"
-repository= "local"
+version = "0.6.8"
+authors = ["Ballerina"]
+keywords = ["edi"]
+license = ["Apache-2.0"]
+distribution = "2201.7.0"
