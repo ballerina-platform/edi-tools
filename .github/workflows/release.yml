@@ -42,6 +42,9 @@ jobs:
             - name: Build with Gradle
               run: |
                 ./gradlew clean build
+              env:
+                  packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
+                  packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
 
             - name: Build the final EDI tools package using Ballerina
               uses: ballerina-platform/ballerina-action/@2201.7.0
