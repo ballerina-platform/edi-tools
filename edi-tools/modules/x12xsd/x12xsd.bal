@@ -31,10 +31,13 @@ public function convertFromX12XsdAndWrite(string inPath, string outPath) returns
 public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
     xml elements = x12xsd/<xs:element>;
     xml root = elements[0];
-    string|error rootName = root.name;
-    if rootName is error {
-        return error("Root element name not found. " + root.toString(), rootName);
+    string rootName = "";
+    do {
+        rootName = check root.name;
+    } on fail error e {
+        return error("Root element name not found. " + root.toString(), e);
     }
+    rootName = getBalCompatibleName(rootName);
     edi:EdiSchema ediSchema = {delimiters: {segment: "~", 'field: "*", component: ":"}, name: rootName, tag: rootName};
     if !rootName.startsWith("X12_") {
         return error("Invalid X12 schema");
@@ -46,10 +49,13 @@ public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
 
 function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema) returns edi:EdiSegGroupSchema|error {
     xml elements = segmentGroup/<xs:complexType>/<xs:sequence>/<xs:element>;
-    string|error tag = segmentGroup.name;
-    if tag is error {
-        return error("Segment group name not found. " + segmentGroup.toString(), tag);
+    string tag = "";
+    do {
+        tag = check segmentGroup.name;
+    } on fail error e {
+        return error("Segment group name not found. " + segmentGroup.toString(), e);
     }
+    tag = getBalCompatibleName(tag);
     edi:EdiSegGroupSchema segGroupSchema = {tag};
     foreach xml element in elements {
         string ref = check element.ref;
@@ -72,14 +78,18 @@ function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema)
 function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema|error {
     xml segElement = check getUnitElement(segmentName, x12xsd);
     string[] nameParts = regex:split(segmentName, "_");
-    edi:EdiSegSchema segSchema = {code: nameParts[0], tag: nameParts[1]};
+    edi:EdiSegSchema segSchema = 
+        {code: getBalCompatibleName(nameParts[0]), tag: getBalCompatibleName(nameParts[1])};
     segSchema.fields.push({tag: "code", required: true});
     xml fieldElements = segElement/<xs:complexType>/<xs:sequence>/<xs:element>;
     foreach xml fieldElement in fieldElements {
-        string|error fieldName = fieldElement.name;
-        if fieldName is error {
-            return error(string `Field name not found. Segment: ${segmentName}, Field: ${fieldElement.toString()}`, fieldName);
+        string fieldName = "";
+        do {
+            fieldName = check fieldElement.name;
+        } on fail error e {
+            return error(string `Field name not found. Segment: ${segmentName}, Field: ${fieldElement.toString()}`, e);
         }
+        fieldName = getBalCompatibleName(fieldName);
         edi:EdiFieldSchema fieldSchema = {tag: fieldName, required: true};
         string|error minOccurs = fieldElement.minOccurs;
         if (minOccurs is string) {
@@ -112,10 +122,13 @@ function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema
 function convertCompositeField(edi:EdiFieldSchema fieldSchema, xml compositeElements, string segmentName, string fieldName) returns error? {
     fieldSchema.dataType = edi:COMPOSITE;
     foreach xml compositeElement in compositeElements {
-        string|error compositeFieldName = compositeElement.name;
-        if compositeFieldName is error {
-            return error(string `Composite field name not found. Segment: ${segmentName}, Field: ${fieldName}, Composite field: ${compositeElement.toString()}`, compositeFieldName);
+        string compositeFieldName = "";
+        do {
+            compositeFieldName = check compositeElement.name;
+        } on fail error e {
+            return error(string `Composite field name not found. Segment: ${segmentName}, Field: ${fieldName}, Composite field: ${compositeElement.toString()}`, e);
         }
+        compositeFieldName = getBalCompatibleName(compositeFieldName);
         edi:EdiComponentSchema compositeFieldSchema = {tag: compositeFieldName, required: true};
         string|error compositeMinOccurs = compositeElement.minOccurs;
         if compositeMinOccurs is string {
@@ -169,4 +182,13 @@ function getUnitElement(string name, xml x12xsd) returns xml|error {
         return error("EDI segment/segment group not found in the input schema. Unit name: " + name);
     }
     return unitElement;
+}
+
+public function getBalCompatibleName(string rawName) returns string {
+    string name = rawName.trim();
+    name = regex:replaceAll(name, "[^a-zA-Z1-9_]", "_");
+    if !regex:matches(name, "^[a-zA-Z].*") {
+        name = "A_" + name;
+    }
+    return name;
 }
