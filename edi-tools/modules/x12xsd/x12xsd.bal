@@ -34,7 +34,7 @@ public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
     string rootName = "";
     do {
         rootName = check root.name;
-    } on fail var e {
+    } on fail error e {
         return error("Root element name not found. " + root.toString(), e);
     }
     rootName = getBalCompatibleName(rootName);
@@ -52,7 +52,7 @@ function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema)
     string tag = "";
     do {
         tag = check segmentGroup.name;
-    } on fail var e {
+    } on fail error e {
         return error("Segment group name not found. " + segmentGroup.toString(), e);
     }
     tag = getBalCompatibleName(tag);
@@ -86,7 +86,7 @@ function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema
         string fieldName = "";
         do {
             fieldName = check fieldElement.name;
-        } on fail var e {
+        } on fail error e {
             return error(string `Field name not found. Segment: ${segmentName}, Field: ${fieldElement.toString()}`, e);
         }
         fieldName = getBalCompatibleName(fieldName);
@@ -125,7 +125,7 @@ function convertCompositeField(edi:EdiFieldSchema fieldSchema, xml compositeElem
         string compositeFieldName = "";
         do {
             compositeFieldName = check compositeElement.name;
-        } on fail var e {
+        } on fail error e {
             return error(string `Composite field name not found. Segment: ${segmentName}, Field: ${fieldName}, Composite field: ${compositeElement.toString()}`, e);
         }
         compositeFieldName = getBalCompatibleName(compositeFieldName);
