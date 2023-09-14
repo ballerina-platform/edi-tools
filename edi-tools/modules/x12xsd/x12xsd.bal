@@ -186,7 +186,7 @@ function getUnitElement(string name, xml x12xsd) returns xml|error {
 
 public function getBalCompatibleName(string rawName) returns string {
     string name = rawName.trim();
-    name = regex:replaceAll(name, "[^a-zA-Z1-9_]", "_");
+    name = regex:replaceAll(name, "[^a-zA-Z0-9_]", "_");
     if !regex:matches(name, "^[a-zA-Z].*") {
         name = "A_" + name;
     }

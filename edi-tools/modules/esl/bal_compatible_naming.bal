@@ -99,7 +99,7 @@ function fixComposite(edi:EdiFieldSchema fieldSchema) returns error? {
 
 public function getBalCompatibleName(string rawName) returns string {
     string name = rawName.trim();
-    name = regex:replaceAll(name, "[^a-zA-Z1-9_]", "_");
+    name = regex:replaceAll(name, "[^a-zA-Z0-9_]", "_");
     if !regex:matches(name, "^[a-zA-Z].*") {
         name = "A_" + name;
     }
