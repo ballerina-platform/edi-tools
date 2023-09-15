@@ -18,9 +18,10 @@ import ballerina/io;
 import editools.x12xsd;
 import ballerina/file;
 import editools.esl;
+import ballerina/log;
 import editools.codegen;
 
-public function main(string[] args) returns error? {
+public function main(string[] args) {
 
     string usage = string `Ballerina EDI tools -
         Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>
@@ -37,8 +38,15 @@ public function main(string[] args) returns error? {
             io:println(usage);
             return;
         }
-        json mappingJson = check io:fileReadJson(args[1].trim());
-        check codegen:generateCodeForSchema(mappingJson, args[2].trim());
+        json|error mappingJson = io:fileReadJson(args[1].trim());
+        if mappingJson is error {
+            log:printError("Error reading schema json file: " + mappingJson.message());
+            return;
+        }
+        error? e = codegen:generateCodeForSchema(mappingJson, args[2].trim());
+        if e is error {
+            log:printError("Error generating code: " + e.message());
+        }
 
     } else if mode == "libgen" {
         if !(args.length() == 5 || args.length() == 6) {
@@ -52,33 +60,43 @@ public function main(string[] args) returns error? {
             outputPath: args[4],
             versioned: args.length() == 6 ? true : false
         };
-        check codegen:generateLibrary(libdata);
+        error? e = codegen:generateLibrary(libdata);
+        if e is error {
+            log:printError("Error generating library: " + e.message());
+        }
 
     } else if mode == "convertESL" {
         string eslPath = args[1].trim();
         string basedefPath = args[2].trim();
         string outputPath = args[3].trim();
-        check esl:convertEsl(eslPath, basedefPath, outputPath);
+        error? e = esl:convertEsl(eslPath, basedefPath, outputPath);
+        if e is error {
+            log:printError("Error converting ESL: " + e.message());
+        }
 
     } else if mode == "convertX12Schema" {
-        string inputPath = args[1].trim();
-        string outputPath = args[2].trim();
-        boolean inputDir = check file:test(inputPath, file:IS_DIR);
-        boolean outputDir = check file:test(outputPath, file:IS_DIR);
+        do {
+            string inputPath = args[1].trim();
+            string outputPath = args[2].trim();
+            boolean inputDir = check file:test(inputPath, file:IS_DIR);
+            boolean outputDir = check file:test(outputPath, file:IS_DIR);
 
-        if inputDir && outputDir {
-            file:MetaData[] inFiles = check file:readDir(inputPath);
-            foreach file:MetaData inFile in inFiles {
-                string ediName = check file:basename(inFile.absPath);
-                if ediName.endsWith(".xsd") {
-                    ediName = ediName.substring(0, ediName.length() - ".xsd".length());
+            if inputDir && outputDir {
+                file:MetaData[] inFiles = check file:readDir(inputPath);
+                foreach file:MetaData inFile in inFiles {
+                    string ediName = check file:basename(inFile.absPath);
+                    if ediName.endsWith(".xsd") {
+                        ediName = ediName.substring(0, ediName.length() - ".xsd".length());
+                    }
+                    check x12xsd:convertFromX12XsdAndWrite(inFile.absPath, check file:joinPath(outputPath, ediName + ".json"));
                 }
-                check x12xsd:convertFromX12XsdAndWrite(inFile.absPath, check file:joinPath(outputPath, ediName + ".json"));
+            } else if !inputDir && !outputDir {
+                check x12xsd:convertFromX12XsdAndWrite(inputPath, outputPath);
+            } else {
+                log:printError("Both input and output should be either directories or files");
             }
-        } else if !inputDir && !outputDir {
-            check x12xsd:convertFromX12XsdAndWrite(inputPath, outputPath);
-        } else {
-            io:println("Both input and output should be either directories or files");
+        } on fail error e {
+            log:printError("Error converting X12 schema: " + e.message());
         }
     } else {
         io:println(usage);
