@@ -90,6 +90,7 @@ public class EdiCmd implements BLauncherCmd {
         stringBuilder.append("Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>\n");
         stringBuilder.append("EDI library generation: bal edi libgen -O <org name> -l <library name> -s <EDI schema folder> -o <output folder>\n");
         stringBuilder.append("ESL to Ballerina EDI schema conversion: bal edi convertESL -b <Segment definitions file path> -s <ESL schema file/folder> -o <output file/folder>\n");
+        stringBuilder.append("Ballerina X12 schema conversion: bal edi codegen [-H] [-c] -i <schema input path> -o <output json file/folder path> [-d] <segment details path>\n");
     }
 
     @Override
