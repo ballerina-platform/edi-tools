@@ -18,13 +18,23 @@ import ballerina/edi;
 import ballerina/regex;
 import ballerina/log;
 import ballerina/io;
+import ballerina/file;
 
 xmlns "http://www.w3.org/2001/XMLSchema" as xs;
 xmlns "http://xml.x12.org/isomorph" as x12;
 
-public function convertFromX12XsdAndWrite(string inPath, string outPath) returns error? {
+map<string> conditionalFeildsMap = {};
+
+public function convertFromX12XsdAndWrite(string inPath, string outPath, string segdetPath="") returns error? {
+    loadConditionalFieldsMap(segdetPath);
     xml x12xsd = check io:fileReadXml(inPath);
     edi:EdiSchema ediSchema = check convertFromX12Xsd(x12xsd);
+    check io:fileWriteJson(outPath, ediSchema);
+}
+
+public function convertFromX12WithHeadersAndWrite(string inPath, string outPath, string segdetPath="") returns error? {
+    loadConditionalFieldsMap(segdetPath);
+    edi:EdiSchema ediSchema = check convertFromX12WithHeaders(inPath);
     check io:fileWriteJson(outPath, ediSchema);
 }
 
@@ -47,7 +57,28 @@ public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
     return ediSchema;
 }
 
-function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema) returns edi:EdiSegGroupSchema|error {
+function convertFromX12WithHeaders(string inPath) returns edi:EdiSchema|error {
+    string interchangePath = inPath + "/Interchange.xsd";
+    xml interchangeXsd = check io:fileReadXml(interchangePath);
+    xml elements = interchangeXsd/<xs:element>;
+    xml root = elements[0];
+    string rootName = "";
+    do {
+        rootName = check root.name;
+    } on fail error e {
+        return error("Root element name not found. " + root.toString(), e);
+    }
+    rootName = getBalCompatibleName(rootName);
+    edi:EdiSchema ediSchema = {delimiters: {segment: "~", 'field: "*", component: ":"}, name: rootName, tag: rootName};
+    if !rootName.startsWith("X12_") {
+        return error("Invalid X12 schema");
+    }
+    edi:EdiSegGroupSchema rootSegGroupSchema = check convertSegmentGroup(root, interchangeXsd, ediSchema, inPath);
+    ediSchema.segments = rootSegGroupSchema.segments;
+    return ediSchema;
+}
+
+function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema, string dirPath = "") returns edi:EdiSegGroupSchema|error {
     xml elements = segmentGroup/<xs:complexType>/<xs:sequence>/<xs:element>;
     string tag = "";
     do {
@@ -59,7 +90,15 @@ function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema)
     edi:EdiSegGroupSchema segGroupSchema = {tag};
     foreach xml element in elements {
         string ref = check element.ref;
-        if ref.startsWith("Loop_") {
+        if(ref.startsWith("X12_")) {
+            schema.name = ref;
+            schema.tag = ref;
+            xml innerX12xsd = check readInnerX12xsd(x12xsd, dirPath);
+            xml rootElement = check validateAndGetRootEelement(innerX12xsd);
+            edi:EdiSegGroupSchema innerSegGroupSchema = check convertSegmentGroup(rootElement, innerX12xsd, schema, dirPath);
+            segGroupSchema.segments.push(innerSegGroupSchema);
+        }
+        else if ref.startsWith("Loop_") {
             xml segGroupElement = check getUnitElement(ref, x12xsd);
             edi:EdiSegGroupSchema childSegGroupSchema = check convertSegmentGroup(segGroupElement, x12xsd, schema);
             segGroupSchema.segments.push(childSegGroupSchema);
@@ -93,7 +132,13 @@ function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema
         edi:EdiFieldSchema fieldSchema = {tag: fieldName, required: true};
         string|error minOccurs = fieldElement.minOccurs;
         if (minOccurs is string) {
-            fieldSchema.required = minOccurs == "0" ? false : true;
+            fieldSchema.required = minOccurs != "0";
+        }
+        if conditionalFeildsMap.length() > 0 {
+            string[] nameSplit = regex:split( fieldName, "_");
+            if conditionalFeildsMap.hasKey(nameSplit[0]) {
+                fieldSchema.required = false;
+            }
         }
         string?|error fieldDataType = fieldElement/<xs:'annotation>/<xs:appinfo>/<x12:STD_Info>.DataType;
         if fieldDataType is error || fieldDataType == () {
@@ -132,7 +177,13 @@ function convertCompositeField(edi:EdiFieldSchema fieldSchema, xml compositeElem
         edi:EdiComponentSchema compositeFieldSchema = {tag: compositeFieldName, required: true};
         string|error compositeMinOccurs = compositeElement.minOccurs;
         if compositeMinOccurs is string {
-            compositeFieldSchema.required = compositeMinOccurs == "0" ? false : true;
+            compositeFieldSchema.required = compositeMinOccurs != "0";
+        }
+        if conditionalFeildsMap.length() > 0 {
+            string[] nameSplit = regex:split( compositeFieldName, "_");
+            if conditionalFeildsMap.hasKey(nameSplit[0]) {
+                compositeFieldSchema.required = false;
+            }
         }
         string?|error compositeDataType = compositeElement/<xs:'annotation>/<xs:appinfo>/<x12:STD_Info>.DataType;
         if compositeDataType is error || compositeDataType == () {
@@ -192,3 +243,47 @@ public function getBalCompatibleName(string rawName) returns string {
     }
     return name;
 }
+
+function readInnerX12xsd(xml x12xsd, string dirPath) returns xml|error {
+    xml include = x12xsd/<xs:include>;
+    string schemaLocation = check include.schemaLocation;
+    string schemaFilePath = dirPath + "/" + schemaLocation;
+    xml innerX12xsd = check io:fileReadXml(schemaFilePath);
+    return innerX12xsd;
+}
+
+function validateAndGetRootEelement(xml xsdFileContent) returns xml|error {
+    xml elements = xsdFileContent/<xs:element>;
+    xml root = elements[0];
+    do {
+        _ = check root.name;
+    } on fail error e {
+        return error("Root element name not found. " + root.toString(), e);
+    }
+    return root;
+}
+
+function loadConditionalFieldsMap(string segdetlPath) {
+    boolean|file:Error segdetlExisits = file:test(segdetlPath, file:EXISTS);
+    if segdetlPath == "" || segdetlExisits is file:Error || !segdetlExisits {
+        io:println("Segment details not found. This might affect the accuracy of the requried state of fields.");
+        return;
+    }
+    stream<string[], io:Error?>|io:Error csvStream = io:fileReadCsvAsStream(segdetlPath);
+    if(csvStream is io:Error) {
+        io:println("Error reading segment details. This might affect the accuracy of the requried state of fields.");
+        return;
+    }
+    map<string> fieldsMap = {};
+    io:Error? forEach = csvStream.forEach(function(string[] val) {
+        if (val[3] == "C") {
+            fieldsMap[val[0] + val[1]] = val[3];
+        }
+    });
+    if forEach is io:Error {
+        io:println("Error reading segment details. This might affect the accuracy of the requried state of fields.");
+        return;
+    }
+    io:println("Segment details loaded successfully from " + segdetlPath);
+    conditionalFeildsMap = fieldsMap;
+};

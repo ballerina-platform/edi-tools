@@ -76,24 +76,65 @@ public function main(string[] args) {
 
     } else if mode == "convertX12Schema" {
         do {
-            string inputPath = args[1].trim();
-            string outputPath = args[2].trim();
-            boolean inputDir = check file:test(inputPath, file:IS_DIR);
-            boolean outputDir = check file:test(outputPath, file:IS_DIR);
+            boolean headers = false;
+            boolean collection = false;
+            string[] x12args = args.slice(1);
+            if (x12args[0] == "H") {
+                headers = true;
+                _ = x12args.shift();
+            }
+            if (x12args[0] == "c") {
+                collection = true;
+                _ = x12args.shift();
+            }
+            string inputPath = x12args[0].trim();
+            string outputPath = x12args[1].trim();
+            string segDetlPath = x12args.length() > 2 ? x12args[2].trim() : "";
 
-            if inputDir && outputDir {
-                file:MetaData[] inFiles = check file:readDir(inputPath);
-                foreach file:MetaData inFile in inFiles {
-                    string ediName = check file:basename(inFile.absPath);
-                    if ediName.endsWith(".xsd") {
-                        ediName = ediName.substring(0, ediName.length() - ".xsd".length());
-                    }
-                    check x12xsd:convertFromX12XsdAndWrite(inFile.absPath, check file:joinPath(outputPath, ediName + ".json"));
+            boolean isInputDir = check file:test(inputPath, file:IS_DIR);
+            boolean isOutputDir = check file:test(outputPath, file:IS_DIR);
+
+            if (collection) {
+                if (!isInputDir || !isOutputDir) {
+                    io:println("In collection mode, both output and input should be a directories");
+                    return;
                 }
-            } else if !inputDir && !outputDir {
-                check x12xsd:convertFromX12XsdAndWrite(inputPath, outputPath);
+                file:MetaData[] inFiles = check file:readDir(inputPath);
+                if (headers) {
+                    foreach file:MetaData inFile in inFiles {
+                        if (inFile.dir) {
+                            string dirName = check file:basename(inFile.absPath);
+                            outputPath = isOutputDir ? check file:joinPath(outputPath, dirName + ".json") : outputPath;
+                            check x12xsd:convertFromX12WithHeadersAndWrite(inFile.absPath, outputPath, segDetlPath);
+                        }
+                    }
+                } else {
+                    foreach file:MetaData inFile in inFiles {
+                        string ediName = check file:basename(inFile.absPath);
+                        if (ediName.endsWith(".xsd")) {
+                            ediName = ediName.substring(0, ediName.length() - ".xsd".length());
+                        }
+                        check x12xsd:convertFromX12XsdAndWrite(inFile.absPath, check file:joinPath(outputPath, ediName + ".json"), segDetlPath);
+                    }
+                }
             } else {
-                log:printError("Both input and output should be either directories or files");
+                if (headers) {
+                    if (!isInputDir) {
+                        io:println("In header mode, input should be a directory containing header and message schema files");
+                        return;
+                    }
+                    if (isOutputDir) {
+                        string dirName = check file:basename(inputPath);
+                        outputPath = isOutputDir ? check file:joinPath(outputPath, dirName + ".json") : outputPath;
+                    }
+                    check x12xsd:convertFromX12WithHeadersAndWrite(inputPath, outputPath, segDetlPath);
+                } else {
+                    if (isInputDir || isOutputDir) {
+                        io:println("Collection mode or header mode not selected, both input and output should be files");
+                        return;
+                    }
+                    check x12xsd:convertFromX12XsdAndWrite(inputPath, outputPath, segDetlPath);
+                }
             }
         } on fail error e {
             log:printError("Error converting X12 schema: " + e.message());
