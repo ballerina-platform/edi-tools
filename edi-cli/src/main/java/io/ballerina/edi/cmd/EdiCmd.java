@@ -39,7 +39,8 @@ import java.nio.file.StandardCopyOption;
         subcommands = {
             CodegenCmd.class,
             LibgenCmd.class,
-            EslCmd.class
+            EslCmd.class,
+            ConvertX12Cmd.class
         }
 )
 public class EdiCmd implements BLauncherCmd {
