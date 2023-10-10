@@ -30,6 +30,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
+@CommandLine.Command(
+        name = "convertX12Schema",
+        description = "Converts X12 schema to JSON schema."
+)
 public class ConvertX12Cmd implements BLauncherCmd {
 
     private static final String CMD_NAME = "convertX12Schema";
