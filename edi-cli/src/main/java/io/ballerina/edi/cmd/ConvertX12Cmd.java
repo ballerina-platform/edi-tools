@@ -76,7 +76,7 @@ public class ConvertX12Cmd implements BLauncherCmd {
         }
         stringBuilder.append(inputPath).append("...");
         printStream.println(stringBuilder);
-        URL res = CodegenCmd.class.getClassLoader().getResource("editools.jar");
+        URL res = ConvertX12Cmd.class.getClassLoader().getResource("editools.jar");
         try {
             Path tempFile = Files.createTempFile(null, null);
             try (InputStream in = res.openStream()) {
