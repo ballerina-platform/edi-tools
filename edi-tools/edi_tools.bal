@@ -99,35 +99,19 @@ public function main(string[] args) {
                     io:println("In collection mode, both output and input should be a directories");
                     return;
                 }
-                file:MetaData[] inFiles = check file:readDir(inputPath);
-                if (headers) {
-                    foreach file:MetaData inFile in inFiles {
-                        if (inFile.dir) {
-                            string dirName = check file:basename(inFile.absPath);
-                            outputPath = isOutputDir ? check file:joinPath(outputPath, dirName + ".json") : outputPath;
-                            check x12xsd:convertFromX12WithHeadersAndWrite(inFile.absPath, outputPath, segDetlPath);
-                        }
-                    }
-                } else {
-                    foreach file:MetaData inFile in inFiles {
-                        string ediName = check file:basename(inFile.absPath);
-                        if (ediName.endsWith(".xsd")) {
-                            ediName = ediName.substring(0, ediName.length() - ".xsd".length());
-                        }
-                        check x12xsd:convertFromX12XsdAndWrite(inFile.absPath, check file:joinPath(outputPath, ediName + ".json"), segDetlPath);
-                    }
-                }
+                check x12xsd:convertFromX12CollectionAndWrite(inputPath, outputPath, headers, segDetlPath);
             } else {
                 if (headers) {
                     if (!isInputDir) {
                         io:println("In header mode, input should be a directory containing header and message schema files");
                         return;
                     }
+                    string outputPathGenerated = outputPath;
                     if (isOutputDir) {
                         string dirName = check file:basename(inputPath);
-                        outputPath = isOutputDir ? check file:joinPath(outputPath, dirName + ".json") : outputPath;
+                        outputPathGenerated = isOutputDir ? check file:joinPath(outputPath, dirName + ".json") : outputPath;
                     }
-                    check x12xsd:convertFromX12WithHeadersAndWrite(inputPath, outputPath, segDetlPath);
+                    check x12xsd:convertFromX12WithHeadersAndWrite(inputPath, outputPathGenerated, segDetlPath);
                 } else {
                     if (isInputDir || isOutputDir) {
                         io:println("Collection mode or header mode not selected, both input and output should be files");
