@@ -38,6 +38,32 @@ public function convertFromX12WithHeadersAndWrite(string inPath, string outPath,
     check io:fileWriteJson(outPath, ediSchema);
 }
 
+public function convertFromX12CollectionAndWrite(string inPath, string outPath, boolean withHeaders, string segdetPath = "") returns error? {
+    loadConditionalFieldsMap(segdetPath);
+    boolean isOutputDir = check file:test(outPath, file:IS_DIR);
+    file:MetaData[] inFiles = check file:readDir(inPath);
+    if withHeaders {
+        foreach file:MetaData inFile in inFiles {
+            if (inFile.dir) {
+                string dirName = check file:basename(inFile.absPath);
+                string outputPathGenerated = isOutputDir ? check file:joinPath(outPath, dirName + ".json") : outPath;
+                edi:EdiSchema ediSchema = check convertFromX12WithHeaders(inFile.absPath);
+                check io:fileWriteJson(outputPathGenerated, ediSchema);
+            }
+        }
+    } else {
+        foreach file:MetaData inFile in inFiles {
+            string ediName = check file:basename(inFile.absPath);
+            if (ediName.endsWith(".xsd")) {
+                ediName = ediName.substring(0, ediName.length() - ".xsd".length());
+            }
+            xml x12xsd = check io:fileReadXml(inFile.absPath);
+            edi:EdiSchema ediSchema = check convertFromX12Xsd(x12xsd);
+            check io:fileWriteJson(check file:joinPath(outPath, ediName + ".json"), ediSchema);
+        }
+    }
+}
+
 public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
     xml elements = x12xsd/<xs:element>;
     xml root = elements[0];
@@ -90,7 +116,7 @@ function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema,
     edi:EdiSegGroupSchema segGroupSchema = {tag};
     foreach xml element in elements {
         string ref = check element.ref;
-        if(ref.startsWith("X12_")) {
+        if ref.startsWith("X12_") {
             schema.name = ref;
             schema.tag = ref;
             xml innerX12xsd = check readInnerX12xsd(x12xsd, dirPath);
