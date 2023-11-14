@@ -69,6 +69,7 @@ public class LibgenCmd implements BLauncherCmd {
             }
             ProcessBuilder processBuilder = new ProcessBuilder(
                     "java", "-jar", tempFile.toAbsolutePath().toString(), "libgen", orgName, libName, schemaPath, outputPath);
+            processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
             java.io.InputStream is=process.getInputStream();
