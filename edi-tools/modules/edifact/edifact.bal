@@ -42,6 +42,7 @@ type Delimiters record {|
     string 'field = "+";
     string component = ":";
     string repetition = "^";
+    string decimalSeparator = ",";
 |};
 
 type SegmentDefintions map<SegmentDef>;
@@ -54,23 +55,21 @@ type EDISchema record {|
     SegmentDefintions segmentDefinitions;
 |};
 
-final string:RegExp msgTypeReg = re `<A HREF = "([^"]+)">([^<]+)</A>`;
-
+final http:Client edifactClient = check new ("https://service.unece.org/");
 readonly & string edifactApi = "";
 
+final string:RegExp msgTypeReg = re `<A HREF = "([^"]+)">([^<]+)</A>`;
+
 final regexp:RegExp segementTableReg = re `\d+\.\d+\.\d+  Segment table([\s\S]+)`;
-final regexp:RegExp singleSegment = re `<A HREF = "\.\./([^"]+)">([^<]+)</A>\s+(.*)\s+([CM])\s+(\d+)(\s+\+*\|*)`;
+
 final regexp:RegExp segmentGroupReg = re `Segment group (\d+)\s+------------------\s+([CM])\s+(\d+)(-+\+*\|*)`;
 final regexp:RegExp segmentGroupOrSegmentReg = re `<A HREF = "\.\./([^"]+)">([^<]+)</A>\s+(.*)\s+([CM])\s+(\d+)([\s-]+\+*\|*)|Segment group (\d+)\s+------------------\s+([CM])\s+(\d+)(-+\+*\|*)`;
 
-// final regexp:RegExp fieldAndComponentReg = re `(\d+)\s+<A HREF = "\.\./([^"]+)">([^<]+)</A>\s+(.*)\s+([CM])\s+(\d+.*)|       <A HREF = "\.\./([^"]+)">([^<]+)</A>\s+(.*)\s+([CM])`;
 final regexp:RegExp fieldAndComponentReg = re `(\d+)\s+<A HREF = "\.\./([^"]+)">([^<]+)</A>\s+(.*)\s+([CM])\s+(\d+.*)|       <A HREF = "\.\./([^"]+)">([^<]+)</A>\s+([A-Za-z-\n\s]*)\s+([CM])`;
 final regexp:RegExp fieldReg = re `(\d+)\s+<A HREF = "\.\./([^"]+)">([^<]+)</A>\s+(.*)\s+([CM])\s+(\d+.*)`;
 
 final regexp:RegExp componentNameReg = re `<H3>[|*]?\s+(\d+)\s+([^<]+)\s+\[[A-Za-z]+\]?\s*</H3>`;
 final regexp:RegExp componentTypeReg = re `Repr:(.*)`;
-
-final http:Client edifactClient = check new ("https://service.unece.org/");
 
 public function convertEdifactToEdi(string version, string dir, string? messageType = ()) returns error? {
     edifactApi = "trade/untdid/" + version + "/";
@@ -91,11 +90,9 @@ public function convertEdifactToEdi(string version, string dir, string? messageT
         }
         string code = codeMatch.substring();
         if messageType is () {
-            // convert all messages
             check genEdiSchema(msgTypesUrl + urlMatch.substring(), code, dir, allSegmentDefinitions);
         } else {
             if code == messageType {
-                // convert only the given message
                 check genEdiSchema(msgTypesUrl + urlMatch.substring(), code, dir, allSegmentDefinitions);
                 return;
             }
@@ -125,7 +122,8 @@ function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinition
             segment: "'",
             'field: "+",
             component: ":",
-            repetition: "*"
+            repetition: "*",
+            decimalSeparator: ","
         },
         segments: [],
         segmentDefinitions: {}
@@ -153,36 +151,36 @@ function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinition
 
 function genSegmentsSchema(regexp:Groups[] segmentsMatch, map<SegmentDef> allSegmentDefinitions, (Segement|SegmentGroup)[] segments, SegmentDefintions segmentDefintions) returns error? {
     int currentDepth = 0;
-    SegmentGroup[] segmentGroupsSequ = [];
+    SegmentGroup[] segmentGroupsSeq = [];
     SegmentGroup? currentGroup = ();
     foreach var segmentMatch in segmentsMatch {
         if segmentGroupReg.isFullMatch(segmentMatch[0].substring()) {
             var [segmentGroup, depth] = check genSegmentGroupSchema(segmentMatch, segments);
             if depth == 0 {
-                segmentGroupsSequ = [segmentGroup];
+                segmentGroupsSeq = [segmentGroup];
                 segments.push(segmentGroup);
                 currentDepth = 0;
             } else if currentDepth == depth {
-                _ = segmentGroupsSequ.pop();
-                segmentGroupsSequ[segmentGroupsSequ.length() - 1].segments.push(segmentGroup);
-                segmentGroupsSequ.push(segmentGroup);
+                _ = segmentGroupsSeq.pop();
+                segmentGroupsSeq[segmentGroupsSeq.length() - 1].segments.push(segmentGroup);
+                segmentGroupsSeq.push(segmentGroup);
             } else if currentDepth < depth {
-                segmentGroupsSequ[segmentGroupsSequ.length() - 1].segments.push(segmentGroup);
-                segmentGroupsSequ.push(segmentGroup);
+                segmentGroupsSeq[segmentGroupsSeq.length() - 1].segments.push(segmentGroup);
+                segmentGroupsSeq.push(segmentGroup);
                 currentDepth = depth;
             } else {
                 int depthDiff = currentDepth - depth;
                 foreach int i in 0 ..< depthDiff {
-                    _ = segmentGroupsSequ.pop();
+                    _ = segmentGroupsSeq.pop();
                     currentDepth = currentDepth - 1;
                 }
-                _ = segmentGroupsSequ.pop();
-                segmentGroupsSequ[segmentGroupsSequ.length() - 1].segments.push(segmentGroup);
-                segmentGroupsSequ.push(segmentGroup);
+                _ = segmentGroupsSeq.pop();
+                segmentGroupsSeq[segmentGroupsSeq.length() - 1].segments.push(segmentGroup);
+                segmentGroupsSeq.push(segmentGroup);
             }
         } else {
-            if segmentGroupsSequ.length() > 0 {
-                currentGroup = segmentGroupsSequ[segmentGroupsSequ.length() - 1];
+            if segmentGroupsSeq.length() > 0 {
+                currentGroup = segmentGroupsSeq[segmentGroupsSeq.length() - 1];
                 regexp:Span? rest = segmentMatch[6];
                 if rest !is () && rest.substring().trim() == "" {
                     currentGroup = ();
@@ -213,9 +211,6 @@ function genSegmentGroupSchema(regexp:Groups segmentGroupMatch, (Segement|Segmen
 }
 
 function genSementSchema(regexp:Groups segmentMatch, map<SegmentDef> allSegmentDefinitions, SegmentGroup? currentGroup, (Segement|SegmentGroup)[] segments, SegmentDefintions segmentDefintions) returns error? {
-    if segmentMatch.length() != 7 {
-        return error("Segment not found");
-    }
     regexp:Span? url = segmentMatch[1];
     regexp:Span? codeMatch = segmentMatch[2];
     regexp:Span? descriptionMatch = segmentMatch[3];
@@ -273,7 +268,6 @@ function genSementSchema(regexp:Groups segmentMatch, map<SegmentDef> allSegmentD
 function getSegmentDef(string segmentPage, string code, string tag) returns SegmentDef|error {
     regexp:Groups[] fieldGroups = fieldAndComponentReg.findAllGroups(segmentPage);
     FieldDef[] fields = [{tag: "code", required: true}];
-    log:printInfo("Generating segment definition for " + code);
     check addFields(fields, fieldGroups);
     return {code, tag, fields};
 }
@@ -307,10 +301,6 @@ function getComponent(regexp:Groups fieldGroup, string[] componentNames) returns
     }
     // TODO: if 400, use matches to parse data.
     string componentPage = check componentPageRes.getTextPayload();
-    // TODO: Remove this
-    if componentTypeReg.findAllGroups(componentPage).length() == 0 {
-        log:printInfo("Generating component definition for " + edifactApi + urlMatch.substring().trim());
-    }
     regexp:Groups typeGroups = componentTypeReg.findAllGroups(componentPage)[0];
     regexp:Span? typeMatch = typeGroups[1];
     if typeMatch is () {
@@ -330,7 +320,6 @@ function getComponent(regexp:Groups fieldGroup, string[] componentNames) returns
 }
 
 function getField(regexp:Groups fieldGroup, string[] fieldNames) returns FieldDef|error {
-    // TODO: Do some validation
     regexp:Span? tagMatch = fieldGroup[4];
     regexp:Span? statusMatch = fieldGroup[5];
     regexp:Span? occuranceAndTypeMatch = fieldGroup[6];

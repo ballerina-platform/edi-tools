@@ -46,11 +46,8 @@ public class ConvertEdifactCmd implements BLauncherCmd {
             try (InputStream in = res.openStream()) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
-            if (type == null) {
-                type = "";
-            }
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java", "-jar", tempFile.toAbsolutePath().toString(), CMD_NAME, version, type, dir);
+                    "java", "-jar", tempFile.toAbsolutePath().toString(), CMD_NAME, version, type == null ? "" : type, dir);
             processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
