@@ -141,8 +141,8 @@ function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema,
 
 function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema|error {
     xml segElement = check getUnitElement(segmentName, x12xsd);
-    string:RegExp r = re `_`;
-    string[] nameParts = r.split(segmentName);
+    string:RegExp underscorePlaceholder = re `_`;
+    string[] nameParts = underscorePlaceholder.split(segmentName);
     edi:EdiSegSchema segSchema =
         {code: getBalCompatibleName(nameParts[0]), tag: getBalCompatibleName(nameParts[1])};
     segSchema.fields.push({tag: "code", required: true});
@@ -161,7 +161,7 @@ function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema
             fieldSchema.required = minOccurs != "0";
         }
         if conditionalFeildsMap.length() > 0 {
-            string[] nameSplit = r.split(fieldName);
+            string[] nameSplit = underscorePlaceholder.split(fieldName);
             if conditionalFeildsMap.hasKey(nameSplit[0]) {
                 fieldSchema.required = false;
             }
@@ -206,8 +206,8 @@ function convertCompositeField(edi:EdiFieldSchema fieldSchema, xml compositeElem
             compositeFieldSchema.required = compositeMinOccurs != "0";
         }
         if conditionalFeildsMap.length() > 0 {
-            string:RegExp r = re `_`;
-            string[] nameSplit = r.split(compositeFieldName);
+            string:RegExp underscorePlaceholder = re `_`;
+            string[] nameSplit = underscorePlaceholder.split(compositeFieldName);
             if conditionalFeildsMap.hasKey(nameSplit[0]) {
                 compositeFieldSchema.required = false;
             }
@@ -234,17 +234,11 @@ function getDataType(string dataTypeString) returns edi:EdiDataType|error {
         "ID"|"AN"|"DT"|"TM"|"R" => {
             return edi:STRING;
         }
-        "N" => {
-            return edi:FLOAT;
-        }
-        "N0" => {
+        "N"|"N0"|"N2" => {
             return edi:FLOAT;
         }
         "N1" => {
             return edi:INT;
-        }
-        "N2" => {
-            return edi:FLOAT;
         }
         _ => {
             return error("Unknown data type.");
@@ -272,10 +266,10 @@ function getUnitElement(string name, xml x12xsd) returns xml|error {
 
 public function getBalCompatibleName(string rawName) returns string {
     string name = rawName.trim();
-    string:RegExp r = re `[^a-zA-Z0-9_]`;
-    string:RegExp expectedRe = re `^[a-zA-Z].*`;
-    name = r.replaceAll(name, "_");
-    if !expectedRe.isFullMatch(name) {
+    string:RegExp nonAlphanumericUnderscore = re `[^a-zA-Z0-9_]`;
+    string:RegExp startsWithLetter = re `^[a-zA-Z].*`;
+    name = nonAlphanumericUnderscore.replaceAll(name, "_");
+    if !startsWithLetter.isFullMatch(name) {
         name = "A_" + name;
     }
     return name;
