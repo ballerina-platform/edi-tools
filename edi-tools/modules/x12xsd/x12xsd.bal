@@ -231,19 +231,7 @@ function convertCompositeField(edi:EdiFieldSchema fieldSchema, xml compositeElem
 
 function getDataType(string dataTypeString) returns edi:EdiDataType|error {
     match dataTypeString {
-        "ID" => {
-            return edi:STRING;
-        }
-        "AN" => {
-            return edi:STRING;
-        }
-        "DT" => {
-            return edi:STRING;
-        }
-        "TM" => {
-            return edi:STRING;
-        }
-        "R" => {
+        "ID"|"AN"|"DT"|"TM"|"R" => {
             return edi:STRING;
         }
         "N" => {
