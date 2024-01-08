@@ -1,6 +1,6 @@
-// Copyright (c) 2023 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org).
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -14,9 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/regex;
-import ballerina/log;
 import ballerina/edi;
+import ballerina/log;
 
 map<int> recordNames = {};
 
@@ -99,8 +98,10 @@ function fixComposite(edi:EdiFieldSchema fieldSchema) returns error? {
 
 public function getBalCompatibleName(string rawName) returns string {
     string name = rawName.trim();
-    name = regex:replaceAll(name, "[^a-zA-Z0-9_]", "_");
-    if !regex:matches(name, "^[a-zA-Z].*") {
+    string:RegExp re = re `[^a-zA-Z0-9_]`;
+    string:RegExp expectedRe = re `^[a-zA-Z].*`;
+    name = re.replaceAll(name, "_");
+    if !expectedRe.isFullMatch(name) {
         name = "A_" + name;
     }
     return name;

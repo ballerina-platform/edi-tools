@@ -1,6 +1,6 @@
-// Copyright (c) 2023 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org).
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,24 +15,23 @@
 // under the License.
 
 import ballerina/edi;
-import ballerina/regex;
-import ballerina/log;
-import ballerina/io;
 import ballerina/file;
+import ballerina/io;
+import ballerina/log;
 
 xmlns "http://www.w3.org/2001/XMLSchema" as xs;
 xmlns "http://xml.x12.org/isomorph" as x12;
 
 map<string> conditionalFeildsMap = {};
 
-public function convertFromX12XsdAndWrite(string inPath, string outPath, string segdetPath="") returns error? {
+public function convertFromX12XsdAndWrite(string inPath, string outPath, string segdetPath = "") returns error? {
     loadConditionalFieldsMap(segdetPath);
     xml x12xsd = check io:fileReadXml(inPath);
     edi:EdiSchema ediSchema = check convertFromX12Xsd(x12xsd);
     check io:fileWriteJson(outPath, ediSchema);
 }
 
-public function convertFromX12WithHeadersAndWrite(string inPath, string outPath, string segdetPath="") returns error? {
+public function convertFromX12WithHeadersAndWrite(string inPath, string outPath, string segdetPath = "") returns error? {
     loadConditionalFieldsMap(segdetPath);
     edi:EdiSchema ediSchema = check convertFromX12WithHeaders(inPath);
     check io:fileWriteJson(outPath, ediSchema);
@@ -142,8 +141,9 @@ function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema,
 
 function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema|error {
     xml segElement = check getUnitElement(segmentName, x12xsd);
-    string[] nameParts = regex:split(segmentName, "_");
-    edi:EdiSegSchema segSchema = 
+    string:RegExp underscorePlaceholder = re `_`;
+    string[] nameParts = underscorePlaceholder.split(segmentName);
+    edi:EdiSegSchema segSchema =
         {code: getBalCompatibleName(nameParts[0]), tag: getBalCompatibleName(nameParts[1])};
     segSchema.fields.push({tag: "code", required: true});
     xml fieldElements = segElement/<xs:complexType>/<xs:sequence>/<xs:element>;
@@ -161,7 +161,7 @@ function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema
             fieldSchema.required = minOccurs != "0";
         }
         if conditionalFeildsMap.length() > 0 {
-            string[] nameSplit = regex:split( fieldName, "_");
+            string[] nameSplit = underscorePlaceholder.split(fieldName);
             if conditionalFeildsMap.hasKey(nameSplit[0]) {
                 fieldSchema.required = false;
             }
@@ -174,7 +174,7 @@ function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema
                 log:printWarn(string `Data type not defined. Defaulting it to string. Segment name: ${segmentName}, Field name: ${fieldName}`);
                 fieldSchema.dataType = edi:STRING;
             } else {
-                check convertCompositeField(fieldSchema, compositeElements, segmentName, fieldName);    
+                check convertCompositeField(fieldSchema, compositeElements, segmentName, fieldName);
             }
         } else {
             edi:EdiDataType|error dataType = getDataType(fieldDataType);
@@ -206,7 +206,8 @@ function convertCompositeField(edi:EdiFieldSchema fieldSchema, xml compositeElem
             compositeFieldSchema.required = compositeMinOccurs != "0";
         }
         if conditionalFeildsMap.length() > 0 {
-            string[] nameSplit = regex:split( compositeFieldName, "_");
+            string:RegExp underscorePlaceholder = re `_`;
+            string[] nameSplit = underscorePlaceholder.split(compositeFieldName);
             if conditionalFeildsMap.hasKey(nameSplit[0]) {
                 compositeFieldSchema.required = false;
             }
@@ -230,16 +231,18 @@ function convertCompositeField(edi:EdiFieldSchema fieldSchema, xml compositeElem
 
 function getDataType(string dataTypeString) returns edi:EdiDataType|error {
     match dataTypeString {
-        "ID" => {return edi:STRING;}
-        "AN" => {return edi:STRING;}
-        "DT" => {return edi:STRING;}
-        "TM" => {return edi:STRING;}
-        "R" => {return edi:STRING;}
-        "N" => {return edi:FLOAT;}
-        "N0" => {return edi:FLOAT;}
-        "N1" => {return edi:INT;}
-        "N2" => {return edi:FLOAT;}
-        _ => {return error("Unknown data type.");}
+        "ID"|"AN"|"DT"|"TM"|"R" => {
+            return edi:STRING;
+        }
+        "N"|"N0"|"N2" => {
+            return edi:FLOAT;
+        }
+        "N1" => {
+            return edi:INT;
+        }
+        _ => {
+            return error("Unknown data type.");
+        }
     }
 }
 
@@ -263,8 +266,10 @@ function getUnitElement(string name, xml x12xsd) returns xml|error {
 
 public function getBalCompatibleName(string rawName) returns string {
     string name = rawName.trim();
-    name = regex:replaceAll(name, "[^a-zA-Z0-9_]", "_");
-    if !regex:matches(name, "^[a-zA-Z].*") {
+    string:RegExp nonAlphanumericUnderscore = re `[^a-zA-Z0-9_]`;
+    string:RegExp startsWithLetter = re `^[a-zA-Z].*`;
+    name = nonAlphanumericUnderscore.replaceAll(name, "_");
+    if !startsWithLetter.isFullMatch(name) {
         name = "A_" + name;
     }
     return name;
@@ -296,7 +301,7 @@ function loadConditionalFieldsMap(string segdetlPath) {
         return;
     }
     stream<string[], io:Error?>|io:Error csvStream = io:fileReadCsvAsStream(segdetlPath);
-    if(csvStream is io:Error) {
+    if (csvStream is io:Error) {
         io:println("Error reading segment details. This might affect the accuracy of the requried state of fields.");
         return;
     }

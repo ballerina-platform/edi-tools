@@ -2,7 +2,7 @@
 org = "ballerina"
 name = "codegen_tests"
 version = "0.1.0"
-distribution = "2201.7.0"
+distribution = "2201.8.4"
 
 [build-options]
 observabilityIncluded = true
