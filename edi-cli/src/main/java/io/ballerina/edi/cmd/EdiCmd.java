@@ -84,7 +84,7 @@ public class EdiCmd implements BLauncherCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
+    public void printLongDesc(StringBuilder stringBuilder) {
         stringBuilder.append("Ballerina EDI tools -\n");
         stringBuilder.append("Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>\n");
         stringBuilder.append("EDI library generation: bal edi libgen -O <org name> -l <library name> -s <EDI schema folder> -o <output folder>\n");
