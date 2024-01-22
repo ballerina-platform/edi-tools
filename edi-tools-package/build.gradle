@@ -106,6 +106,9 @@ task deleteOldEdiCliJars(type: Delete) {
 
 task copyEdiCliJar {
     doLast {
+        if (!file("resources").exists()) {
+            file("resources").mkdir()
+        }
         copy {
             from "../edi-cli/build/libs/edi-cli-${version}.jar"
             into "resources"

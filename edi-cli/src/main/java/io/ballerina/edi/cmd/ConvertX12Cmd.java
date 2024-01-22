@@ -37,6 +37,7 @@ import java.util.List;
 public class ConvertX12Cmd implements BLauncherCmd {
 
     private static final String CMD_NAME = "convertX12Schema";
+    private static final String EDI_TOOL = "editools.jar";
 
     private final PrintStream printStream;
 
@@ -76,10 +77,11 @@ public class ConvertX12Cmd implements BLauncherCmd {
         }
         stringBuilder.append(inputPath).append("...");
         printStream.println(stringBuilder);
-        URL res = ConvertX12Cmd.class.getClassLoader().getResource("editools.jar");
+        Class<?> clazz = ConvertX12Cmd.class;
+        ClassLoader classLoader = clazz.getClassLoader();
         try {
             Path tempFile = Files.createTempFile(null, null);
-            try (InputStream in = res.openStream()) {
+            try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             List<String> argsList = new ArrayList<>();

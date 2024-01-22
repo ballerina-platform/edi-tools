@@ -34,6 +34,8 @@ import java.nio.file.StandardCopyOption;
 )
 public class EslCmd implements BLauncherCmd {
     private static final String CMD_NAME = "convertESL";
+    private static final String EDI_TOOL = "editools.jar";
+    
     private PrintStream printStream;
 
     @CommandLine.Option(names = {"-b", "--basedef"}, description = "Segment definitions path")
@@ -59,9 +61,10 @@ public class EslCmd implements BLauncherCmd {
         }
         try {
             printStream.println("Converting ESL schemas in " + schemaPath);
-            URL res = LibgenCmd.class.getClassLoader().getResource("editools.jar");
+            Class<?> clazz = LibgenCmd.class;
+            ClassLoader classLoader = clazz.getClassLoader();
             Path tempFile = Files.createTempFile(null, null);
-            try (InputStream in = res.openStream()) {
+            try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             ProcessBuilder processBuilder = new ProcessBuilder(

@@ -1,6 +1,6 @@
-// Copyright (c) 2023 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2023 WSO2 LLC. (http://www.wso2.org).
 //
-// WSO2 Inc. licenses this file to you under the Apache License,
+// WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/test;
-import ballerina/regex;
 
 @test:Config {}
 function testFieldGeneration() {
@@ -58,7 +57,10 @@ function testComplexRecordGeneration() {
     r2.addField(BSTRING, "location", false, true);
 
     string expected = "public type Team record {| string teamName; Person? lead?; Person[] members = []; Team[] subteams = []; string location?;|};";
-    string output = regex:replaceAll(r2.toString(), "\n", "");
-    output = regex:replaceAll(output, "   ", " ");
+    string:RegExp re1 = re `\n`;
+    string:RegExp re2 = re `   `;
+
+    string output = re1.replaceAll(r2.toString(), "");
+    output = re2.replaceAll(output, " ");
     test:assertEquals(output, expected);
 }

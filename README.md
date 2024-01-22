@@ -9,8 +9,8 @@ EDI tools provide the below set of command line tools to work with EDI files in 
 
 |                                   | Version               |
 |:---------------------------------:|:---------------------:|
-| Ballerina Language                | 2201.7.0              |
-| Java Development Kit (JDK)        | 11                    |
+| Ballerina Language                | 2201.8.4              |
+| Java Development Kit (JDK)        | 17                    |
 
 ## Code generation
 

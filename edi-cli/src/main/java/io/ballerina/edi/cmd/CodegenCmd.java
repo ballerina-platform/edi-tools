@@ -23,7 +23,6 @@ import picocli.CommandLine;
 
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -33,7 +32,9 @@ import java.nio.file.StandardCopyOption;
         description = "Generated code for a given EDI schema."
 )
 public class CodegenCmd implements BLauncherCmd {
+    private static final String EDI_TOOL = "editools.jar";
     private static final String CMD_NAME = "codegen";
+
     private final PrintStream printStream;
 
     @CommandLine.Option(names = {"-s", "--schema"}, description = "EDI schema path")
@@ -56,13 +57,15 @@ public class CodegenCmd implements BLauncherCmd {
         }
         try {
             printStream.println("Generating code for " + schemaPath + "...");
-            URL res = CodegenCmd.class.getClassLoader().getResource("editools.jar");
+            Class<?> clazz = CodegenCmd.class;
+            ClassLoader classLoader = clazz.getClassLoader();
             Path tempFile = Files.createTempFile(null, null);
-            try (InputStream in = res.openStream()) {
+            try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             ProcessBuilder processBuilder = new ProcessBuilder(
                     "java", "-jar", tempFile.toAbsolutePath().toString(), "codegen", schemaPath, outputPath);
+            processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
             java.io.InputStream is = process.getInputStream();

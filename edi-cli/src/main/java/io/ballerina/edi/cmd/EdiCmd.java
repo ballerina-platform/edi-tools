@@ -58,12 +58,14 @@ public class EdiCmd implements BLauncherCmd {
     @Override
     public void execute() {
         try {
-            URL res = EdiCmd.class.getClassLoader().getResource(EDI_TOOL);
+            Class<?> clazz = EdiCmd.class;
+            ClassLoader classLoader = clazz.getClassLoader();
             Path tempFile = Files.createTempFile(null, null);
-            try (InputStream in = res.openStream()) {
+            try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", tempFile.toAbsolutePath().toString());
+            processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
             java.io.InputStream is=process.getInputStream();
@@ -82,16 +84,16 @@ public class EdiCmd implements BLauncherCmd {
     }
 
     @Override
-    public void printLongDesc(StringBuilder out) {
-    }
-
-    @Override
-    public void printUsage(StringBuilder stringBuilder) {
+    public void printLongDesc(StringBuilder stringBuilder) {
         stringBuilder.append("Ballerina EDI tools -\n");
         stringBuilder.append("Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>\n");
         stringBuilder.append("EDI library generation: bal edi libgen -O <org name> -l <library name> -s <EDI schema folder> -o <output folder>\n");
         stringBuilder.append("ESL to Ballerina EDI schema conversion: bal edi convertESL -b <Segment definitions file path> -s <ESL schema file/folder> -o <output file/folder>\n");
         stringBuilder.append("Ballerina X12 schema conversion: bal edi codegen [-H] [-c] -i <schema input path> -o <output json file/folder path> [-d] <segment details path>\n");
+    }
+
+    @Override
+    public void printUsage(StringBuilder stringBuilder) {
     }
 
     @Override
