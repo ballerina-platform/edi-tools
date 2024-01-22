@@ -3,4 +3,3 @@ id = "edi"
 
 [[dependency]]
 path = "resources/edi-cli-0.8.6.jar"
-
