@@ -129,11 +129,11 @@ public class ConvertX12Cmd implements BLauncherCmd {
         stringBuilder.append("Ballerina EDI tools - X12 Schema Conversion\n");
         stringBuilder.append("Ballerina X12 schema conversion: bal edi ").append(CMD_NAME).append(" [-H] [-c] -i <schema input path> -o <output json file/folder path> [-d] <segment details path>\n");
         stringBuilder.append("Options:\n");
-        stringBuilder.append("  -H, --headers\t\t\tEnable headers mode (Input should be a directory and should contain header schemas)\n");
-        stringBuilder.append("  -c, --collection\t\tEnable collection mode (Input should be a directory)\n");
-        stringBuilder.append("  -i, --input string\tInput path\n");
-        stringBuilder.append("  -o, --output string\tOutput path\n");
-        stringBuilder.append("  -d, --segdet string\tSegment details path\n");
+        stringBuilder.append("  -H, --headers       Enable headers mode (Input should be a directory and should contain header schemas)\n");
+        stringBuilder.append("  -c, --collection    Enable collection mode (Input should be a directory)\n");
+        stringBuilder.append("  -i, --input string  Input path\n");
+        stringBuilder.append("  -o, --output string Output path\n");
+        stringBuilder.append("  -d, --segdet string Segment details path\n");
     }
 
     @Override
