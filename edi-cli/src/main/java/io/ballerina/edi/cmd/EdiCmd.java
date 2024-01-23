@@ -40,7 +40,8 @@ import java.nio.file.StandardCopyOption;
             CodegenCmd.class,
             LibgenCmd.class,
             EslCmd.class,
-            ConvertX12Cmd.class
+            ConvertX12Cmd.class,
+            ConvertEdifactCmd.class
         }
 )
 public class EdiCmd implements BLauncherCmd {
@@ -90,6 +91,8 @@ public class EdiCmd implements BLauncherCmd {
         stringBuilder.append("EDI library generation: bal edi libgen -O <org name> -l <library name> -s <EDI schema folder> -o <output folder>\n");
         stringBuilder.append("ESL to Ballerina EDI schema conversion: bal edi convertESL -b <Segment definitions file path> -s <ESL schema file/folder> -o <output file/folder>\n");
         stringBuilder.append("Ballerina X12 schema conversion: bal edi codegen [-H] [-c] -i <schema input path> -o <output json file/folder path> [-d] <segment details path>\n");
+        stringBuilder.append("Ballerina X12 schema conversion: bal edi codegen [-H] [-c] -i <schema input path> -o <output json file/folder path> [-d] <segment details path>\n");
+        stringBuilder.append("EDIFACT to Ballerina EDI schema conversion: bal edi convertEdifactSchema -v <EDIFACT version> -t <EDIFACT message type> -o <output folder>\n");
     }
 
     @Override
