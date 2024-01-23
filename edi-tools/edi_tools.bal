@@ -20,12 +20,14 @@ import ballerina/file;
 import editools.esl;
 import ballerina/log;
 import editools.codegen;
+import editools.edifact;
 
 public function main(string[] args) {
 
     string usage = string `Ballerina EDI tools -
         Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>
-        EDI library generation: bal edi libgen -O <org name> -n <library name> -s <EDI schema folder> -o <output folder>`;
+        EDI library generation: bal edi libgen -O <org name> -n <library name> -s <EDI schema folder> -o <output folder>
+        Convert EDIFACT schema to EDI: bal edi convertEdifactSchema -v <EDIFACT version> -t <EDIFACT message type> -o <output folder>`;
 
     if args.length() == 0 {
         io:println(usage);
@@ -122,6 +124,19 @@ public function main(string[] args) {
             }
         } on fail error e {
             log:printError("Error converting X12 schema: " + e.message());
+        }
+    } else if mode == "convertEdifactSchema" {
+        do {
+            if args.length() < 3 {
+                io:println(usage);
+                return;
+            }
+            string version = args[1].trim(); // ex: d10a
+            string 'type = args[2].trim(); // ex: INVOIC
+            string outputPath = args[3].trim();
+            check edifact:convertEdifactToEdi(version, outputPath, 'type == "" ? () : 'type);
+        } on fail error e {
+            log:printError("Error converting EDIFACT schema: " + e.message());
         }
     } else {
         io:println(usage);
