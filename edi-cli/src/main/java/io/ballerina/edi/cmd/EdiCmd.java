@@ -34,8 +34,7 @@ import java.nio.file.StandardCopyOption;
  */
 @CommandLine.Command(
         name = "edi",
-        description = "Generates Ballerina service/client for OpenAPI contract and OpenAPI contract for Ballerina" +
-                "Service.",
+        description = "Generate the Ballerina records and parsing functions or a Ballerina package for a given EDI schema or collection of schemas",
         subcommands = {
             CodegenCmd.class,
             LibgenCmd.class,
