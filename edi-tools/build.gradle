@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,6 @@
  */
 import org.apache.tools.ant.taskdefs.condition.Os
 
-// buildscript {
-//     repositories {
-//         maven {
-//             url = 'https://maven.pkg.github.com/ballerina-platform/plugin-gradle'
-//             credentials {
-//                 username System.getenv("packageUser")
-//                 password System.getenv("packagePAT")
-//             }
-//         }
-//     }
-//     dependencies {
-//         classpath "io.ballerina:plugin-gradle:${project.ballerinaGradlePluginVersion}"
-//     }
-// }
-
-
 description = 'Ballerina - EDI tools'
 
 def packageName = "editools"
@@ -40,17 +24,9 @@ def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/Ballerina.toml")
 def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
 
-// apply plugin: 'io.ballerina.plugin'
-
-// ballerina {
-//     packageOrganization = packageOrg
-//     module = packageName
-//     langVersion = ballerinaLangVersion
-//     testCoverageParam = "--code-coverage --coverage-format=xml --includes=io.ballerina.stdlib.editools.*:ballerina.editools*"
-//     platform = "any"
-// }
 
 task updateTomlFiles {
+    // Update the Ballerina.toml and Dependencies.toml files
     doLast {
         println "Updating toml files"
         def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
@@ -59,66 +35,46 @@ task updateTomlFiles {
     }
 }
 
-task commitTomlFiles {
+task buildEDIToolCore() {
+    // Build the ballerina tools
     doLast {
         project.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
+                commandLine 'cmd', '/c', "bal build"
             } else {
-                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
+                commandLine 'sh', '-c', "bal build"
             }
         }
     }
 }
 
-// publishing {
-//     publications {
-//         maven(MavenPublication) {
-//             artifact source: createArtifactZip, extension: 'zip'
-//         }
-//     }
-
-//     repositories {
-//         maven {
-//             name = "GitHubPackages"
-//             url = uri("https://maven.pkg.github.com/ballerina-platform/module-${packageOrg}-${packageName}")
-//             credentials {
-//                 username = System.getenv("publishUser")
-//                 password = System.getenv("publishPAT")
-//             }
-//         }
-//     }
-// }
-
-// updateTomlFiles.dependsOn copyStdlibs
-
-// build.dependsOn "generatePomFileForMavenPublication"
-// publishToMavenLocal.dependsOn build
-// publish.dependsOn build
-
 task deleteTarget {
+    // Delete the target directory
     doLast {
         delete 'target'
     }
 }
 
-task prepare {
-    dependsOn deleteTarget
-    dependsOn updateTomlFiles
-    doLast{
-        println "Preparing the project for build"
-    }
-}
-
-task generateCode {
+task copyEdiToolsJar {
+    // Copy edi-tools jar to resources folder
     doLast {
-        
+        copy {
+            from "target/bin/editools.jar"
+            into "../edi-tools-cli/src/main/resources"
+            include "*.jar"
+        }
+        println "Copying edi-tools jar to resources folder"
     }
 }
 
 task build {
-    doLast {
-        println "This needs to be built outside of gradle."
-    }
+    dependsOn deleteTarget
+    dependsOn updateTomlFiles
+    dependsOn buildEDIToolCore
+    dependsOn copyEdiToolsJar
 }
+
+buildEDIToolCore.dependsOn deleteTarget
+buildEDIToolCore.dependsOn updateTomlFiles
+copyEdiToolsJar.dependsOn buildEDIToolCore

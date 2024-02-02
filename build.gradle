@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,20 +95,24 @@ subprojects {
 
 def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
-release {
-    failOnPublishNeeded = false
+task build {
+    dependsOn ":edi-tools-package:build"
+    dependsOn ":edi-tools-tests:test"
+}
 
-    buildTasks = ["build"]
+task prbuild{
+    dependsOn ":edi-tools-package:prbuild"
+    dependsOn ":edi-tools-tests:test"
+}
+
+release {
     failOnSnapshotDependencies = true
     versionPropertyFile = 'gradle.properties'
-    tagTemplate = 'v$version'
-
+    tagTemplate = 'v${version}'
     git {
         requireBranch = "release-${moduleVersion}"
         pushToRemote = 'origin'
     }
 }
 
-task build {
-    dependsOn('edi-tools:build')
-}
+publish.dependsOn ":edi-tools-package:publish"

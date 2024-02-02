@@ -1,0 +1,85 @@
+/*
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+task prepareTests {
+    doLast {
+        file('resources').listFiles().each { sampleFile ->
+            if (sampleFile.name == 'common') {
+                return
+            }
+            println("Generating codes for test: " + sampleFile.name);
+
+            // Create a directory for each sample in the modules directory
+            def sampleName = sampleFile.name
+            delete "modules/${sampleName}"
+            mkdir "modules/${sampleName}/tests"
+
+            // Generate code for each sample using the schema.json file
+            try {
+                exec {
+                        def genCommand = "bal edi codegen -s resources/${sampleName}/schema.json -o modules/${sampleName}/gen_code.bal"
+                        println("Executing command: " + genCommand)
+                        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                            commandLine 'cmd', "/c", genCommand
+                        } else {
+                            commandLine 'sh', "-c", genCommand
+                        }
+                    }
+            } catch (Exception e) {
+                    println("Test code generation failed: " + e.message)
+                    throw e
+            }
+
+            // Copy the generated code to the tests directory
+            copy {
+                from 'resources/common/codegen_test.bal'
+                into "modules/${sampleName}/tests"
+            }
+            def fileToReplace = file("modules/${sampleName}/tests/codegen_test.bal")
+            def replacedText = fileToReplace.text.replaceAll('<sample-name>', sampleName)
+            fileToReplace.write(replacedText)
+        }
+    }
+}
+
+task runTests {
+    doLast {
+            try {
+                // Run tests for each sample
+                exec {
+                        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                            commandLine 'cmd', "/c", 'bal test'
+                        } else {
+                            commandLine 'sh', "-c", 'bal test'
+                        }
+                    }
+                } catch (Exception e) {
+                    println("Test Run failed: " + e.message)
+                    throw e
+                }
+
+        }
+    }
+
+task  test{
+    dependsOn prepareTests
+    dependsOn runTests
+}
+
+runTests.dependsOn prepareTests

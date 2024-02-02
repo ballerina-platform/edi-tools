@@ -17,5 +17,5 @@
 import ballerina/io;
 
 public function main() {
-    io:println("Codegen tests");
+    io:println("edi-tools-tests");
 }
