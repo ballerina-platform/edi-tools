@@ -1,10 +1,14 @@
-name: PR Build
+name: Build
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-on: pull_request
+on:
+  push:
+      branches:
+          - main
+  workflow_dispatch:
 
 jobs:
   ubuntu-build:
@@ -27,7 +31,14 @@ jobs:
             with:
                 distribution: 'temurin'
                 java-version: 17.0.7
-          
+          - name: Change to Timestamped Version
+            run: |
+              startTime=$(TZ="Asia/Kolkata" date +'%Y%m%d-%H%M00')
+              latestCommit=$(git log -n 1 --pretty=format:"%h")
+              VERSION=$((grep -w 'version' | cut -d= -f2) < gradle.properties | rev | cut --complement -d- -f1 | rev)
+              updatedVersion=$VERSION-$startTime-$latestCommit
+              echo $updatedVersion
+              sed -i "s/version=\(.*\)/version=$updatedVersion/g" gradle.properties
           - name: Set ENV Variables
             run: |
                 echo -e '${{ toJson(secrets) }}' | jq -r 'to_entries[] | .key + "=" + .value' >> $GITHUB_ENV 

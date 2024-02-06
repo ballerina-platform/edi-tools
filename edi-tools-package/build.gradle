@@ -158,7 +158,7 @@ task build {
     dependsOn commitTomlFiles
     dependsOn buildEDIPackage
 }
-task prbuild{
+task fullbuild{
     dependsOn createBallerinaToolConfigFile
     dependsOn build
 }
@@ -169,6 +169,6 @@ commitTomlFiles.dependsOn updateTomlFiles
 buildEDIPackage.dependsOn copyEdiCliJar
 buildEDIPackage.dependsOn commitTomlFiles
 
-publish.dependsOn prbuild
+publish.dependsOn fullbuild
 publish.dependsOn publishEDIPackage
-publishEDIPackage.dependsOn prbuild
+publishEDIPackage.dependsOn fullbuild

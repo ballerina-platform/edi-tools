@@ -100,8 +100,8 @@ task build {
     dependsOn ":edi-tools-tests:test"
 }
 
-task prbuild{
-    dependsOn ":edi-tools-package:prbuild"
+task fullbuild{
+    dependsOn ":edi-tools-package:fullbuild"
     dependsOn ":edi-tools-tests:test"
 }
 
