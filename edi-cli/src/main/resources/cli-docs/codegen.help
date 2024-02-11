@@ -1,0 +1,20 @@
+NAME
+       bal edi codegen - Ballerina EDI Code Generation
+
+SYNOPSIS
+       bal edi codegen [OPTIONS]
+
+DESCRIPTION
+       The 'bal edi codegen' command is used to generate records and 
+       parsing functions for a given EDI schema.
+
+OPTIONS
+       -s, --schema <EDI schema path>
+           Path to the EDI schema file or folder.
+
+       -o, --output <output path>
+           Path to the output file or folder.
+
+EXAMPLE
+       Generate records and parsing functions for a given EDI schema.
+           $ bal edi codegen -s resources/schema.json -o modules/orders/records.bal

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2024, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  *  WSO2 Inc. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -21,30 +21,30 @@ package io.ballerina.edi.cmd;
 import io.ballerina.cli.BLauncherCmd;
 import picocli.CommandLine;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-@CommandLine.Command(
-        name = "convertESL",
-        description = "Converts ESL schemas to Ballerina compatible JSON schemas."
-)
+@CommandLine.Command(name = "convertESL", description = "Converts ESL schemas to Ballerina compatible JSON schemas.")
 public class EslCmd implements BLauncherCmd {
     private static final String CMD_NAME = "convertESL";
     private static final String EDI_TOOL = "editools.jar";
-    
+
     private PrintStream printStream;
 
-    @CommandLine.Option(names = {"-b", "--basedef"}, description = "Segment definitions path")
+    @CommandLine.Option(names = { "-b", "--basedef" }, description = "Segment definitions path")
     private String basedefPath;
 
-    @CommandLine.Option(names = {"-s", "--schema"}, description = "ESL schema path")
+    @CommandLine.Option(names = { "-s", "--schema" }, description = "ESL schema path")
     private String schemaPath;
 
-    @CommandLine.Option(names = {"-o", "--output"}, description = "Output path")
+    @CommandLine.Option(names = { "-o", "--output" }, description = "Output path")
     private String outputPath;
 
     public EslCmd() {
@@ -68,12 +68,13 @@ public class EslCmd implements BLauncherCmd {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java", "-jar", tempFile.toAbsolutePath().toString(), "convertESL", schemaPath, basedefPath, outputPath);
+                    "java", "-jar", tempFile.toAbsolutePath().toString(), "convertESL", schemaPath, basedefPath,
+                    outputPath);
             Process process = processBuilder.start();
             process.waitFor();
-            java.io.InputStream is=process.getInputStream();
-            byte b[]=new byte[is.available()];
-            is.read(b,0,b.length);
+            java.io.InputStream is = process.getInputStream();
+            byte b[] = new byte[is.available()];
+            is.read(b, 0, b.length);
             printStream.println(new String(b));
         } catch (Exception e) {
             printStream.println("Error in generating library. " + e.getMessage());
@@ -88,17 +89,28 @@ public class EslCmd implements BLauncherCmd {
 
     @Override
     public void printLongDesc(StringBuilder stringBuilder) {
-
+        Class<?> clazz = EdiCmd.class;
+        ClassLoader classLoader = clazz.getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream("cli-docs/convertESL.help");
+        if (inputStream != null) {
+            try (InputStreamReader inputStreamREader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                    BufferedReader br = new BufferedReader(inputStreamREader)) {
+                String content = br.readLine();
+                printStream.append(content);
+                while ((content = br.readLine()) != null) {
+                    printStream.append('\n').append(content);
+                }
+            } catch (IOException e) {
+                printStream.println("Helper text is not available.");
+            }
+        }
     }
 
     @Override
     public void printUsage(StringBuilder stringBuilder) {
-        stringBuilder.append("Ballerina EDI tools - ESL to Ballerina EDI schema conversion\n");
-        stringBuilder.append("bal edi convertESL -b <Segment definitions file path> -s <ESL schema file/folder> -o <output file/folder>\n");
     }
 
     @Override
     public void setParentCmdParser(CommandLine commandLine) {
-
     }
 }

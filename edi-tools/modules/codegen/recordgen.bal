@@ -1,4 +1,4 @@
-// Copyright (c) 2023 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+// Copyright (c) 2024 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
 //
 // WSO2 Inc. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -92,6 +92,7 @@ function generateRecordForSegment(edi:EdiSegSchema segmap, GenContext context) r
                 return error("Code field must be of type string. Segment: " + segmap.toString());
             }
             defaultValue = segmap.code;
+            emap.required = true;
         }
 
         if emap.dataType == edi:COMPOSITE {

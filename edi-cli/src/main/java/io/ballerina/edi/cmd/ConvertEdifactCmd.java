@@ -1,30 +1,49 @@
+/*
+ *  Copyright (c) 2024, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  WSO2 Inc. licenses this file to you under the Apache License,
+ *  Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
+ */
+
 package io.ballerina.edi.cmd;
 
 import io.ballerina.cli.BLauncherCmd;
 import picocli.CommandLine;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-@CommandLine.Command(
-        name = "convertEdifactSchema",
-        description = "Converts EDIFACT schema to EDI schema."
-)
+@CommandLine.Command(name = "convertEdifactSchema", description = "Converts EDIFACT schema to EDI schema.")
 public class ConvertEdifactCmd implements BLauncherCmd {
     private static final String CMD_NAME = "convertEdifactSchema";
     private final PrintStream printStream;
 
-    @CommandLine.Option(names = {"-v", "--version"}, description = "EDIFACT version")
+    @CommandLine.Option(names = { "-v", "--version" }, description = "EDIFACT version")
     private String version;
 
-    @CommandLine.Option(names = {"-t", "--type"}, description = "EDIFACT message type")
+    @CommandLine.Option(names = { "-t", "--type" }, description = "EDIFACT message type")
     private String type;
 
-    @CommandLine.Option(names = {"-o", "--output"}, description = "EDIFACT schema directory path")
+    @CommandLine.Option(names = { "-o", "--output" }, description = "EDIFACT schema directory path")
     private String dir;
 
     public ConvertEdifactCmd() {
@@ -47,7 +66,8 @@ public class ConvertEdifactCmd implements BLauncherCmd {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java", "-jar", tempFile.toAbsolutePath().toString(), CMD_NAME, version, type == null ? "" : type, dir);
+                    "java", "-jar", tempFile.toAbsolutePath().toString(), CMD_NAME, version, type == null ? "" : type,
+                    dir);
             processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
@@ -68,17 +88,28 @@ public class ConvertEdifactCmd implements BLauncherCmd {
 
     @Override
     public void printLongDesc(StringBuilder stringBuilder) {
-
+        Class<?> clazz = EdiCmd.class;
+        ClassLoader classLoader = clazz.getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream("cli-docs/convertEDIfact.help");
+        if (inputStream != null) {
+            try (InputStreamReader inputStreamREader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                    BufferedReader br = new BufferedReader(inputStreamREader)) {
+                String content = br.readLine();
+                printStream.append(content);
+                while ((content = br.readLine()) != null) {
+                    printStream.append('\n').append(content);
+                }
+            } catch (IOException e) {
+                printStream.println("Helper text is not available.");
+            }
+        }
     }
 
     @Override
     public void printUsage(StringBuilder stringBuilder) {
-        stringBuilder.append("Ballerina EDI tools - EDIFACT to Ballerina EDI schema conversion\n");
-        stringBuilder.append("bal edi convertEdifactSchema -v <EDIFACT version> -t <EDIFACT message type> -o <output folder>\n");
     }
 
     @Override
     public void setParentCmdParser(CommandLine commandLine) {
-
     }
 }
