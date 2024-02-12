@@ -40,7 +40,7 @@ jobs:
               packageUser: ${{ github.actor }}
               packagePAT: ${{ secrets.GITHUB_TOKEN }}
             run: |
-                ./gradlew fullbuild
+                ./gradlew build
 
           - name: Generate Codecov Report
             uses: codecov/codecov-action@v3

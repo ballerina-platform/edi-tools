@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,22 +60,22 @@ task prepareTests {
 
 task runTests {
     doLast {
-            try {
-                // Run tests for each sample
-                exec {
-                        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                            commandLine 'cmd', "/c", 'bal test'
-                        } else {
-                            commandLine 'sh', "-c", 'bal test'
-                        }
+        try {
+            // Run tests for each sample
+            exec {
+                    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                        commandLine 'cmd', "/c", 'bal test'
+                    } else {
+                        commandLine 'sh', "-c", 'bal test'
                     }
-                } catch (Exception e) {
-                    println("Test Run failed: " + e.message)
-                    throw e
-                }
-
+            }
+        } catch (Exception e) {
+            println("Test Run failed: " + e.message)
+            throw e
         }
+
     }
+}
 
 task  test{
     dependsOn prepareTests
