@@ -92,6 +92,7 @@ function generateRecordForSegment(edi:EdiSegSchema segmap, GenContext context) r
                 return error("Code field must be of type string. Segment: " + segmap.toString());
             }
             defaultValue = segmap.code;
+            emap.required = true;
         }
 
         if emap.dataType == edi:COMPOSITE {

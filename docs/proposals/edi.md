@@ -1,6 +1,6 @@
 # Proposal: EDI
 
-_Owners_: @chathurace @ruks  
+_Authors_: @chathurace @ruks  
 _Reviewers_:     
 _Created_: 2023/03/31  
 _Updated_:   

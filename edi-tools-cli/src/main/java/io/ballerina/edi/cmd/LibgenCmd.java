@@ -21,33 +21,33 @@ package io.ballerina.edi.cmd;
 import io.ballerina.cli.BLauncherCmd;
 import picocli.CommandLine;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-@CommandLine.Command(
-        name = "libgen",
-        description = "Generated code for a given EDI schema."
-)
+@CommandLine.Command(name = "libgen", description = "Generates Ballerina package for code for the given collection of EDI schemas.")
 public class LibgenCmd implements BLauncherCmd {
     private static final String CMD_NAME = "libgen";
     private static final String EDI_TOOL = "editools.jar";
-    
+
     private PrintStream printStream;
 
-    @CommandLine.Option(names = {"-O", "--org"}, description = "Organization name")
+    @CommandLine.Option(names = { "-O", "--org" }, description = "Organization name")
     private String orgName;
 
-    @CommandLine.Option(names = {"-n", "--name"}, description = "Library name")
+    @CommandLine.Option(names = { "-n", "--name" }, description = "Library name")
     private String libName;
 
-    @CommandLine.Option(names = {"-s", "--schema"}, description = "EDI schema path")
+    @CommandLine.Option(names = { "-s", "--schema" }, description = "EDI schema path")
     private String schemaPath;
 
-    @CommandLine.Option(names = {"-o", "--output"}, description = "Output path")
+    @CommandLine.Option(names = { "-o", "--output" }, description = "Output path")
     private String outputPath;
 
     public LibgenCmd() {
@@ -71,13 +71,14 @@ public class LibgenCmd implements BLauncherCmd {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java", "-jar", tempFile.toAbsolutePath().toString(), "libgen", orgName, libName, schemaPath, outputPath);
+                    "java", "-jar", tempFile.toAbsolutePath().toString(), "libgen", orgName, libName, schemaPath,
+                    outputPath);
             processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
-            java.io.InputStream is=process.getInputStream();
-            byte b[]=new byte[is.available()];
-            is.read(b,0,b.length);
+            java.io.InputStream is = process.getInputStream();
+            byte b[] = new byte[is.available()];
+            is.read(b, 0, b.length);
             printStream.println(new String(b));
         } catch (Exception e) {
             printStream.println("Error in generating library. " + e.getMessage());
@@ -92,17 +93,28 @@ public class LibgenCmd implements BLauncherCmd {
 
     @Override
     public void printLongDesc(StringBuilder stringBuilder) {
-
+        Class<?> clazz = EdiCmd.class;
+        ClassLoader classLoader = clazz.getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream("cli-docs/libgen.help");
+        if (inputStream != null) {
+            try (InputStreamReader inputStreamREader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                    BufferedReader br = new BufferedReader(inputStreamREader)) {
+                String content = br.readLine();
+                printStream.append(content);
+                while ((content = br.readLine()) != null) {
+                    printStream.append('\n').append(content);
+                }
+            } catch (IOException e) {
+                printStream.println("Helper text is not available.");
+            }
+        }
     }
 
     @Override
     public void printUsage(StringBuilder stringBuilder) {
-        stringBuilder.append("Ballerina EDI tools - Library generation\n");
-        stringBuilder.append("EDI library generation: bal edi libgen -O <org name> -l <library name> -s <EDI schema folder> -o <output folder>\n");
     }
 
     @Override
     public void setParentCmdParser(CommandLine commandLine) {
-
     }
 }

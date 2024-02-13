@@ -1,0 +1,29 @@
+NAME
+       bal edi convertX12Schema - X12 Schema Conversion to Ballerina EDI
+
+SYNOPSIS
+       bal edi convertX12Schema [OPTIONS]
+
+DESCRIPTION
+       The 'bal edi convertX12Schema' command is used to convert X12 schema 
+       to Ballerina EDI schema.
+
+OPTIONS
+       -H, --headers
+           Enable headers mode for X12 schema conversion.
+
+       -c, --collection
+           Enable collection mode for X12 schema conversion.
+
+       -i, --input <schema input path>
+           Input path for X12 schema conversion.
+
+       -o, --output <output path>
+           Path to the output file or folder.
+
+       -d, --segdet <segment details path>
+           Path to the segment details file for X12 schema conversion.
+
+EXAMPLE
+       Convert X12 schema to Ballerina EDI schema.
+           $ bal edi convertX12Schema -H -i input/schema.xsd -o output/schema.json

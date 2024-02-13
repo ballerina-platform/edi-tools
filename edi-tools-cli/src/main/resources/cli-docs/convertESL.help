@@ -1,0 +1,23 @@
+NAME
+       bal edi convertESL - ESL Schema Conversion to Ballerina EDI
+
+SYNOPSIS
+       bal edi convertESL [OPTIONS]
+
+DESCRIPTION
+       The 'bal edi convertESL' command is used to convert ESL 
+       schema to Ballerina EDI schema.
+
+OPTIONS
+       -b, --basedef <segment definitions file path>
+           Path to the segment definitions file for ESL schema conversion.
+
+       -s, --schema <ESL schema file/folder>
+           Path to the ESL schema file or folder.
+
+       -o, --output <output file/folder>
+           Path to the output file or folder.
+
+EXAMPLE
+       Convert ESL schema to Ballerina EDI schema.
+           $ bal edi convertESL -b segment_definitions.yaml -s esl_schema.esl -o output/schema.json

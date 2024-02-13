@@ -1,0 +1,23 @@
+NAME
+       bal edi convertEdifactSchema - EDIFACT Schema Conversion to Ballerina EDI
+
+SYNOPSIS
+       bal edi convertEdifactSchema [OPTIONS]
+
+DESCRIPTION
+       The 'bal edi convertEdifactSchema' command is used to convert 
+       EDIFACT schema to Ballerina EDI schema.
+
+OPTIONS
+       -v, --version <EDIFACT version>
+           EDIFACT version for EDIFACT schema conversion.
+
+       -t, --type <EDIFACT message type>
+           EDIFACT message type for EDIFACT schema conversion.
+
+       -o, --output <output folder>
+           Path to the folder where EDIFACT schemas will be generated.
+
+EXAMPLE
+       Convert EDIFACT schema to Ballerina EDI schema.
+           $ bal edi convertEdifactSchema -v 01B -t ORDERS -o output/schema.json
