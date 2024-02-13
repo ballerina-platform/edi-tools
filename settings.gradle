@@ -22,17 +22,11 @@ plugins {
 
 include ':checkstyle'
 include 'edi-tools'
-include 'edi-cli'
+include 'edi-tools-cli'
 include 'edi-tools-package'
-include 'codegen-tests'
+include 'edi-tools-tests'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
-// project(':edi-tools').projectDir = file('edi-tools')
-// project(':edi-tools-package').projectDir = file('edi-tools-package')
-// project(':edi-cli').projectDir = file('edi-cli')
-
-// project(':edi-tools-package').dependsOn(':edi-cli')
-// project(':edi-cli').dependsOn(':edi-tools')
 
 gradleEnterprise {
     buildScan {
