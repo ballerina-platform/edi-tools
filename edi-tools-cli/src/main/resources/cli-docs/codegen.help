@@ -6,7 +6,7 @@ SYNOPSIS
 
 DESCRIPTION
        The 'bal edi codegen' command is used to generate records and 
-       parsing functions for a given EDI schema.
+       parser functions for a given EDI schema.
 
 OPTIONS
        -s, --schema <EDI schema path>
@@ -16,5 +16,5 @@ OPTIONS
            Path to the output file or folder.
 
 EXAMPLE
-       Generate records and parsing functions for a given EDI schema.
+       Generate records and parser functions for a given EDI schema.
            $ bal edi codegen -s resources/schema.json -o modules/orders/records.bal

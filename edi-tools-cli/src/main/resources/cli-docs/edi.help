@@ -10,7 +10,7 @@ DESCRIPTION
 
 COMMANDS
        codegen
-           Generate records and parsing functions for a given EDI schema.
+           Generate records and parser functions for a given EDI schema.
 
        libgen
            Generate EDI libraries.
@@ -84,7 +84,7 @@ OPTIONS
                Path to the output file or folder.
 
 EXAMPLES
-       Generate records and parsing functions for a given EDI schema.
+       Generate records and parser functions for a given EDI schema.
            $ bal edi codegen -s resources/schema.json -o modules/orders/records.bal
 
        Generate EDI libraries.

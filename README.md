@@ -20,8 +20,8 @@ $ bal tool pull edi
 
 The tool supports three main usages as follows.
 
-- **Code generation**: Generate Ballerina records and parsing functions for a given EDI schema.
-- **Library generation**: Generates Ballerina records, parsing functions, utility methods, and a REST connector for a given collection of EDI schemas and organizes those as a Ballerina library
+- **Code generation**: Generate Ballerina records and parser functions for a given EDI schema.
+- **Library generation**: Generates Ballerina records, parser functions, utility methods, and a REST connector for a given collection of EDI schemas and organizes those as a Ballerina library
 - **Schema Conversion**: Convert various EDI schema formats to Ballerina EDI schema format.
 
 ## Define EDI Schema
@@ -66,13 +66,13 @@ ITM*T-46*28~
 
 ## Code generation
 
-The below command can be used to generate records and parsing functions for a given EDI schema:
+The below command can be used to generate typed Ballerina records and parser functions for a given EDI schema.
 
 ```
 bal edi codegen <EDI schema path> <output path>
 ```
 
-The above command generates all Ballerina records and parsing functions required for working with data in the given EDI schema and writes those into the file specified in the `output path`. The generated parsing function (i.e. `fromEdiString(...)`) can read EDI text files into generated records, which can be accessed from Ballerina code similar to accessing any other Ballerina record. Similarly, generated serialization function (i.e. `toEdiString(...)`) can serialize Generated Ballerina records into EDI text.
+The above command generates all Ballerina records and parser functions required for working with data in the given EDI schema and writes those into the file specified in the `output path`. The generated parser function (i.e. `fromEdiString(...)`) can read EDI text files into generated records, which can be accessed from Ballerina code similar to accessing any other Ballerina record. Similarly, generated serialization function (i.e. `toEdiString(...)`) can serialize Generated Ballerina records into EDI text.
 
 ### Example
 
@@ -168,7 +168,7 @@ public function main() returns error? {
 
 Usually, organizations have to work with many EDI formats, and integration developers need to have a convenient way to work on EDI data with minimum effort. Ballerina EDI libraries facilitate this by allowing organizations to pack all EDI processing code for to their EDI collections into an importable library. Therefore, integration developers can simply import those libraries and convert EDI messages into Ballerina records in a single line of code.
 
-The below command can be used to generate EDI libraries:
+The below command can be used to generates Ballerina records, parser and util functions, and a REST connector for a given collection of EDI schemas organized into a Ballerina package:
 
 ```
 bal edi libgen -O <org name> -n <library name> -s <EDI schema folder> -o <output folder>

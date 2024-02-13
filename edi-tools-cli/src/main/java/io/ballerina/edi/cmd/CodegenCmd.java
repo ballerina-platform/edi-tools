@@ -31,7 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-@CommandLine.Command(name = "codegen", description = "Generated code for a given EDI schema.")
+@CommandLine.Command(name = "codegen", description = "Generates Ballerina records and parser functions for a given EDI schema.")
 public class CodegenCmd implements BLauncherCmd {
     private static final String EDI_TOOL = "editools.jar";
     private static final String CMD_NAME = "codegen";

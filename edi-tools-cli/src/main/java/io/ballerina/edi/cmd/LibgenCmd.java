@@ -31,7 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-@CommandLine.Command(name = "libgen", description = "Generated code for a given EDI schema.")
+@CommandLine.Command(name = "libgen", description = "Generates Ballerina package for code for the given collection of EDI schemas.")
 public class LibgenCmd implements BLauncherCmd {
     private static final String CMD_NAME = "libgen";
     private static final String EDI_TOOL = "editools.jar";
