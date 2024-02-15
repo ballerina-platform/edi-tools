@@ -12,7 +12,7 @@ OPTIONS
        -b, --basedef <segment definitions file path>
            Path to the segment definitions file for ESL schema conversion.
 
-       -s, --schema <ESL schema file/folder>
+       -i, --input <input ESL schema file/folder>
            Path to the ESL schema file or folder.
 
        -o, --output <output file/folder>
@@ -20,4 +20,4 @@ OPTIONS
 
 EXAMPLE
        Convert ESL schema to Ballerina EDI schema.
-           $ bal edi convertESL -b segment_definitions.yaml -s esl_schema.esl -o output/schema.json
+           $ bal edi convertESL -b segment_definitions.yaml -i esl_schema.esl -o output/schema.json

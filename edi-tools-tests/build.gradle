@@ -33,7 +33,7 @@ task prepareTests {
             // Generate code for each sample using the schema.json file
             try {
                 exec {
-                        def genCommand = "bal edi codegen -s resources/${sampleName}/schema.json -o modules/${sampleName}/gen_code.bal"
+                        def genCommand = "bal edi codegen -i resources/${sampleName}/schema.json -o modules/${sampleName}/gen_code.bal"
                         println("Executing command: " + genCommand)
                         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                             commandLine 'cmd', "/c", genCommand

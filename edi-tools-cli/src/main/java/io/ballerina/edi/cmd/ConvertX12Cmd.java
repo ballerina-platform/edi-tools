@@ -47,7 +47,7 @@ public class ConvertX12Cmd implements BLauncherCmd {
     @CommandLine.Option(names = { "-c", "--collection" }, description = { "Switch to collection mode" })
     private boolean collectionMode;
 
-    @CommandLine.Option(names = { "-i", "--input" }, description = { "X12 schema path" })
+    @CommandLine.Option(names = { "-i", "--input" }, description = { "Input X12 schema path" })
     private String inputPath;
 
     @CommandLine.Option(names = { "-o", "--output" }, description = { "Output path" })

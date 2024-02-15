@@ -20,4 +20,4 @@ OPTIONS
 
 EXAMPLE
        Convert EDIFACT schema to Ballerina EDI schema.
-           $ bal edi convertEdifactSchema -v 01B -t ORDERS -o output/schema.json
+           $ bal edi convertEdifactSchema -v d03a -t ORDERS -o output/schema.json

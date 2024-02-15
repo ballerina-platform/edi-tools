@@ -69,7 +69,7 @@ ITM*T-46*28~
 The below command can be used to generate typed Ballerina records and parser functions for a given EDI schema.
 
 ```
-bal edi codegen <EDI schema path> <output path>
+bal edi codegen <input schema path> <output path>
 ```
 
 The above command generates all Ballerina records and parser functions required for working with data in the given EDI schema and writes those into the file specified in the `output path`. The generated parser function (i.e. `fromEdiString(...)`) can read EDI text files into generated records, which can be accessed from Ballerina code similar to accessing any other Ballerina record. Similarly, generated serialization function (i.e. `toEdiString(...)`) can serialize Generated Ballerina records into EDI text.
@@ -107,7 +107,7 @@ Ballerina records for the EDI schema in the `resources/schema.json` can be gener
 Run the below command from the project root directory to generate the Ballerina parser for the above schema.
 
 ```
-bal edi codegen -s resources/schema.json -o modules/orders/records.bal
+bal edi codegen -i resources/schema.json -o modules/orders/records.bal
 ```
 
 Generated Ballerina records for the above schema are shown below:
@@ -171,7 +171,7 @@ Usually, organizations have to work with many EDI formats, and integration devel
 The below command can be used to generates Ballerina records, parser and util functions, and a REST connector for a given collection of EDI schemas organized into a Ballerina package:
 
 ```
-bal edi libgen -O <org name> -n <library name> -s <EDI schema folder> -o <output folder>
+bal edi libgen -p <package name> -i <input schema folder> -o <output folder>
 ```
 
 The Ballerina library project will be generated in the output folder. This library can be built and published by issuing "bal pack" and "bal push" commands from the output folder. Then the generated library can be imported into any Ballerina project and generated utility functions of the library can be invoked to parse EDI messages into Ballerina records. 
@@ -193,7 +193,7 @@ let's assume that an organization named "CityMart" needs to work with X12 850, 8
 Then the libgen command can be used to generate a Ballerina library as shown below:
 
 ````
-bal edi libgen -O citymart -n porder -s CityMart/schemas -o CityMart/lib
+bal edi libgen -p citymart/porder -i CityMart/schemas -o CityMart/lib
 ````
 
 The generated Ballerina library will look like below:
@@ -314,12 +314,12 @@ X12, short for ANSI ASC X12, is a standard for electronic data interchange (EDI)
 The below command can be used to convert X12 schema to Ballerina EDI schema:
 
 ``` 
-bal edi convertX12Schema -H <enable headers mode> -c <enable collection mode > -i <schema input path> -o <output json file/folder path> -d <segment details path>
+bal edi convertX12Schema -H <enable headers mode> -c <enable collection mode > -i <input schema path> -o <output json file/folder path> -d <segment details path>
 ```
 
 Example:
 ```
-$ bal edi convertX12Schema -H -i input/schema.xsd -o output/schema.json
+$ bal edi convertX12Schema -i input/schema.xsd -o output/schema.json
 ```
 ### EDIFACT schema to Ballerina EDI schema
 
@@ -333,7 +333,7 @@ bal edi convertEdifactSchema -v <EDIFACT version> -t <EDIFACT message type> -o <
 
 Example:
 ```
-$ bal edi convertEdifactSchema -v 01B -t ORDERS -o output/schema.json
+$ bal edi convertEdifactSchema -v d03a -t ORDERS -o output/schema.json
 ```
 ### ESL to Ballerina EDI schema
 
@@ -342,12 +342,12 @@ ESL, or Electronic Shelf Labeling, is a technology used in retail stores to disp
 The below command can be used to convert ESL schema to Ballerina EDI schema:
 
 ```
-bal edi convertESL -b <Segment definitions file path> -s <ESL schema file/folder> -o <output file/folder>
+bal edi convertESL -b <segment definitions file path> -i <input ESL schema file/folder> -o <output file/folder>
 ```
 
 Example:
 ```
-$ bal edi convertESL -b segment_definitions.yaml -s esl_schema.esl -o output/schema.json
+$ bal edi convertESL -b segment_definitions.yaml -i esl_schema.esl -o output/schema.json
 ```
 ## Issues and projects
 
@@ -381,7 +381,7 @@ Execute the commands below to build from the source.
    ```bash
    ./gradlew clean build
    ```
- > **Note**: Ensure that the ``.ballerina/.config/bal-tools.toml` is configured before executing build.
+ > **Note**: The content of the `.ballerina/.config/bal-tools.toml` file will be wiped out during the build process.
 
 2. To run the tests:
 

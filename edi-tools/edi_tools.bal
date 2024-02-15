@@ -15,19 +15,114 @@
 // under the License.
 
 import ballerina/io;
-import editools.x12xsd;
 import ballerina/file;
-import editools.esl;
 import ballerina/log;
 import editools.codegen;
 import editools.edifact;
+import editools.esl;
+import editools.x12xsd;
 
 public function main(string[] args) {
 
-    string usage = string `Ballerina EDI tools -
-        Ballerina code generation for edi schema: bal edi codegen -s <schema json path> -o <output bal file path>
-        EDI library generation: bal edi libgen -O <org name> -n <library name> -s <EDI schema folder> -o <output folder>
-        Convert EDIFACT schema to EDI: bal edi convertEdifactSchema -v <EDIFACT version> -t <EDIFACT message type> -o <output folder>`;
+    string usage = string 
+`NAME
+    bal edi - Ballerina EDI Tool
+
+SYNOPSIS
+       bal edi <command> [OPTIONS] [<arguments>]
+
+DESCRIPTION
+       The 'bal edi' command-line tool provides the functionality required to process
+       EDI files and implement EDI integrations.
+
+COMMANDS
+       codegen
+           Generate records and parser functions for a given EDI schema.
+
+       libgen
+           Generate EDI libraries.
+
+       convertX12Schema
+           Convert X12 schema to Ballerina EDI schema.
+
+       convertEdifactSchema
+           Convert EDIFACT schema to Ballerina EDI schema.
+
+       convertESL
+           Convert ESL schema to Ballerina EDI schema.
+
+OPTIONS
+       The following options are available for each command:
+
+       codegen:
+           -i, --input <input schema path>
+               Path to the EDI schema file.
+
+           -o, --output <output path>
+               Path to the output file.
+
+       libgen:
+           -p, --package <package name>
+               Package name(organization-name/library-name).
+
+           -i, --input <input schema folder>
+               Path to the folder containing EDI schemas.
+
+           -o, --output <output folder>
+               Path to the folder where libraries will be generated.
+
+       convertX12Schema:
+           -H, --headers
+               Enable headers mode for X12 schema conversion.
+
+           -c, --collection
+               Enable collection mode for X12 schema conversion.
+
+           -i, --input <input schema path>
+               Path to the X12 schema file.
+
+           -o, --output <output path>
+               Path to the output file or folder.
+
+           -d, --segdet <segment details path>
+               Path to the segment details file for X12 schema conversion.
+
+       convertEdifactSchema:
+           -v, --version <EDIFACT version>
+               EDIFACT version for EDIFACT schema conversion.
+
+           -t, --type <EDIFACT message type>
+               EDIFACT message type for EDIFACT schema conversion.
+
+           -o, --output <output folder>
+               Path to the folder where EDIFACT schemas will be generated.
+
+       convertESL:
+           -b, --basedef <segment definitions file path>
+               Path to the segment definitions file for ESL schema conversion.
+
+           -i, --input <input ESL schema file/folder>
+               Path to the ESL schema file or folder.
+
+           -o, --output <output file/folder>
+               Path to the output file or folder.
+
+EXAMPLES
+       Generate records and parser functions for a given EDI schema.
+           $ bal edi codegen -i resources/schema.json -o modules/orders/records.bal
+
+       Generate EDI libraries.
+           $ bal edi libgen -p myorg/mylib -i schemas/ -o lib/
+
+       Convert X12 schema to Ballerina EDI schema.
+           $ bal edi convertX12Schema -i input/schema.xsd -o output/schema.json
+
+       Convert EDIFACT schema to Ballerina EDI schema.
+           $ bal edi convertEdifactSchema -v d03a -t ORDERS -o output/schema.json
+
+       Convert ESL schema to Ballerina EDI schema.
+           $ bal edi convertESL -b segment_definitions.yaml -i esl_schema.esl -o output/schema.json
+`;
 
     if args.length() == 0 {
         io:println(usage);
