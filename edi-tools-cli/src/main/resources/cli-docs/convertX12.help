@@ -15,8 +15,8 @@ OPTIONS
        -c, --collection
            Enable collection mode for X12 schema conversion.
 
-       -i, --input <schema input path>
-           Input path for X12 schema conversion.
+       -i, --input <input schema path>
+           Path to the X12 schema file.
 
        -o, --output <output path>
            Path to the output file or folder.
@@ -26,4 +26,4 @@ OPTIONS
 
 EXAMPLE
        Convert X12 schema to Ballerina EDI schema.
-           $ bal edi convertX12Schema -H -i input/schema.xsd -o output/schema.json
+           $ bal edi convertX12Schema -i input/schema.xsd -o output/schema.json

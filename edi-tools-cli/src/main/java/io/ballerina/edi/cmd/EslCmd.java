@@ -41,7 +41,7 @@ public class EslCmd implements BLauncherCmd {
     @CommandLine.Option(names = { "-b", "--basedef" }, description = "Segment definitions path")
     private String basedefPath;
 
-    @CommandLine.Option(names = { "-s", "--schema" }, description = "ESL schema path")
+    @CommandLine.Option(names = { "-i", "--input" }, description = "Input ESL schema path")
     private String schemaPath;
 
     @CommandLine.Option(names = { "-o", "--output" }, description = "Output path")

@@ -28,20 +28,17 @@ OPTIONS
        The following options are available for each command:
 
        codegen:
-           -s, --schema <EDI schema path>
-               Path to the EDI schema file or folder.
+           -i, --input <input schema path>
+               Path to the EDI schema file.
 
            -o, --output <output path>
-               Path to the output file or folder.
+               Path to the output file.
 
        libgen:
-           -O, --org <org name>
-               Organization name for generating EDI libraries.
+           -p, --package <package name>
+               Package name(organization-name/library-name).
 
-           -n, --name <library name>
-               Name for the generated EDI library.
-
-           -s, --schema <EDI schema folder>
+           -i, --input <input schema folder>
                Path to the folder containing EDI schemas.
 
            -o, --output <output folder>
@@ -54,8 +51,8 @@ OPTIONS
            -c, --collection
                Enable collection mode for X12 schema conversion.
 
-           -i, --input <schema input path>
-               Input path for X12 schema conversion.
+           -i, --input <input schema path>
+               Path to the X12 schema file.
 
            -o, --output <output path>
                Path to the output file or folder.
@@ -77,7 +74,7 @@ OPTIONS
            -b, --basedef <segment definitions file path>
                Path to the segment definitions file for ESL schema conversion.
 
-           -s, --schema <ESL schema file/folder>
+           -i, --input <input ESL schema file/folder>
                Path to the ESL schema file or folder.
 
            -o, --output <output file/folder>
@@ -85,16 +82,16 @@ OPTIONS
 
 EXAMPLES
        Generate records and parser functions for a given EDI schema.
-           $ bal edi codegen -s resources/schema.json -o modules/orders/records.bal
+           $ bal edi codegen -i resources/schema.json -o modules/orders/records.bal
 
        Generate EDI libraries.
-           $ bal edi libgen -O myorg -n mylib -s schemas/ -o lib/
+           $ bal edi libgen -p myorg/mylib -i schemas/ -o lib/
 
        Convert X12 schema to Ballerina EDI schema.
-           $ bal edi convertX12Schema -H -i input/schema.xsd -o output/schema.json
+           $ bal edi convertX12Schema -i input/schema.xsd -o output/schema.json
 
        Convert EDIFACT schema to Ballerina EDI schema.
-           $ bal edi convertEdifactSchema -v 01B -t ORDERS -o output/schema.json
+           $ bal edi convertEdifactSchema -v d03a -t ORDERS -o output/schema.json
 
        Convert ESL schema to Ballerina EDI schema.
-           $ bal edi convertESL -b segment_definitions.yaml -s esl_schema.esl -o output/schema.json
+           $ bal edi convertESL -b segment_definitions.yaml -i esl_schema.esl -o output/schema.json

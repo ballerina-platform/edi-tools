@@ -38,7 +38,7 @@ public class CodegenCmd implements BLauncherCmd {
 
     private final PrintStream printStream;
 
-    @CommandLine.Option(names = { "-s", "--schema" }, description = "EDI schema path")
+    @CommandLine.Option(names = { "-i", "--input" }, description = "EDI schema file path")
     private String schemaPath;
 
     @CommandLine.Option(names = { "-o", "--output" }, description = "Output path")

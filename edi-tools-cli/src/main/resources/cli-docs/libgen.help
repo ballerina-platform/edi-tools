@@ -8,13 +8,10 @@ DESCRIPTION
        The 'bal edi libgen' command is used to generate EDI libraries.
 
 OPTIONS
-       -O, --org <org name>
-           Organization name for generating EDI libraries.
+       -p, --package <package name>
+           Package name(organization-name/library-name).
 
-       -n, --name <library name>
-           Name for the generated EDI library.
-
-       -s, --schema <EDI schema folder>
+       -i, --input <input schema folder>
            Path to the folder containing EDI schemas.
 
        -o, --output <output folder>
@@ -22,4 +19,4 @@ OPTIONS
 
 EXAMPLE
        Generate EDI libraries.
-           $ bal edi libgen -O myorg -n mylib -s schemas/ -o lib/
+           $ bal edi libgen -p myorg/mylib -i schemas/ -o lib/

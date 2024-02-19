@@ -38,13 +38,10 @@ public class LibgenCmd implements BLauncherCmd {
 
     private PrintStream printStream;
 
-    @CommandLine.Option(names = { "-O", "--org" }, description = "Organization name")
-    private String orgName;
+    @CommandLine.Option(names = { "-p", "--package" }, description = "Package name(organization-name/library-name)")
+    private String packageName;
 
-    @CommandLine.Option(names = { "-n", "--name" }, description = "Library name")
-    private String libName;
-
-    @CommandLine.Option(names = { "-s", "--schema" }, description = "EDI schema path")
+    @CommandLine.Option(names = { "-i", "--input" }, description = "EDI schemas path")
     private String schemaPath;
 
     @CommandLine.Option(names = { "-o", "--output" }, description = "Output path")
@@ -56,20 +53,26 @@ public class LibgenCmd implements BLauncherCmd {
 
     @Override
     public void execute() {
-        if (orgName == null || libName == null || schemaPath == null || outputPath == null) {
+        if (packageName == null || schemaPath == null || outputPath == null) {
             StringBuilder stringBuilder = new StringBuilder();
             printUsage(stringBuilder);
             printStream.println(stringBuilder.toString());
             return;
         }
+        if (!packageName.matches("^[a-z0-9]+/[a-z0-9]+$")) {
+            printStream.println("Invalid package name. Package name should be in the format orgname/libname");
+            return;
+        }
         try {
-            printStream.println("Generating library package for " + orgName + " - " + libName + " : " + schemaPath);
+            printStream.println("Generating library package for " + packageName + " : " + schemaPath);
             Class<?> clazz = LibgenCmd.class;
             ClassLoader classLoader = clazz.getClassLoader();
             Path tempFile = Files.createTempFile(null, null);
             try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
+            String orgName = packageName.split("/")[0];
+            String libName = packageName.split("/")[1];
             ProcessBuilder processBuilder = new ProcessBuilder(
                     "java", "-jar", tempFile.toAbsolutePath().toString(), "libgen", orgName, libName, schemaPath,
                     outputPath);
