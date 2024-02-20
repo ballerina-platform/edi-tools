@@ -22,11 +22,11 @@ The tool supports three main usages as follows.
 
 - **Code generation**: Generate Ballerina records and parser functions for a given EDI schema.
 - **Library generation**: Generates Ballerina records, parser functions, utility methods, and a REST connector for a given collection of EDI schemas and organizes those as a Ballerina library
-- **Schema Conversion**: Convert various EDI schema formats to Ballerina EDI schema format.
+- **Schema conversion**: Convert various EDI schema formats to Ballerina EDI schema format.
 
-## Define EDI Schema
+## Define EDI schema
 
-Prior to utilizing the EDI Tools, it is crucial to define the structure of the EDI data meant for import. Developers have the option to utilize the [Ballerina EDI Schema Specification](https://github.com/ballerina-platform/module-ballerina-edi/docs/specs/SchemaSpecification.md) for guidance. This specification outlines the essential components required to describe an EDI schema, encompassing attributes such as name, delimiters, segments, field definitions, components, sub-components, and additional configuration options.
+Prior to utilizing the EDI Tools, it is crucial to define the structure of the EDI data meant for import. Developers have the option to utilize the [Ballerina EDI Schema Specification](https://github.com/ballerina-platform/module-ballerina-edi/blob/main/docs/specs/SchemaSpecification.md) for guidance. This specification outlines the essential components required to describe an EDI schema, encompassing attributes such as name, delimiters, segments, field definitions, components, sub-components, and additional configuration options.
 
 As an illustrative example, consider the following EDI schema definition for a _simple order_, assumed to be stored as "schema.json":
 
@@ -303,7 +303,7 @@ Above REST call will return a JSON response like below:
 }
 ```
 
-## Schema Conversion
+## Schema conversion
 
 Instead of writing Ballerina EDI schema from scratch,The Ballerina EDI tool also supports converting various EDI schema formats to Ballerina EDI schema format.
 
