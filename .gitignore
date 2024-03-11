@@ -33,3 +33,6 @@ build
 
 #Ignore all dependancy files
 Dependencies.toml
+
+#Ignore all .deb files
+*.deb
