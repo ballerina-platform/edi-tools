@@ -91,14 +91,25 @@ task createBallerinaToolConfigFile {
         version = "$version"
         active = true
     """.stripIndent()
-    
+
     outputs.upToDateWhen { false }
     doLast {
         if (!file(ballerinaToolConfigToml).exists()) {
-            file(ballerinaToolConfigToml).mkdir()
+            file(ballerinaToolConfigDir).mkdirs()
+            file(ballerinaToolConfigToml).createNewFile()
         }
-        file(ballerinaToolConfigToml).write(configFileContent)
-        println("Successfully created the bal-tools.toml file in the .ballerina/.config directory")
+
+        // Retrieve existing content of toml file
+        def tomlFile = file(ballerinaToolConfigToml)
+        def tomlFileContent = tomlFile.text
+
+        // Append tool to toml file if it does not exist
+        if (!tomlFileContent.contains(configFileContent)) {
+            tomlFile << "\n" + configFileContent
+            println("Successfully created the bal-tools.toml file in the .ballerina/.config directory")
+        } else {
+            println("bal scan tool already exists!")
+        }
     }
 }
 
@@ -160,6 +171,10 @@ task build {
     dependsOn buildEDIPackage
 }
 
+task release {
+    dependsOn publishEDIPackage
+}
+
 deleteOldEdiCliJars.dependsOn ":edi-tools-cli:build"
 copyEdiCliJar.dependsOn deleteOldEdiCliJars
 commitTomlFiles.dependsOn updateTomlFiles
@@ -167,6 +182,4 @@ buildEDIPackage.dependsOn createBallerinaToolConfigFile
 buildEDIPackage.dependsOn copyEdiCliJar
 buildEDIPackage.dependsOn commitTomlFiles
 
-publish.dependsOn build
-publish.dependsOn publishEDIPackage
-publishEDIPackage.dependsOn build
+release.dependsOn build
