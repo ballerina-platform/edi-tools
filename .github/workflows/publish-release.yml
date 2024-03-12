@@ -1,16 +1,7 @@
-name: Release
+name: Publish Release
 
 on:
     workflow_dispatch:
-      inputs:
-        environment:
-          type: choice
-          description: Select environment
-          required: true
-          options:
-            - CENTRAL
-            - DEV CENTRAL
-            - STAGE CENTRAL
 
 jobs:
     build:
