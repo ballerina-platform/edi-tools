@@ -31,8 +31,7 @@ jobs:
                   java-version: 17.0.7
 
             - name: Set ENV Variables
-              run: |
-                run: echo "VERSION=$((grep -w "version" | cut -d= -f2) < gradle.properties | rev | cut --complement -d- -f1 | rev)" >> $GITHUB_ENV
+              run:  echo "VERSION=$((grep -w "version" | cut -d= -f2) < gradle.properties | rev | cut --complement -d- -f1 | rev)" >> $GITHUB_ENV
 
             - name: Pre release depenency version update
               env:
