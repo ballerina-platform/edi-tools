@@ -1,0 +1,58 @@
+name: Dev Central Release
+
+on:
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up JDK 11
+              uses: actions/setup-java@v3
+              with:
+                  distribution: 'zulu'
+                  java-version: 11
+
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+
+            - name: Prepare all modules for build
+              run: |
+                  ./gradlew prepare
+
+            - name: Build edi-tools project as an executable jar using Ballerina
+              uses: ballerina-platform/ballerina-action/@2201.7.0
+              with:
+                  args: build ./edi-tools
+              env:
+                  JAVA_HOME: /usr/lib/jvm/default-jvm
+
+            - name: Build with Gradle
+              run: |
+                ./gradlew clean build
+              env:
+                  packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
+                  packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
+
+            - name: Build the final EDI tools package using Ballerina
+              uses: ballerina-platform/ballerina-action/@2201.7.0
+              with:
+                  args: pack ./edi-tools-package
+              env:
+                  JAVA_HOME: /usr/lib/jvm/default-jvm
+
+            - name: Ballerina Push
+              uses: ballerina-platform/ballerina-action/@2201.7.0
+              with:
+                  args: push
+              env:
+                  WORKING_DIR: ./edi-tools-package
+                  BALLERINA_DEV_CENTRAL: true
+                  BALLERINA_STAGE_CENTRAL: false
+                  packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
+                  packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
+                  JAVA_HOME: /usr/lib/jvm/default-jvm
+                  BALLERINA_CENTRAL_ACCESS_TOKEN: ${{ secrets.BALLERINA_CENTRAL_ACCESS_TOKEN }}
