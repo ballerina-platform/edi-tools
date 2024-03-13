@@ -2,7 +2,7 @@ name: Dev Central Release
 
 on:
     workflow_dispatch:
-    pull_request:
+
 jobs:
     build:
         runs-on: ubuntu-latest

@@ -2,7 +2,15 @@ name: Release
 
 on:
     workflow_dispatch:
-    pull_request:
+      inputs:
+        environment:
+          type: choice
+          description: Select environment
+          required: true
+          options:
+            - CENTRAL
+            - DEV CENTRAL
+            - STAGE CENTRAL
 
 jobs:
     build:
