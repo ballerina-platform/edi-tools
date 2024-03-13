@@ -33,6 +33,7 @@ def ballerinaLocalDir = System.getProperty("user.home") + "/.ballerina/repositor
 def ediPackageDir = project.file("$project.projectDir")
 def balCentralCacheDir = project.file(System.getProperty("user.home") + "/.ballerina/repositories/central.ballerina.io")
 def ballerinaToolConfigToml = System.getProperty("user.home") + "/.ballerina/.config/bal-tools.toml"
+def ballerinaToolConfigDir = System.getProperty("user.home") + "/.ballerina/.config"
 task updateTomlFiles {
     // Update the Ballerina.toml and Dependencies.toml files
     doLast {
