@@ -1,22 +1,22 @@
 NAME
-       bal edi libgen - Ballerina EDI Library Generation
+       bal edi libgen - Ballerina EDI Package Generation
 
 SYNOPSIS
        bal edi libgen [OPTIONS]
 
 DESCRIPTION
-       The 'bal edi libgen' command is used to generate EDI libraries.
+       The 'bal edi libgen' command is used to generate EDI packages.
 
 OPTIONS
        -p, --package <package name>
-           Package name(organization-name/library-name).
+           Package name(organization-name/package-name).
 
        -i, --input <input schema folder>
            Path to the folder containing EDI schemas.
 
        -o, --output <output folder>
-           Path to the folder where libraries will be generated.
+           Path to the folder where packages will be generated.
 
 EXAMPLE
-       Generate EDI libraries.
+       Generate EDI packages.
            $ bal edi libgen -p myorg/mylib -i schemas/ -o lib/
