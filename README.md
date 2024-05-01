@@ -84,7 +84,7 @@ $ cd sample
 $ bal add orders
 ```
 
-Create a new folder named resources in the root of the project and copy the `schema.json` and `sample.edi` file into it. At this point, the directory structure of the project would look like below:
+Create a new folder named resources in the root of the project and copy the `schema.json` and `sample.edi` files into it. At this point, the directory structure of the project would look like below:
 ```
 .
 ├── Ballerina.toml
@@ -166,7 +166,7 @@ public function main() returns error? {
 
 ## Package generation
 
-Usually, organizations have to work with many EDI formats, and integration developers need to have a convenient way to work on EDI data with minimum effort. Ballerina EDI libraries facilitate this by allowing organizations to pack all EDI processing code for their EDI collections into an importable package. Therefore, integration developers can simply import those libraries and convert EDI messages into Ballerina records in a single line of code.
+Usually, organizations have to work with many EDI formats, and integration developers need to have a convenient way to work on EDI data with minimum effort. Ballerina EDI libraries facilitate this by allowing organizations to pack all EDI processing codes for their EDI collections into an importable package. Therefore, integration developers can simply import those libraries and convert EDI messages into Ballerina records in a single line of code.
 
 The below command can be used to generate Ballerina records, parser and util functions, and a REST connector for a given collection of EDI schemas organized into a Ballerina package:
 
@@ -249,7 +249,7 @@ It is quite common for different trading partners to use variations of standard 
 
 ### Using generated EDI libraries as standalone REST services
 
-EDI libraries generated in the previous step can also be compiled to a jar file (using the ```bal build``` command) and executed(using the ```bal run``` command) as a standalone Ballerina service that processes EDI files via a REST interface. This is useful for microservice environments where the EDI processing functionality can be deployed as a separate micro service.
+EDI libraries generated in the previous step can also be compiled to a jar file (using the ```bal build``` command) and executed(using the ```bal run``` command) as a standalone Ballerina service that processes EDI files via a REST interface. This is useful for microservice environments where the EDI processing functionality can be deployed as a separate microservice.
 
 For example, the "citymart" package generated in the above step can be built and executed as a jar file. Once executed, it will expose a REST service to work with X12 850, 810, 820, and 855 files. Converting of X12 850 EDI text to JSON using the REST service is shown below:
 
