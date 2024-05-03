@@ -28,7 +28,7 @@ The tool supports three main usages as follows.
 
 Prior to utilizing the EDI Tools, it is crucial to define the structure of the EDI data meant for import. Developers have the option to utilize the [Ballerina EDI Schema Specification](https://github.com/ballerina-platform/module-ballerina-edi/blob/main/docs/specs/SchemaSpecification.md) for guidance. This specification outlines the essential components required to describe an EDI schema, encompassing attributes such as name, delimiters, segments, field definitions, components, sub-components, and additional configuration options.
 
-As an illustrative example, consider the following EDI schema definition for a _simple order_, assumed to be stored as "schema.json":
+As an illustrative example, consider the following EDI schema definition for a _simple order_, assumed to be stored as `schema.json`:
 
 ```json
 {
@@ -53,7 +53,7 @@ As an illustrative example, consider the following EDI schema definition for a _
 
 This schema can be employed to parse EDI documents featuring one HDR segment, mapped to the _header_, and any number of ITM segments, mapped to _items_. The HDR segment incorporates three _fields_, corresponding to _orderId_, _organization_, and _date_. Each ITM segment comprises two fields, mapped to _item_ and _quantity_.
 
-Below is an example of an EDI document that can be parsed using the aforementioned schema. Let's assume that the following EDI information is saved in a file named 'sample.edi':
+Below is an example of an EDI document that can be parsed using the aforementioned schema. Let's assume that the following EDI information is saved in a file named `sample.edi`:
 
 ```
 HDR*ORDER_1201*ABC_Store*2008-01-01~
@@ -76,7 +76,7 @@ The above command generates all Ballerina records and parser functions required 
 
 ### Example
 
-Create a new Ballerina project named `sample` and create a module named `orders` inside that project by using the below commands
+Create a new Ballerina project named `sample` and create a module named `orders` inside that project by using the below commands:
 
 ```
 $ bal new sample
