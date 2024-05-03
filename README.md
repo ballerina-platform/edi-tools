@@ -21,7 +21,7 @@ $ bal tool pull edi
 The tool supports three main usages as follows.
 
 - **Code generation**: Generate Ballerina records and parser functions for a given EDI schema.
-- **Package generation**: Generates Ballerina records, parser functions, utility methods, and a REST connector for a given collection of EDI schemas and organizes those as a Ballerina package
+- **Package generation**: Generates Ballerina records, parser functions, utility methods, and a REST connector for a given collection of EDI schemas and organizes those as a Ballerina package.
 - **Schema conversion**: Convert various EDI schema formats to Ballerina EDI schema format.
 
 ## Define EDI schema
@@ -69,7 +69,7 @@ ITM*T-46*28~
 The below command can be used to generate typed Ballerina records and parser functions for a given EDI schema.
 
 ```
-bal edi codegen <input schema path> <output path>
+bal edi codegen -i <input schema path> -o <output path>
 ```
 
 The above command generates all Ballerina records and parser functions required for working with data in the given EDI schema and writes those into the file specified in the `output path`. The generated parser function (i.e. `fromEdiString(...)`) can read EDI text files into generated records, which can be accessed from Ballerina code similar to accessing any other Ballerina record. Similarly, the generated serialization function (i.e. `toEdiString(...)`) can serialize generated Ballerina records into EDI text.
