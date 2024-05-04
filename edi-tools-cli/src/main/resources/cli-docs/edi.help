@@ -13,7 +13,7 @@ COMMANDS
            Generate records and parser functions for a given EDI schema.
 
        libgen
-           Generate EDI libraries.
+           Generate EDI packages.
 
        convertX12Schema
            Convert X12 schema to Ballerina EDI schema.
@@ -36,13 +36,13 @@ OPTIONS
 
        libgen:
            -p, --package <package name>
-               Package name(organization-name/library-name).
+               Package name(organization-name/package-name).
 
            -i, --input <input schema folder>
                Path to the folder containing EDI schemas.
 
            -o, --output <output folder>
-               Path to the folder where libraries will be generated.
+               Path to the folder where packages will be generated.
 
        convertX12Schema:
            -H, --headers
@@ -84,7 +84,7 @@ EXAMPLES
        Generate records and parser functions for a given EDI schema.
            $ bal edi codegen -i resources/schema.json -o modules/orders/records.bal
 
-       Generate EDI libraries.
+       Generate EDI packages.
            $ bal edi libgen -p myorg/mylib -i schemas/ -o lib/
 
        Convert X12 schema to Ballerina EDI schema.

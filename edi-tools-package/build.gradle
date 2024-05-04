@@ -108,7 +108,7 @@ task createBallerinaToolConfigFile {
             tomlFile << "\n" + configFileContent
             println("Successfully created the bal-tools.toml file in the .ballerina/.config directory")
         } else {
-            println("bal scan tool already exists!")
+            println("bal edi tool already exists!")
         }
     }
 }

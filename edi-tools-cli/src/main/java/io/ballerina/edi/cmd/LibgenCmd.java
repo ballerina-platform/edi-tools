@@ -38,7 +38,7 @@ public class LibgenCmd implements BLauncherCmd {
 
     private PrintStream printStream;
 
-    @CommandLine.Option(names = { "-p", "--package" }, description = "Package name(organization-name/library-name)")
+    @CommandLine.Option(names = { "-p", "--package" }, description = "Package name(organization-name/package-name)")
     private String packageName;
 
     @CommandLine.Option(names = { "-i", "--input" }, description = "EDI schemas path")
@@ -60,7 +60,7 @@ public class LibgenCmd implements BLauncherCmd {
             return;
         }
         if (!packageName.matches("^[a-z0-9]+/[a-z0-9]+$")) {
-            printStream.println("Invalid package name. Package name should be in the format orgname/libname");
+            printStream.println("Invalid package name. Package name should be in the format orgname/packagename");
             return;
         }
         try {
