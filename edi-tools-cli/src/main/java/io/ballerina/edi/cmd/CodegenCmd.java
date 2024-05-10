@@ -33,7 +33,6 @@ import java.nio.file.StandardCopyOption;
 
 @CommandLine.Command(name = "codegen", description = "Generates Ballerina records and parser functions for a given EDI schema.")
 public class CodegenCmd implements BLauncherCmd {
-    private static final String EDI_TOOL = "editools.jar";
     private static final String CMD_NAME = "codegen";
 
     private final PrintStream printStream;
@@ -58,14 +57,11 @@ public class CodegenCmd implements BLauncherCmd {
         }
         try {
             printStream.println("Generating code for " + schemaPath + "...");
-            Class<?> clazz = CodegenCmd.class;
-            ClassLoader classLoader = clazz.getClassLoader();
-            Path tempFile = Files.createTempFile(null, null);
-            try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
-                Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
-            }
+            Path tempFolder = Files.createTempDirectory(null);
+            Util.copyFromJar(tempFolder);
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java", "-jar", tempFile.toAbsolutePath().toString(), "codegen", schemaPath, outputPath);
+                    "bal", "run",  tempFolder.toAbsolutePath().toString(), "--", "codegen",
+                    schemaPath, outputPath);
             processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
