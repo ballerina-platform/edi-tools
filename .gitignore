@@ -36,3 +36,7 @@ Dependencies.toml
 
 #Ignore all .deb files
 *.deb
+
+.idea
+
+**/bin/**
