@@ -59,11 +59,13 @@ task copyEdiToolsJar {
     // Copy edi-tools jar to resources folder
     doLast {
         copy {
-            from "target/bin/editools.jar"
-            into "../edi-tools-cli/src/main/resources"
-            include "*.jar"
+            from "$project.projectDir"
+            into "../edi-tools-cli/src/main/resources/edi-tool"
+            exclude "build.gradle"
+            exclude "**/target/**"
+            exclude "**/bin/**"
         }
-        println "Copying edi-tools jar to resources folder"
+        println "Copying edi-tools bal module to resources folder"
     }
 }
 task test{
