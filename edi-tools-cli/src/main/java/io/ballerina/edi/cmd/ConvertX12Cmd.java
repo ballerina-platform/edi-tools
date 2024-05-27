@@ -80,14 +80,15 @@ public class ConvertX12Cmd implements BLauncherCmd {
         Class<?> clazz = ConvertX12Cmd.class;
         ClassLoader classLoader = clazz.getClassLoader();
         try {
-            Path tempFile = Files.createTempFile(null, null);
+            Path tempFile = Files.createTempFile(null, ".jar");
             try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             List<String> argsList = new ArrayList<>();
-            argsList.add("java");
-            argsList.add("-jar");
+            argsList.add("bal");
+            argsList.add("run");
             argsList.add(tempFile.toAbsolutePath().toString());
+            argsList.add("--");
             argsList.add(CMD_NAME);
             if (headersIncluded) {
                 argsList.add("H");

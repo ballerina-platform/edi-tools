@@ -61,12 +61,12 @@ public class ConvertEdifactCmd implements BLauncherCmd {
         try {
             printStream.println("Generating EDI schema for EDIFACT schema ...");
             URL res = ConvertEdifactCmd.class.getClassLoader().getResource("editools.jar");
-            Path tempFile = Files.createTempFile(null, null);
+            Path tempFile = Files.createTempFile(null, ".jar");
             try (InputStream in = res.openStream()) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java", "-jar", tempFile.toAbsolutePath().toString(), CMD_NAME, version, type == null ? "" : type,
+                    "bal", "run", tempFile.toAbsolutePath().toString(), "--", CMD_NAME, version, type == null ? "" : type,
                     dir);
             processBuilder.inheritIO();
             Process process = processBuilder.start();

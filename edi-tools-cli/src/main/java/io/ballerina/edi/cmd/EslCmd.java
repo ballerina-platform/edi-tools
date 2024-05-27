@@ -63,12 +63,12 @@ public class EslCmd implements BLauncherCmd {
             printStream.println("Converting ESL schemas in " + schemaPath);
             Class<?> clazz = LibgenCmd.class;
             ClassLoader classLoader = clazz.getClassLoader();
-            Path tempFile = Files.createTempFile(null, null);
+            Path tempFile = Files.createTempFile(null, ".jar");
             try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java", "-jar", tempFile.toAbsolutePath().toString(), "convertESL", schemaPath, basedefPath,
+                    "bal", "run", tempFile.toAbsolutePath().toString(), "--", "convertESL", schemaPath, basedefPath,
                     outputPath);
             Process process = processBuilder.start();
             process.waitFor();

@@ -67,14 +67,14 @@ public class LibgenCmd implements BLauncherCmd {
             printStream.println("Generating library package for " + packageName + " : " + schemaPath);
             Class<?> clazz = LibgenCmd.class;
             ClassLoader classLoader = clazz.getClassLoader();
-            Path tempFile = Files.createTempFile(null, null);
+            Path tempFile = Files.createTempFile(null, ".jar");
             try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             String orgName = packageName.split("/")[0];
             String libName = packageName.split("/")[1];
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java", "-jar", tempFile.toAbsolutePath().toString(), "libgen", orgName, libName, schemaPath,
+                    "bal", "run", tempFile.toAbsolutePath().toString(), "--", "libgen", orgName, libName, schemaPath,
                     outputPath);
             processBuilder.inheritIO();
             Process process = processBuilder.start();
