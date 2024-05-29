@@ -58,11 +58,11 @@ public class EdiCmd implements BLauncherCmd {
         try {
             Class<?> clazz = EdiCmd.class;
             ClassLoader classLoader = clazz.getClassLoader();
-            Path tempFile = Files.createTempFile(null, null);
+            Path tempFile = Files.createTempFile(null, ".jar");
             try (InputStream in = classLoader.getResourceAsStream(EDI_TOOL)) {
                 Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
             }
-            ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", tempFile.toAbsolutePath().toString());
+            ProcessBuilder processBuilder = new ProcessBuilder("bal", "run", tempFile.toAbsolutePath().toString());
             processBuilder.inheritIO();
             Process process = processBuilder.start();
             process.waitFor();
