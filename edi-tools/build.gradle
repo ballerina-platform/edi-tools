@@ -72,9 +72,9 @@ task test{
             // Run tests for each sample
             exec {
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        commandLine 'cmd', "/c", 'bal test'
+                        commandLine 'cmd', "/c", 'bal test --code-coverage --coverage-format=xml'
                     } else {
-                        commandLine 'sh', "-c", 'bal test'
+                        commandLine 'sh', "-c", 'bal test --code-coverage --coverage-format=xml'
                     }
             }
         } catch (Exception e) {
