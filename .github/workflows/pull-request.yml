@@ -44,3 +44,5 @@ jobs:
 
           - name: Generate Codecov Report
             uses: codecov/codecov-action@v3
+            with:
+              token: ${{ secrets.CODECOV_TOKEN }}
