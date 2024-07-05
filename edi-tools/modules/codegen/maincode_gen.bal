@@ -29,6 +29,11 @@ public isolated function getEDINames() returns string[] {
     return ${libdata.ediNames.toString()};
 }
 
+# Convert EDI string to Ballerina record.
+# 
+# + ediText - EDI string to be converted
+# + ediName - EDI type name
+# + return - Ballerina record or error
 public isolated function fromEdiString(string ediText, EDI_NAME ediName) returns anydata|error {
     EdiDeserialize? ediDeserialize = ediDeserializers[ediName];
     if ediDeserialize is () {
@@ -37,6 +42,11 @@ public isolated function fromEdiString(string ediText, EDI_NAME ediName) returns
     return ediDeserialize(ediText);
 }
 
+# Convert Ballerina record to EDI string.
+# 
+# + data - Ballerina record to be converted
+# + ediName - EDI type name
+# + return - EDI string or error
 public isolated function toEdiString(anydata data, EDI_NAME ediName) returns string|error {
     EdiSerialize? ediSerialize = ediSerializers[ediName];
     if ediSerialize is () {
