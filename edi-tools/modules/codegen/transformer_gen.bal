@@ -21,7 +21,7 @@ type InternalType ${mainRecordName};
 # Convert EDI string to Ballerina ${mainRecordName} record.
 #
 # + ediText - EDI string to be converted
-# + return - Ballerina record
+# + return - Ballerina record or error
 public isolated function transformFromEdiString(string ediText) returns anydata|error {
     ${mainRecordName} data = check fromEdiString(ediText);
     return transformRead(data);
@@ -32,7 +32,7 @@ isolated function transformRead(${mainRecordName} data) returns InternalType => 
 # Convert Ballerina ${mainRecordName} record to EDI string.
 # 
 # + content - Ballerina record to be converted
-# + return - EDI string
+# + return - EDI string or error
 public isolated function transformToEdiString(anydata content) returns string|error {
     ${mainRecordName} data = transformWrite(check content.ensureType());
     return toEdiString(data);

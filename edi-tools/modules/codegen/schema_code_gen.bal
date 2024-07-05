@@ -31,7 +31,7 @@ import ballerina/edi;
 # Convert EDI string to Ballerina ${ediSchema.name} record.
 # 
 # + ediText - EDI string to be converted
-# + return - Ballerina record
+# + return - Ballerina record or error
 public isolated function fromEdiString(string ediText) returns ${ediSchema.name}|error {
     edi:EdiSchema ediSchema = check edi:getSchema(schemaJson);
     json dataJson = check edi:fromEdiString(ediText, ediSchema);
@@ -41,7 +41,7 @@ public isolated function fromEdiString(string ediText) returns ${ediSchema.name}
 # Convert Ballerina ${ediSchema.name} record to EDI string.
 # 
 # + data - Ballerina record to be converted
-# + return - EDI string
+# + return - EDI string or error
 public isolated function toEdiString(${ediSchema.name} data) returns string|error {
     edi:EdiSchema ediSchema = check edi:getSchema(schemaJson);
     return edi:toEdiString(data, ediSchema);    
@@ -49,7 +49,7 @@ public isolated function toEdiString(${ediSchema.name} data) returns string|erro
 
 # Get the EDI schema.
 # 
-# + return - EDI schema
+# + return - EDI schema or error
 public isolated function getSchema() returns edi:EdiSchema|error {
     return edi:getSchema(schemaJson);
 }
@@ -58,7 +58,7 @@ public isolated function getSchema() returns edi:EdiSchema|error {
 # 
 # + ediText - EDI string to be converted
 # + schema - EDI schema
-# + return - Ballerina record
+# + return - Ballerina record or error
 public isolated function fromEdiStringWithSchema(string ediText, edi:EdiSchema schema) returns ${ediSchema.name}|error {
     json dataJson = check edi:fromEdiString(ediText, schema);
     return dataJson.cloneWithType();
@@ -68,7 +68,7 @@ public isolated function fromEdiStringWithSchema(string ediText, edi:EdiSchema s
 # 
 # + data - Ballerina record to be converted
 # + ediSchema - EDI schema
-# + return - EDI string
+# + return - EDI string or error
 public isolated function toEdiStringWithSchema(${ediSchema.name} data, edi:EdiSchema ediSchema) returns string|error {
     return edi:toEdiString(data, ediSchema);    
 }
