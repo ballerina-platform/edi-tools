@@ -103,7 +103,7 @@ function convertFromX12WithHeaders(string inPath) returns edi:EdiSchema|error {
     return ediSchema;
 }
 
-function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema, string dirPath = "") returns edi:EdiSegGroupSchema|error {
+function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema, string dirPath = "", int parentMinOccur = 0, int parentMaxOccur = 1) returns edi:EdiSegGroupSchema|error {
     xml elements = segmentGroup/<xs:complexType>/<xs:sequence>/<xs:element>;
     string tag = "";
     do {
@@ -112,9 +112,14 @@ function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema,
         return error("Segment group name not found. " + segmentGroup.toString(), e);
     }
     tag = getBalCompatibleName(tag);
-    edi:EdiSegGroupSchema segGroupSchema = {tag};
+    int segMinOccur = segmentGroup.minOccurs is string ? check int:fromString(check segmentGroup.minOccurs) : parentMinOccur;
+    int segMaxOccur = segmentGroup.maxOccurs is string ? check segmentGroup.maxOccurs == "unbounded" ? -1 : check int:fromString(check segmentGroup.maxOccurs) : parentMaxOccur;
+    edi:EdiSegGroupSchema segGroupSchema = {tag: tag, minOccurances: segMinOccur, maxOccurances: segMaxOccur};
     foreach xml element in elements {
         string ref = check element.ref;
+        int eleMinOccur = element.minOccurs is string ? check int:fromString(check element.minOccurs) : 0;
+        int eleMaxOccur = element.maxOccurs is string ? check element.maxOccurs == "unbounded" ? -1 : check int:fromString(check element.maxOccurs) : 1;
+
         if ref.startsWith("X12_") {
             schema.name = ref;
             schema.tag = ref;
@@ -125,26 +130,26 @@ function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema,
         }
         else if ref.startsWith("Loop_") {
             xml segGroupElement = check getUnitElement(ref, x12xsd);
-            edi:EdiSegGroupSchema childSegGroupSchema = check convertSegmentGroup(segGroupElement, x12xsd, schema);
+            edi:EdiSegGroupSchema childSegGroupSchema = check convertSegmentGroup(segmentGroup = segGroupElement, x12xsd = x12xsd, schema = schema, parentMaxOccur = eleMaxOccur, parentMinOccur = eleMinOccur);
             segGroupSchema.segments.push(childSegGroupSchema);
         } else {
             if !schema.segmentDefinitions.hasKey((ref)) {
-                edi:EdiSegSchema segSchema = check convertSegment(ref, x12xsd);
+                edi:EdiSegSchema segSchema = check convertSegment(ref, eleMinOccur, eleMaxOccur, x12xsd);
                 schema.segmentDefinitions[ref] = segSchema;
             }
-            edi:EdiUnitRef segRef = {ref: ref};
+            edi:EdiUnitRef segRef = {ref: ref, minOccurances: eleMinOccur, maxOccurances: eleMaxOccur};
             segGroupSchema.segments.push(segRef);
         }
     }
     return segGroupSchema;
 }
 
-function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema|error {
+function convertSegment(string segmentName, int minOccurs, int maxOccurs, xml x12xsd) returns edi:EdiSegSchema|error {
     xml segElement = check getUnitElement(segmentName, x12xsd);
     string:RegExp underscorePlaceholder = re `_`;
     string[] nameParts = underscorePlaceholder.split(segmentName);
     edi:EdiSegSchema segSchema =
-        {code: getBalCompatibleName(nameParts[0]), tag: getBalCompatibleName(nameParts[1])};
+        {code: getBalCompatibleName(nameParts[0]), tag: getBalCompatibleName(nameParts[1]), minOccurances: minOccurs, maxOccurances: maxOccurs};
     segSchema.fields.push({tag: "code", required: true});
     xml fieldElements = segElement/<xs:complexType>/<xs:sequence>/<xs:element>;
     foreach xml fieldElement in fieldElements {
@@ -156,9 +161,9 @@ function convertSegment(string segmentName, xml x12xsd) returns edi:EdiSegSchema
         }
         fieldName = getBalCompatibleName(fieldName);
         edi:EdiFieldSchema fieldSchema = {tag: fieldName, required: true};
-        string|error minOccurs = fieldElement.minOccurs;
-        if (minOccurs is string) {
-            fieldSchema.required = minOccurs != "0";
+        string|error fieldMinOccurs = fieldElement.minOccurs;
+        if (fieldMinOccurs is string) {
+            fieldSchema.required = fieldMinOccurs != "0";
         }
         if conditionalFeildsMap.length() > 0 {
             string[] nameSplit = underscorePlaceholder.split(fieldName);

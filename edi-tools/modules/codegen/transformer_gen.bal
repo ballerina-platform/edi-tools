@@ -18,6 +18,10 @@ function generateTransformerCode(string ediName, string mainRecordName) returns 
     string transformer = string `
 type InternalType ${mainRecordName};
 
+# Convert EDI string to Ballerina ${mainRecordName} record.
+#
+# + ediText - EDI string to be converted
+# + return - Ballerina record
 public isolated function transformFromEdiString(string ediText) returns anydata|error {
     ${mainRecordName} data = check fromEdiString(ediText);
     return transformRead(data);
@@ -25,6 +29,10 @@ public isolated function transformFromEdiString(string ediText) returns anydata|
 
 isolated function transformRead(${mainRecordName} data) returns InternalType => data;
 
+# Convert Ballerina ${mainRecordName} record to EDI string.
+# 
+# + content - Ballerina record to be converted
+# + return - EDI string
 public isolated function transformToEdiString(anydata content) returns string|error {
     ${mainRecordName} data = transformWrite(check content.ensureType());
     return toEdiString(data);
