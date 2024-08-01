@@ -59,8 +59,11 @@ public class LibgenCmd implements BLauncherCmd {
             printStream.println(stringBuilder.toString());
             return;
         }
-        if (!packageName.matches("^[a-zA-Z0-9_]+/[a-zA-Z0-9_.]+$")) {
-            printStream.println("Invalid package name. Package name should be in the format orgname/packagename");
+        if (!packageName.matches("^[a-zA-Z0-9_]{1,256}/[a-zA-Z0-9_.]{1,256}$")) {
+            printStream.println(
+                    "Invalid package name. Package name should be in the format orgname/packagename."+
+                    " The orgname part must contain only alphanumeric characters or underscores and be 1 to 256 characters long."+
+                    " The packagename part must contain only alphanumeric characters, underscores, or periods and be 1 to 256 characters long.");
             return;
         }
         try {
