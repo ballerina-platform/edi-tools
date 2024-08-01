@@ -59,7 +59,7 @@ public class LibgenCmd implements BLauncherCmd {
             printStream.println(stringBuilder.toString());
             return;
         }
-        if (!packageName.matches("^[a-z0-9]+/[a-z0-9]+$")) {
+        if (!packageName.matches("^[a-zA-Z0-9_]+/[a-zA-Z0-9_]+$")) {
             printStream.println("Invalid package name. Package name should be in the format orgname/packagename");
             return;
         }
