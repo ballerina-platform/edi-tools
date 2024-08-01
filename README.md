@@ -171,7 +171,7 @@ Usually, organizations have to work with many EDI formats, and integration devel
 The below command can be used to generate Ballerina records, parser and util functions, and a REST connector for a given collection of EDI schemas organized into a Ballerina package:
 
 ```
-bal edi libgen -p <package name> -i <input schema folder> -o <output folder>
+bal edi libgen -p <organization-name/package-name> -i <input schema folder> -o <output folder>
 ```
 
 The Ballerina package will be generated in the output folder. This package can be built and published by issuing "bal pack" and "bal push" commands from the output folder. Then the generated package can be imported into any Ballerina project and generated utility functions of the package can be invoked to parse EDI messages into Ballerina records. 
