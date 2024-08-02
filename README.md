@@ -251,56 +251,107 @@ It is quite common for different trading partners to use variations of standard 
 
 EDI libraries generated in the previous step can also be compiled to a jar file (using the ```bal build``` command) and executed(using the ```bal run``` command) as a standalone Ballerina service that processes EDI files via a REST interface. This is useful for microservice environments where the EDI processing functionality can be deployed as a separate microservice.
 
-For example, the "citymart" package generated in the above step can be built and executed as a jar file. Once executed, it will expose a REST service to work with X12 850, 810, 820, and 855 files. Converting of X12 850 EDI text to JSON using the REST service is shown below:
+For example, the "citymart" package generated in the above step can be built and executed as a jar file. Once executed, it will expose a REST service to work with X12 850, 810, 820, and 855 files. 
+
+#### Converting of X12 850 EDI text to JSON using the REST service
+
+The below REST call can be used to convert an X12 850 EDI text to JSON using the REST service generated from the "citymart" package:
 
 ```
-curl --request POST \
-  --url http://localhost:9090/porderParser/edis/850 \
-  --header 'Content-Type: text/plain' \
-  --data 'ST*834*12345*005010X220A1~
-BGN*00*12456*20020601*1200****~
-REF*38*ABCD012354~
-AMT*cc payment*467.34*~
-N1*P5**FI*999888777~
-N1*IN**FI*654456654~
-INS*Y*18*025**A***FT~
-REF*0F*202443307~
-REF*1L*123456001~
-NM1*IL*1*SMITH*WILLIAM****ZZ*202443307~
-HD*025**DEN~
-DTP*348*D8*20020701~
-SE*12*12345~'
+curl --location 'http://localhost:9090/porderParser/edis/850' \
+--header 'Content-Type: text/plain' \
+--data-raw 'GS*PO*SENDERID*RECEIVERID*20240802*1705*1*X*004010~
+ST*850*0001~
+BEG*00*NE*4500012345**20240802~
+REF*DP*038~
+PER*BD*John Doe*TE*1234567890*EM*john.doe@example.com~
+FOB*CC~
+ITD*01*3*2**30**31~
+DTM*002*20240902~
+N1*ST*SHIP TO NAME*92*SHIP TO CODE~
+N3*123 SHIP TO ADDRESS~
+N4*CITY*STATE*12345*US~
+PO1*1*10*EA*15.00**BP*123456789012*VP*9876543210*UP*123456789012~
+PID*F****PRODUCT DESCRIPTION~
+PO4*1*CA*20*LB~
+CTT*1~
+SE*16*0001~
+GE*1*1~
+IEA*1*000000001~'
 ```
 
 The above REST call will return a JSON response like the below:
 
 ```
 {
-    "Transaction_Set_Header": {
-        "Transaction_Set_Identifier_Code": "834",
-        "Transaction_Set_Control_Number": "12345",
-        "Implementation_Convention_Reference": "005010X220A1"
-    },
-    "Beginning_Segment": {
-        "Transaction_Set_Purpose_Code": "00",
-        "Reference_Identification": "12456",
-        "Date": "20020601",
-        "Time": "1200"
-    },
-    "Reference_Information": [
-        {
-            "Reference_Identification_Qualifier": "38",
-            "Reference_Identification": "ABCD012354"
+    "X12_FunctionalGroup": {
+        "FunctionalGroupHeader": {
+            "code": "GS",
+            "GS01__FunctionalIdentifierCode": "PO",
+            "GS02__ApplicationSendersCode": "SENDERID",
+            "GS03__ApplicationReceiversCode": "RECEIVERID",
+            ... // Other fields
         }
-    ],
-    "Date_or_Time_or_Period": [],
-    "Monetary_Amount_Information": [
-        {
-            "Amount_Qualifier_Code": "cc payment",
-            "Monetary_Amount": 467.34
-        }
-    ],...
+        ... // Other fields
+    },
+    "InterchangeControlTrailer": {
+        "code": "IEA",
+        "IEA01__NumberofIncludedFunctionalGroups": 1.0,
+        "IEA02__InterchangeControlNumber": 1.0
+    }
 }
+```
+
+#### Converting of JSON to X12 850 EDI text using the REST service
+
+The below REST call can be used to convert a JSON to X12 850 EDI text using the REST service generated from the "citymart" package:
+
+```
+curl --location 'http://localhost:9090/ediParser/objects/850' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "X12_FunctionalGroup": {
+        "FunctionalGroupHeader": {
+            "code": "GS",
+            "GS01__FunctionalIdentifierCode": "PO",
+            "GS02__ApplicationSendersCode": "SENDERID",
+            "GS03__ApplicationReceiversCode": "RECEIVERID",
+            "GS04__Date": "20240802",
+            "GS05__Time": "1705",
+            "GS06__GroupControlNumber": 1.0,
+            ... // Other fields
+        },
+        ... // Other fields
+    },
+    "InterchangeControlTrailer": {
+        "code": "IEA",
+        "IEA01__NumberofIncludedFunctionalGroups": 1.0,
+        "IEA02__InterchangeControlNumber": 1.0
+    }
+}'
+```
+
+The above REST call will return an X12 850 EDI text response like the below:
+
+```
+GS*PO*SENDERID*RECEIVERID*20240802*1705*1*X*004010~
+ST*850*0001~
+BEG*00*NE*4500012345**20240802~
+REF*DP*038~
+PER*BD*John Doe*TE*1234567890*EM*john.doe@example.com~
+FOB*CC~
+ITD*01*3*2**30**31~
+DTM*002*20240902~
+N1*ST*SHIP TO NAME*92*SHIP TO CODE~
+N3*123 SHIP TO ADDRESS~
+N4*CITY*STATE*12345*US~
+PO1*1*10*EA*15.00**BP*123456789012*VP*9876543210*UP*123456789012~
+PID*F****PRODUCT DESCRIPTION~
+PO4*1*CA*20*LB~
+CTT*1~
+SE*16*0001~
+GE*1*1~
+IEA*1*1~
 ```
 
 ## Schema conversion
@@ -318,9 +369,11 @@ bal edi convertX12Schema -H <enable headers mode> -c <enable collection mode > -
 ```
 
 Example:
+
 ```
 $ bal edi convertX12Schema -i input/schema.xsd -o output/schema.json
 ```
+
 ### EDIFACT schema to Ballerina EDI schema
 
 EDIFACT, which stands for Electronic Data Interchange For Administration, Commerce, and Transport, is an international EDI standard developed by the United Nations. It's widely used in Europe and many other parts of the world. EDIFACT provides a common syntax for exchanging business documents electronically between trading partners, facilitating global trade and improving efficiency in supply chain management.
@@ -332,9 +385,11 @@ bal edi convertEdifactSchema -v <EDIFACT version> -t <EDIFACT message type> -o <
 ```
 
 Example:
+
 ```
 $ bal edi convertEdifactSchema -v d03a -t ORDERS -o output/schema.json
 ```
+
 ### ESL to Ballerina EDI schema
 
 ESL, or Electronic Shelf Labeling, is a technology used in retail stores to display product pricing and information electronically. Instead of traditional paper price tags, ESL systems use digital displays that can be updated remotely, allowing retailers to change prices in real-time and automate pricing strategies.
@@ -346,9 +401,11 @@ bal edi convertESL -b <segment definitions file path> -i <input ESL schema file/
 ```
 
 Example:
+
 ```
 $ bal edi convertESL -b segment_definitions.yaml -i esl_schema.esl -o output/schema.json
 ```
+
 ## Issues and projects
 
 The **Issues** and **Projects** tabs are disabled for this repository as this is part of the Ballerina library. To report bugs, request new features, start new discussions, view project boards, etc., visit the Ballerina library [parent repository](https://github.com/ballerina-platform/ballerina-library).
@@ -407,7 +464,7 @@ All the contributors are encouraged to read the [Ballerina Code of Conduct](http
 
 ## Useful links
 
-* For more information go to the [EDI package](https://ballerina.io/learn/edi-tool/).
+* For more information go to the [EDI Tool documentation](https://ballerina.io/learn/edi-tool/).
 * For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 * Chat live with us via our [Discord server](https://discord.gg/ballerinalang).
 * Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
