@@ -34,7 +34,7 @@ isolated function transformRead(${mainRecordName} data) returns InternalType => 
 # + content - Ballerina record to be converted
 # + return - EDI string or error
 public isolated function transformToEdiString(anydata content) returns string|error {
-    ${mainRecordName} data = transformWrite(check content.ensureType());
+    ${mainRecordName} data = transformWrite(check content.cloneWithType());
     return toEdiString(data);
 }
 
