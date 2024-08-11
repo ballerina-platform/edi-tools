@@ -2,4 +2,4 @@
 id = "edi"
 
 [[dependency]]
-path = "resources/edi-tools-cli-2.0.3.jar"
+path = "resources/edi-tools-cli-2.1.0.jar"
