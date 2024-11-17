@@ -31,8 +31,5 @@ hs_err_pid*
 # Ignore Gradle build output directory
 build
 
-#Ignore all dependancy files
-Dependencies.toml
-
 #Ignore all .deb files
 *.deb
