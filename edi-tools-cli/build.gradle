@@ -44,7 +44,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.ballerinalang:ballerina-cli:2201.11.0-20241112-214900-6b80ab87'
+    implementation 'org.ballerinalang:ballerina-cli:2201.11.0'
     implementation 'info.picocli:picocli:4.0.1'
 }
 
