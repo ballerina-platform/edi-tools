@@ -1,4 +1,5 @@
 name: Publish to the Ballerina DEV/STAGE Central
+# This is non compatible with standard workflows, due to the need to install ballerina step
 
 on:
     workflow_dispatch:
