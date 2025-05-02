@@ -269,7 +269,11 @@ class BalField {
         }
         // string typeName = t is BalRecord? t.name : t.toString();
         string assignment = self.defaultValue is () ? (self.array ? " = []" : "") : string ` = ${self.defaultValue is string ? "\"" : ""}${self.defaultValue.toString()}${self.defaultValue is string ? "\"" : ""}`;
-        return string `${typeName}${(self.optional && !self.array && self.btype != BSTRING) ? "?" : ""}${self.array ? "[]" : ""} ${self.name}${(self.optional && !self.array) ? "?" : ""}${assignment};`;
+        
+        // Type includes nil is only for components i.e BalBasicType
+        string fieldType = (!self.array && !(self.btype is BalRecord) && self.optional && self.btype != BSTRING) ? "?" : "";
+        
+        return string `${typeName}${fieldType}${self.array ? "[]" : ""} ${self.name}${(self.optional && !self.array) ? "?" : ""}${assignment};`;
     }
 }
 

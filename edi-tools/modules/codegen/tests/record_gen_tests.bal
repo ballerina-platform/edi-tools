@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/edi;
 import ballerina/test;
 
 @test:Config {}
@@ -56,11 +57,82 @@ function testComplexRecordGeneration() {
     r2.addField(r2, "subteams", true, true);
     r2.addField(BSTRING, "location", false, true);
 
-    string expected = "public type Team record {| string teamName; Person? lead?; Person[] members = []; Team[] subteams = []; string location?;|};";
+    string expected = "public type Team record {| string teamName; Person lead?; Person[] members = []; Team[] subteams = []; string location?;|};";
     string:RegExp re1 = re `\n`;
     string:RegExp re2 = re `   `;
 
     string output = re1.replaceAll(r2.toString(), "");
     output = re2.replaceAll(output, " ");
     test:assertEquals(output, expected);
+}
+
+@test:Config {}
+function testComplexSchema() returns error? {
+    edi:EdiSchema schema = {
+        "name": "SimpleOrder",
+        "delimiters": {"segment": "~", "field": "*", "component": ":", "repetition": "^"},
+        "segments": [
+            {
+                "tag": "Header",
+                "minOccurances": 0,
+                "maxOccurances": 1,
+                "segments": [
+                    {
+                        "code": "SO",
+                        "tag": "items",
+                        "truncatable": true,
+                        "minOccurances": 0,
+                        "maxOccurances": 1,
+                        "fields": [
+                            {
+                                "tag": "code",
+                                "repeat": false,
+                                "required": false,
+                                "truncatable": true,
+                                "dataType": "string",
+                                "startIndex": -1,
+                                "length": -1,
+                                "components": []
+                            },
+                            {
+                                "tag": "test",
+                                "repeat": false,
+                                "required": false,
+                                "truncatable": true,
+                                "dataType": "string",
+                                "startIndex": -1,
+                                "length": -1,
+                                "components": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+    BalRecord[] generateCodeResult = check generateCode(schema);
+    test:assertEquals(generateCodeResult.length(), 3, "Expected 3 records to be generated");
+    foreach BalRecord ediRecord in generateCodeResult {
+        match ediRecord.name {
+            "SimpleOrder" => {
+                test:assertEquals(ediRecord.toString(),
+                        "public type SimpleOrder record {|\n" +
+                        "   Header_GType Header?;\n" +
+                        "|};\n");
+            }
+            "Header_GType" => {
+                test:assertEquals(ediRecord.toString(),
+                        "public type Header_GType record {|\n" +
+                        "   Items_Type items?;\n" +
+                        "|};\n");
+            }
+            "Items_Type" => {
+                test:assertEquals(ediRecord.toString(),
+                        "public type Items_Type record {|\n" +
+                        "   string code = \"SO\";\n" +
+                        "   string test?;\n" +
+                        "|};\n");
+            }
+        }
+    }
 }
