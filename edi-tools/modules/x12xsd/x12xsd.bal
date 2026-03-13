@@ -79,6 +79,7 @@ public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
     }
     edi:EdiSegGroupSchema rootSegGroupSchema = check convertSegmentGroup(root, x12xsd, ediSchema);
     ediSchema.segments = rootSegGroupSchema.segments;
+    extractEnvelopeSegments(ediSchema);
     return ediSchema;
 }
 
@@ -100,7 +101,25 @@ function convertFromX12WithHeaders(string inPath) returns edi:EdiSchema|error {
     }
     edi:EdiSegGroupSchema rootSegGroupSchema = check convertSegmentGroup(root, interchangeXsd, ediSchema, inPath);
     ediSchema.segments = rootSegGroupSchema.segments;
+    extractEnvelopeSegments(ediSchema);
     return ediSchema;
+}
+
+# Extracts ST (transaction set header) and SE (transaction set trailer) segments
+# from the flat segments array into headerSegments and trailerSegments respectively.
+# This enables the tiered envelope parsing API in ballerina/edi.
+function extractEnvelopeSegments(edi:EdiSchema ediSchema) {
+    edi:EdiUnitSchema[] remaining = [];
+    foreach edi:EdiUnitSchema seg in ediSchema.segments {
+        if seg is edi:EdiSegSchema && seg.code == "ST" {
+            ediSchema.headerSegments.push(seg);
+        } else if seg is edi:EdiSegSchema && seg.code == "SE" {
+            ediSchema.trailerSegments.push(seg);
+        } else {
+            remaining.push(seg);
+        }
+    }
+    ediSchema.segments = remaining;
 }
 
 function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema, string dirPath = "", int parentMinOccur = 0, int parentMaxOccur = 1) returns edi:EdiSegGroupSchema|error {

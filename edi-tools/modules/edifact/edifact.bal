@@ -51,7 +51,9 @@ type EDISchema record {|
     string name;
     string[] ignoreSegments;
     Delimiters delimiters;
+    (Segement|SegmentGroup)[] headerSegments = [];
     (Segement|SegmentGroup)[] segments;
+    (Segement|SegmentGroup)[] trailerSegments = [];
     SegmentDefintions segmentDefinitions;
 |};
 
@@ -117,7 +119,7 @@ function genEdiSchema(string url, string code, string dir, SegmentDefintions all
 function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinitions, string name) returns EDISchema|error {
     EDISchema ediSchema = {
         name,
-        ignoreSegments: ["UNB"],
+        ignoreSegments: ["UNB", "UNA"],
         delimiters: {
             segment: "'",
             'field: "+",
@@ -146,7 +148,25 @@ function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinition
     regexp:Groups[] segments = segmentGroupOrSegmentReg.findAllGroups(segmentTable);
 
     check genSegmentsSchema(segments, segmentDefinitions, ediSchema.segments, ediSchema.segmentDefinitions);
+    extractEdifactEnvelopeSegments(ediSchema);
     return ediSchema;
+}
+
+# Extracts UNH (message header) and UNT (message trailer) segments from the flat
+# segments array into headerSegments and trailerSegments respectively.
+# This enables the tiered envelope parsing API in ballerina/edi.
+function extractEdifactEnvelopeSegments(EDISchema ediSchema) {
+    (Segement|SegmentGroup)[] remaining = [];
+    foreach Segement|SegmentGroup seg in ediSchema.segments {
+        if seg is Segement && seg.ref == "UNH" {
+            ediSchema.headerSegments.push(seg);
+        } else if seg is Segement && seg.ref == "UNT" {
+            ediSchema.trailerSegments.push(seg);
+        } else {
+            remaining.push(seg);
+        }
+    }
+    ediSchema.segments = remaining;
 }
 
 function genSegmentsSchema(regexp:Groups[] segmentsMatch, map<SegmentDef> allSegmentDefinitions, (Segement|SegmentGroup)[] segments, SegmentDefintions segmentDefintions) returns error? {
