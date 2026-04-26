@@ -49,6 +49,12 @@ public function generateLibrary(LibData libdata) returns error? {
         check generateCodeFromSchemas(libdata, "", ());
     }
     check createBalLib(libdata);
+    io:println(string `
+NOTE: The generated library uses the headerSegments and trailerSegments fields
+in its embedded schema JSON. These fields were introduced in ballerina/edi 1.6.0,
+so the library must be built and run against ballerina/edi >= 1.6.0. Older
+versions will fail to deserialize the schema with a "field cannot be added to
+the closed record 'edi:EdiSchema'" error.`);
 }
 
 function createLibStructure(LibData libdata) returns error? {

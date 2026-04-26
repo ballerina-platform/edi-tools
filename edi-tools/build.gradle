@@ -30,7 +30,21 @@ task updateTomlFiles {
         println "Updating toml files"
         def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
+        newConfig = newConfig.replace("@stdlib.edi.native.version@",
+                stripBallerinaExtensionVersion(project.stdlibEdiVersion))
         ballerinaTomlFile.text = newConfig
+    }
+}
+
+// Unpack the edi-ballerina snapshot bala from GitHub Packages into
+// ~/.ballerina/repositories/local so `bal build` resolves the dependency declared
+// in edi-tools/Ballerina.toml ([[dependency]] ... repository = "local"). Mirrors
+// the io.ballerina.plugin `copyStdlibs` behaviour used by stdlib repos like sql.
+task unpackEdiBala(type: Copy) {
+    def edibala = configurations.ballerinaStdLibs.find { it.name.startsWith("edi-ballerina-") && it.name.endsWith(".zip") }
+    if (edibala != null) {
+        from zipTree(edibala)
+        into "${System.getProperty('user.home')}/.ballerina/repositories/local"
     }
 }
 
@@ -96,5 +110,6 @@ task build {
 
 buildEDIToolCore.dependsOn deleteTarget
 buildEDIToolCore.dependsOn updateTomlFiles
+buildEDIToolCore.dependsOn unpackEdiBala
 copyEdiToolsJar.dependsOn buildEDIToolCore
 test.dependsOn buildEDIToolCore

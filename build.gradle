@@ -90,6 +90,11 @@ subprojects {
         ballerinaStdLibs "io.ballerina.stdlib:time-ballerina:${project.stdlibTimeVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:observe-ballerina:${project.observeVersion}"
         ballerinaStdLibs "io.ballerina:observe-ballerina:${project.observeInternalVersion}"
+
+        /* edi module — consumed as a snapshot bala from GitHub Packages because the
+         * tool depends on APIs that are not yet on Central. Unpacked into the local
+         * Ballerina repo by `unpackEdiBala` in `edi-tools/build.gradle`. */
+        ballerinaStdLibs "io.ballerina.stdlib:edi-ballerina:${project.stdlibEdiVersion}@zip"
     }
 }
 
