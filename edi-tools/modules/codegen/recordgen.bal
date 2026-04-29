@@ -44,13 +44,41 @@ public function generateCodeToFile(edi:EdiSchema mapping, string outpath) return
 }
 
 # Generates all Ballerina records required to represent EDI data in the given schema.
+# Walks `mapping.segments` (the transaction body) and, when the schema declares
+# an `envelope`, also walks every envelope level so envelope segments produce
+# typed records (e.g. `Interchange_header_Type`, `Message_header_Type`) that the
+# generated typed wrappers can reference.
 #
 # + mapping - EDI schema for which records need to be generated
 # + return - Returns an array of generated records. Error if the generation is not successfull.
 public function generateCode(edi:EdiSchema mapping) returns BalRecord[]|error {
     GenContext context = {};
     _ = check generateRecordForUnits(mapping.segments, mapping.name, context);
+
+    edi:EdiEnvelopeSchema? env = mapping.envelope;
+    if env is edi:EdiEnvelopeSchema {
+        _ = check generateEnvelopeLevelRecord(env.interchange, mapping.name + "InterchangeHeader", context, true);
+        _ = check generateEnvelopeLevelRecord(env.interchange, mapping.name + "InterchangeTrailer", context, false);
+        edi:EdiEnvelopeLevel? grp = env?.group;
+        if grp is edi:EdiEnvelopeLevel {
+            _ = check generateEnvelopeLevelRecord(grp, mapping.name + "GroupHeader", context, true);
+            _ = check generateEnvelopeLevelRecord(grp, mapping.name + "GroupTrailer", context, false);
+        }
+        _ = check generateEnvelopeLevelRecord(env.'transaction, mapping.name + "TransactionHeader", context, true);
+        _ = check generateEnvelopeLevelRecord(env.'transaction, mapping.name + "TransactionTrailer", context, false);
+    }
     return context.typeRecords.toArray();
+}
+
+// Builds a wrapper record for one envelope level's `header` or `trailer` array.
+// Each segment in the array becomes a typed field inside the wrapper, keyed by
+// the segment's tag so the wrapper matches the JSON shape produced by the
+// runtime's `readSegmentGroup`. Individual segment record types are emitted
+// into `context.typeRecords` as a side effect via `generateRecordForSegment`.
+function generateEnvelopeLevelRecord(edi:EdiEnvelopeLevel level, string typeName,
+        GenContext context, boolean isHeader) returns BalRecord|error {
+    edi:EdiUnitSchema[] units = isHeader ? level.header : level.trailer;
+    return generateRecordForUnits(units, typeName, context);
 }
 
 function generateRecordForSegmentGroup(edi:EdiSegGroupSchema groupmap, GenContext context) returns BalRecord|error {

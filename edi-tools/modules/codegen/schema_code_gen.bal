@@ -93,66 +93,92 @@ final readonly & json schemaJson = ${schema.toJsonString()};
 }
 
 // Renders the typed envelope records (Interchange / FunctionalGroup / Transaction)
-// for a schema that declares an envelope. Header / trailer fields stay as `json`
-// — the structured envelope shape is exposed but the per-field decomposition of
-// envelope segments is left as JSON for callers who need it.
+// for a schema that declares an envelope. The envelope segment wrappers
+// (e.g. <Name>InterchangeHeader, <Name>TransactionHeader) are emitted by
+// `recordgen.generateCode` via the envelope-level walk added there — so this
+// function only needs to reference them by name.
 function renderEnvelopeRecords(string name, edi:EdiEnvelopeSchema env) returns string {
     string transactionRecord = string `
 public type ${name}Transaction record {|
-    json transactionHeader;
+    ${name}TransactionHeader transactionHeader;
     ${name}|error body;
-    json transactionTrailer;
+    ${name}TransactionTrailer transactionTrailer;
 |};
 `;
 
     if env?.group is edi:EdiEnvelopeLevel {
         return string `${transactionRecord}
 public type ${name}FunctionalGroup record {|
-    json groupHeader;
+    ${name}GroupHeader groupHeader;
     ${name}Transaction[] transactions;
-    json groupTrailer;
+    ${name}GroupTrailer groupTrailer;
 |};
 
 public type ${name}Interchange record {|
-    json interchangeHeader;
+    ${name}InterchangeHeader interchangeHeader;
     ${name}FunctionalGroup[] groups;
-    json interchangeTrailer;
+    ${name}InterchangeTrailer interchangeTrailer;
 |};
 `;
     }
 
     return string `${transactionRecord}
 public type ${name}Interchange record {|
-    json interchangeHeader;
+    ${name}InterchangeHeader interchangeHeader;
     ${name}Transaction[] transactions;
-    json interchangeTrailer;
+    ${name}InterchangeTrailer interchangeTrailer;
 |};
 `;
 }
 
 // Renders typed wrappers for `headersFromEdiString` and `interchangeFromEdiString`.
+// Each envelope header / trailer JSON is round-tripped through `cloneWithType`
+// so the typed wrapper records emitted by `renderEnvelopeRecords` populate
+// cleanly. Per-transaction bodies remain fail-safe — a body that came back as
+// an error stays as an error in the typed transaction.
 function renderEnvelopeFns(string name, edi:EdiEnvelopeSchema env) returns string {
+    // Body unwrap is in a helper because Ballerina does not narrow `json|error`
+    // across a `?:` ternary, so an inline cast to `json` would be rejected.
+    string bodyHelper = string `
+
+isolated function convert${name}Body(json|error raw) returns ${name}|error {
+    if raw is error {
+        return raw;
+    }
+    return raw.cloneWithType();
+}`;
+
     string convertTxn = env?.group is edi:EdiEnvelopeLevel ?
         string `foreach var grp in raw.groups ?: [] {
             ${name}Transaction[] txns = [];
             foreach var t in grp.transactions {
-                ${name}|error body = t.body is error ? <error>t.body : (<json>t.body).cloneWithType();
-                txns.push({transactionHeader: t.transactionHeader, body, transactionTrailer: t.transactionTrailer});
+                ${name}|error body = convert${name}Body(t.body);
+                ${name}TransactionHeader th = check t.transactionHeader.cloneWithType();
+                ${name}TransactionTrailer tt = check t.transactionTrailer.cloneWithType();
+                txns.push({transactionHeader: th, body, transactionTrailer: tt});
             }
-            groups.push({groupHeader: grp.groupHeader, transactions: txns, groupTrailer: grp.groupTrailer});
+            ${name}GroupHeader gh = check grp.groupHeader.cloneWithType();
+            ${name}GroupTrailer gt = check grp.groupTrailer.cloneWithType();
+            groups.push({groupHeader: gh, transactions: txns, groupTrailer: gt});
         }` :
         string `foreach var t in raw.transactions ?: [] {
-            ${name}|error body = t.body is error ? <error>t.body : (<json>t.body).cloneWithType();
-            txns.push({transactionHeader: t.transactionHeader, body, transactionTrailer: t.transactionTrailer});
+            ${name}|error body = convert${name}Body(t.body);
+            ${name}TransactionHeader th = check t.transactionHeader.cloneWithType();
+            ${name}TransactionTrailer tt = check t.transactionTrailer.cloneWithType();
+            txns.push({transactionHeader: th, body, transactionTrailer: tt});
         }`;
 
     string assemble = env?.group is edi:EdiEnvelopeLevel ?
         string `${name}FunctionalGroup[] groups = [];
         ${convertTxn}
-        return {interchangeHeader: raw.interchangeHeader, groups, interchangeTrailer: raw.interchangeTrailer};` :
+        ${name}InterchangeHeader ih = check raw.interchangeHeader.cloneWithType();
+        ${name}InterchangeTrailer it = check raw.interchangeTrailer.cloneWithType();
+        return {interchangeHeader: ih, groups, interchangeTrailer: it};` :
         string `${name}Transaction[] txns = [];
         ${convertTxn}
-        return {interchangeHeader: raw.interchangeHeader, transactions: txns, interchangeTrailer: raw.interchangeTrailer};`;
+        ${name}InterchangeHeader ih = check raw.interchangeHeader.cloneWithType();
+        ${name}InterchangeTrailer it = check raw.interchangeTrailer.cloneWithType();
+        return {interchangeHeader: ih, transactions: txns, interchangeTrailer: it};`;
 
     return string `
 
@@ -176,5 +202,6 @@ public isolated function interchangeFromEdiString(string ediText) returns ${name
     edi:EdiSchema ediSchema = check edi:getSchema(schemaJson);
     edi:EdiInterchange raw = check edi:interchangeFromEdiString(ediText, ediSchema);
     ${assemble}
-}`;
+}
+${bodyHelper}`;
 }
