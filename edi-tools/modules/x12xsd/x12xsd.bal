@@ -79,7 +79,63 @@ public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
     }
     edi:EdiSegGroupSchema rootSegGroupSchema = check convertSegmentGroup(root, x12xsd, ediSchema);
     ediSchema.segments = rootSegGroupSchema.segments;
+    populateX12Envelope(ediSchema);
     return ediSchema;
+}
+
+// Builds the structured envelope for an X12 transaction set schema:
+//   * interchange — ISA / IEA (inline definitions)
+//   * group       — GS / GE (inline definitions)
+//   * transaction — ST / SE (lifted out of `segments` where the XSD placed them)
+function populateX12Envelope(edi:EdiSchema schema) {
+    edi:EdiUnitSchema[] body = [];
+    edi:EdiUnitSchema[] txnHeader = [];
+    edi:EdiUnitSchema[] txnTrailer = [];
+
+    foreach edi:EdiUnitSchema unit in schema.segments {
+        string? code = getRefCode(unit, schema);
+        if code == "ST" {
+            txnHeader.push(unit);
+        } else if code == "SE" {
+            txnTrailer.push(unit);
+        } else {
+            body.push(unit);
+        }
+    }
+
+    schema.segmentDefinitions["ISA"] = ISA_SEG;
+    schema.segmentDefinitions["IEA"] = IEA_SEG;
+    schema.segmentDefinitions["GS"] = GS_SEG;
+    schema.segmentDefinitions["GE"] = GE_SEG;
+
+    schema.segments = body;
+    schema.envelope = {
+        interchange: {
+            header: [<edi:EdiUnitRef>{ref: "ISA", tag: "InterchangeControlHeader", maxOccurances: 1}],
+            trailer: [<edi:EdiUnitRef>{ref: "IEA", tag: "InterchangeControlTrailer", maxOccurances: 1}]
+        },
+        group: {
+            header: [<edi:EdiUnitRef>{ref: "GS", tag: "FunctionalGroupHeader", maxOccurances: 1}],
+            trailer: [<edi:EdiUnitRef>{ref: "GE", tag: "FunctionalGroupTrailer", maxOccurances: 1}]
+        },
+        'transaction: {
+            header: txnHeader,
+            trailer: txnTrailer
+        }
+    };
+}
+
+// Returns the segment code of an EdiUnitSchema entry, resolving an EdiUnitRef
+// through `schema.segmentDefinitions` when needed.
+function getRefCode(edi:EdiUnitSchema unit, edi:EdiSchema schema) returns string? {
+    if unit is edi:EdiSegSchema {
+        return unit.code;
+    }
+    if unit is edi:EdiUnitRef {
+        edi:EdiSegSchema? def = schema.segmentDefinitions[unit.ref];
+        return def?.code;
+    }
+    return ();
 }
 
 function convertFromX12WithHeaders(string inPath) returns edi:EdiSchema|error {

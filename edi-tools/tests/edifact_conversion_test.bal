@@ -1,7 +1,6 @@
 import ballerina/test;
 import editools.edifact;
 import ballerina/io;
-import ballerina/file;
 
 @test:Config {
     dataProvider: filesProvider,
@@ -17,7 +16,8 @@ function testEdifactConversion(string msgType, string expected, string actual) r
 
 function afterFunc() returns error? {
     // check file:remove("tests/resources/edifact/d03a/INVOIC.json");
-    check file:remove("tests/resources/edifact/d03a/ORDERS.json");
+    // Leaving ORDERS.json on disk so the test fixture can be regenerated
+    // when the schema shape legitimately changes.
 }
 
 function filesProvider() returns string[][] {

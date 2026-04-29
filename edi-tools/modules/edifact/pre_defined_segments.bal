@@ -1,6 +1,61 @@
-// There are some cases segment web pages are not available. 
-// Those segments are defined here. 
+// There are some cases segment web pages are not available.
+// Those segments are defined here.
 // If these segments are not equal for each version or catagory, a map should be used.
+
+final SegmentDef UNB = {
+    code: "UNB",
+    tag: "interchange_header",
+    fields: [
+        {tag: "code", required: true},
+        {
+            tag: "syntax_identifier",
+            dataType: "composite",
+            required: true,
+            components: [
+                {tag: "syntax_id", dataType: "string", required: true},
+                {tag: "syntax_version", dataType: "string", required: true}
+            ]
+        },
+        {
+            tag: "sender",
+            dataType: "composite",
+            required: true,
+            components: [
+                {tag: "id", dataType: "string", required: true},
+                {tag: "qualifier", dataType: "string"}
+            ]
+        },
+        {
+            tag: "recipient",
+            dataType: "composite",
+            required: true,
+            components: [
+                {tag: "id", dataType: "string", required: true},
+                {tag: "qualifier", dataType: "string"}
+            ]
+        },
+        {
+            tag: "date_and_time",
+            dataType: "composite",
+            required: true,
+            components: [
+                {tag: "date", dataType: "string", required: true},
+                {tag: "time", dataType: "string", required: true}
+            ]
+        },
+        {tag: "control_reference", dataType: "string", required: true}
+    ]
+};
+
+final SegmentDef UNZ = {
+    code: "UNZ",
+    tag: "interchange_trailer",
+    fields: [
+        {tag: "code", required: true},
+        {tag: "interchange_control_count", dataType: "int", required: true},
+        {tag: "interchange_control_reference", dataType: "string", required: true}
+    ]
+};
 
 final SegmentDef UNH = {
     code: "UNH",

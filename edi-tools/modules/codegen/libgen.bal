@@ -49,6 +49,12 @@ public function generateLibrary(LibData libdata) returns error? {
         check generateCodeFromSchemas(libdata, "", ());
     }
     check createBalLib(libdata);
+    io:println("");
+    io:println("Generated library uses envelope-aware schema and APIs from " +
+            "ballerina/edi 1.6.0. Older runtime versions reject the new " +
+            "`envelope` field with `field cannot be added to the closed record " +
+            "'edi:EdiSchema'`. Pin `ballerina/edi` >= 1.6.0 in your project's " +
+            "Ballerina.toml.");
 }
 
 function createLibStructure(LibData libdata) returns error? {

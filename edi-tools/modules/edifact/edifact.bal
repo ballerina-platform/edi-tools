@@ -47,10 +47,22 @@ type Delimiters record {|
 
 type SegmentDefintions map<SegmentDef>;
 
+type EnvelopeLevel record {|
+    (Segement|SegmentGroup)[] header;
+    (Segement|SegmentGroup)[] trailer;
+|};
+
+type EnvelopeSchema record {|
+    EnvelopeLevel interchange;
+    EnvelopeLevel group?;
+    EnvelopeLevel 'transaction;
+|};
+
 type EDISchema record {|
     string name;
     string[] ignoreSegments;
     Delimiters delimiters;
+    EnvelopeSchema envelope?;
     (Segement|SegmentGroup)[] segments;
     SegmentDefintions segmentDefinitions;
 |};
@@ -117,13 +129,13 @@ function genEdiSchema(string url, string code, string dir, SegmentDefintions all
 function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinitions, string name) returns EDISchema|error {
     EDISchema ediSchema = {
         name,
-        ignoreSegments: ["UNB"],
+        ignoreSegments: [],
         delimiters: {
             segment: "'",
             'field: "+",
             component: ":",
             repetition: "*",
-            decimalSeparator: ","
+            decimalSeparator: "."
         },
         segments: [],
         segmentDefinitions: {}
@@ -146,7 +158,51 @@ function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinition
     regexp:Groups[] segments = segmentGroupOrSegmentReg.findAllGroups(segmentTable);
 
     check genSegmentsSchema(segments, segmentDefinitions, ediSchema.segments, ediSchema.segmentDefinitions);
+
+    // EDIFACT envelope: interchange = UNB / UNZ, transaction = UNH / UNT.
+    // No group level. Lift UNH / UNT out of `segments` and add UNB / UNZ
+    // definitions so the runtime can parse the full interchange.
+    populateEdifactEnvelope(ediSchema);
     return ediSchema;
+}
+
+// Builds the structured envelope for an EDIFACT schema. UNH and UNT are
+// extracted from `segments` (where the message-table conversion places them)
+// into `envelope.transaction`; UNB and UNZ are added as new envelope refs and
+// their definitions inserted into `segmentDefinitions`.
+function populateEdifactEnvelope(EDISchema schema) {
+    (Segement|SegmentGroup)[] body = [];
+    (Segement|SegmentGroup)[] txnHeader = [];
+    (Segement|SegmentGroup)[] txnTrailer = [];
+
+    foreach var seg in schema.segments {
+        if seg is Segement && seg.ref == "UNH" {
+            txnHeader.push(seg);
+        } else if seg is Segement && seg.ref == "UNT" {
+            txnTrailer.push(seg);
+        } else {
+            body.push(seg);
+        }
+    }
+
+    if !schema.segmentDefinitions.hasKey("UNB") {
+        schema.segmentDefinitions["UNB"] = UNB;
+    }
+    if !schema.segmentDefinitions.hasKey("UNZ") {
+        schema.segmentDefinitions["UNZ"] = UNZ;
+    }
+
+    schema.segments = body;
+    schema.envelope = {
+        interchange: {
+            header: [{ref: "UNB", tag: "interchange_header", maxOccurances: 1}],
+            trailer: [{ref: "UNZ", tag: "interchange_trailer", maxOccurances: 1}]
+        },
+        'transaction: {
+            header: txnHeader,
+            trailer: txnTrailer
+        }
+    };
 }
 
 function genSegmentsSchema(regexp:Groups[] segmentsMatch, map<SegmentDef> allSegmentDefinitions, (Segement|SegmentGroup)[] segments, SegmentDefintions segmentDefintions) returns error? {
