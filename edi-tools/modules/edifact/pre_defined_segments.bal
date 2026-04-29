@@ -43,7 +43,16 @@ final SegmentDef UNB = {
                 {tag: "time", dataType: "string", required: true}
             ]
         },
-        {tag: "control_reference", dataType: "string", required: true}
+        {tag: "control_reference", dataType: "string", required: true},
+        // Optional trailing fields per UN/EDIFACT — present in many real
+        // interchanges. Marked truncatable on the segment so callers that
+        // omit them still parse cleanly.
+        {tag: "recipient_reference_password", dataType: "string"},
+        {tag: "application_reference", dataType: "string"},
+        {tag: "processing_priority_code", dataType: "string"},
+        {tag: "acknowledgement_request", dataType: "string"},
+        {tag: "communications_agreement_id", dataType: "string"},
+        {tag: "test_indicator", dataType: "string"}
     ]
 };
 
