@@ -195,14 +195,34 @@ function populateEdifactEnvelope(EDISchema schema) {
     schema.segments = body;
     schema.envelope = {
         interchange: {
-            header: [{ref: "UNB", tag: "interchange_header", maxOccurances: 1}],
-            trailer: [{ref: "UNZ", tag: "interchange_trailer", maxOccurances: 1}]
+            header: [{ref: "UNB", tag: "interchange_header", minOccurances: 1, maxOccurances: 1}],
+            trailer: [{ref: "UNZ", tag: "interchange_trailer", minOccurances: 1, maxOccurances: 1}]
         },
         'transaction: {
-            header: txnHeader,
-            trailer: txnTrailer
+            header: forceMandatory(txnHeader),
+            trailer: forceMandatory(txnTrailer)
         }
     };
+}
+
+// UNH and UNT are lifted out of `segments` as-is and therefore inherit whatever
+// `minOccurances` the message-table extractor chose (typically 0 because the
+// table emits all segments as conditional). At the envelope level they are
+// mandatory by definition, so promote them.
+function forceMandatory((Segement|SegmentGroup)[] units) returns (Segement|SegmentGroup)[] {
+    (Segement|SegmentGroup)[] result = [];
+    foreach var u in units {
+        if u is Segement {
+            Segement promoted = u.clone();
+            promoted.minOccurances = 1;
+            result.push(promoted);
+        } else {
+            SegmentGroup promoted = u.clone();
+            promoted.minOccurances = 1;
+            result.push(promoted);
+        }
+    }
+    return result;
 }
 
 function genSegmentsSchema(regexp:Groups[] segmentsMatch, map<SegmentDef> allSegmentDefinitions, (Segement|SegmentGroup)[] segments, SegmentDefintions segmentDefintions) returns error? {

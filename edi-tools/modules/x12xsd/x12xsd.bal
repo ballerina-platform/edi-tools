@@ -111,18 +111,41 @@ function populateX12Envelope(edi:EdiSchema schema) {
     schema.segments = body;
     schema.envelope = {
         interchange: {
-            header: [<edi:EdiUnitRef>{ref: "ISA", tag: "InterchangeControlHeader", maxOccurances: 1}],
-            trailer: [<edi:EdiUnitRef>{ref: "IEA", tag: "InterchangeControlTrailer", maxOccurances: 1}]
+            header: [<edi:EdiUnitRef>{ref: "ISA", tag: "InterchangeControlHeader", minOccurances: 1, maxOccurances: 1}],
+            trailer: [<edi:EdiUnitRef>{ref: "IEA", tag: "InterchangeControlTrailer", minOccurances: 1, maxOccurances: 1}]
         },
         group: {
-            header: [<edi:EdiUnitRef>{ref: "GS", tag: "FunctionalGroupHeader", maxOccurances: 1}],
-            trailer: [<edi:EdiUnitRef>{ref: "GE", tag: "FunctionalGroupTrailer", maxOccurances: 1}]
+            header: [<edi:EdiUnitRef>{ref: "GS", tag: "FunctionalGroupHeader", minOccurances: 1, maxOccurances: 1}],
+            trailer: [<edi:EdiUnitRef>{ref: "GE", tag: "FunctionalGroupTrailer", minOccurances: 1, maxOccurances: 1}]
         },
         'transaction: {
-            header: txnHeader,
-            trailer: txnTrailer
+            header: forceMandatoryX12(txnHeader),
+            trailer: forceMandatoryX12(txnTrailer)
         }
     };
+}
+
+// ST and SE are lifted out of `segments[]` as-is and inherit whatever
+// `minOccurances` the XSD specified (often 0). At the envelope level they
+// are mandatory by definition, so promote them.
+function forceMandatoryX12(edi:EdiUnitSchema[] units) returns edi:EdiUnitSchema[] {
+    edi:EdiUnitSchema[] result = [];
+    foreach edi:EdiUnitSchema u in units {
+        if u is edi:EdiSegSchema {
+            edi:EdiSegSchema promoted = u.clone();
+            promoted.minOccurances = 1;
+            result.push(promoted);
+        } else if u is edi:EdiUnitRef {
+            edi:EdiUnitRef promoted = u.clone();
+            promoted.minOccurances = 1;
+            result.push(promoted);
+        } else {
+            edi:EdiSegGroupSchema promoted = u.clone();
+            promoted.minOccurances = 1;
+            result.push(promoted);
+        }
+    }
+    return result;
 }
 
 // Returns the segment code of an EdiUnitSchema entry, resolving an EdiUnitRef

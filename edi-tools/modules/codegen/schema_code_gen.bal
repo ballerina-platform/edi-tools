@@ -106,6 +106,24 @@ public type ${name}Transaction record {|
 |};
 `;
 
+    // Top-level `<Name>Headers` record returned by `headersFromEdiString`. Field
+    // names match the JSON keys emitted by the runtime's `readEnvelopeHeaders`:
+    // "interchange", "group" (when present), and "transaction".
+    string headersRecord = env?.group is edi:EdiEnvelopeLevel ?
+        string `
+public type ${name}Headers record {|
+    ${name}InterchangeHeader interchange;
+    ${name}GroupHeader group;
+    ${name}TransactionHeader 'transaction;
+|};
+` :
+        string `
+public type ${name}Headers record {|
+    ${name}InterchangeHeader interchange;
+    ${name}TransactionHeader 'transaction;
+|};
+`;
+
     if env?.group is edi:EdiEnvelopeLevel {
         return string `${transactionRecord}
 public type ${name}FunctionalGroup record {|
@@ -119,7 +137,7 @@ public type ${name}Interchange record {|
     ${name}FunctionalGroup[] groups;
     ${name}InterchangeTrailer interchangeTrailer;
 |};
-`;
+${headersRecord}`;
     }
 
     return string `${transactionRecord}
@@ -128,7 +146,7 @@ public type ${name}Interchange record {|
     ${name}Transaction[] transactions;
     ${name}InterchangeTrailer interchangeTrailer;
 |};
-`;
+${headersRecord}`;
 }
 
 // Renders typed wrappers for `headersFromEdiString` and `interchangeFromEdiString`.
@@ -185,10 +203,11 @@ isolated function convert${name}Body(json|error raw) returns ${name}|error {
 # Parse only the envelope header segments from the given EDI string.
 #
 # + ediText - EDI string to parse
-# + return - Parsed header sections as JSON, or error
-public isolated function headersFromEdiString(string ediText) returns json|error {
+# + return - Parsed ${name}Headers record, or error if the headers are malformed
+public isolated function headersFromEdiString(string ediText) returns ${name}Headers|error {
     edi:EdiSchema ediSchema = check edi:getSchema(schemaJson);
-    return edi:headersFromEdiString(ediText, ediSchema);
+    json raw = check edi:headersFromEdiString(ediText, ediSchema);
+    return raw.cloneWithType();
 }
 
 # Parse the full envelope hierarchy from the given EDI string.
