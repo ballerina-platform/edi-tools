@@ -155,8 +155,10 @@ ${headersRecord}`;
 // cleanly. Per-transaction bodies remain fail-safe — a body that came back as
 // an error stays as an error in the typed transaction.
 function renderEnvelopeFns(string name, edi:EdiEnvelopeSchema env) returns string {
-    // Body unwrap is in a helper because Ballerina does not narrow `json|error`
-    // across a `?:` ternary, so an inline cast to `json` would be rejected.
+    // Body unwrap helpers — Ballerina does not narrow `json|error` (or
+    // `<Name>|error`) across a `?:` ternary, so an inline conversion would
+    // be rejected. Two helpers: parse direction (json -> typed) and write
+    // direction (typed -> json).
     string bodyHelper = string `
 
 isolated function convert${name}Body(json|error raw) returns ${name}|error {
@@ -164,6 +166,13 @@ isolated function convert${name}Body(json|error raw) returns ${name}|error {
         return raw;
     }
     return raw.cloneWithType();
+}
+
+isolated function unwrap${name}Body(${name}|error typed) returns json|error {
+    if typed is error {
+        return typed;
+    }
+    return typed.toJson();
 }`;
 
     string convertTxn = env?.group is edi:EdiEnvelopeLevel ?
@@ -198,6 +207,53 @@ isolated function convert${name}Body(json|error raw) returns ${name}|error {
         ${name}InterchangeTrailer it = check raw.interchangeTrailer.cloneWithType();
         return {interchangeHeader: ih, transactions: txns, interchangeTrailer: it};`;
 
+    // Builds the runtime EdiInterchange (with `json` envelope fields) from a
+    // typed `<Name>Interchange`. The transaction body has to detour through
+    // `unwrap<Name>Body` because Ballerina does not narrow `<Name>|error`.
+    string rawInterchange = env?.group is edi:EdiEnvelopeLevel ?
+        string `{
+        edi:EdiFunctionalGroup[] rawGroups = [];
+        foreach var g in msg.groups {
+            edi:EdiTransaction[] rawTxns = [];
+            foreach var t in g.transactions {
+                json|error body = unwrap${name}Body(t.body);
+                rawTxns.push({
+                    transactionHeader: t.transactionHeader.toJson(),
+                    body: body,
+                    transactionTrailer: t.transactionTrailer.toJson()
+                });
+            }
+            rawGroups.push({
+                groupHeader: g.groupHeader.toJson(),
+                transactions: rawTxns,
+                groupTrailer: g.groupTrailer.toJson()
+            });
+        }
+        edi:EdiInterchange built = {
+            interchangeHeader: msg.interchangeHeader.toJson(),
+            groups: rawGroups,
+            interchangeTrailer: msg.interchangeTrailer.toJson()
+        };
+        raw = built;
+    }` :
+        string `{
+        edi:EdiTransaction[] rawTxns = [];
+        foreach var t in msg.transactions {
+            json|error body = unwrap${name}Body(t.body);
+            rawTxns.push({
+                transactionHeader: t.transactionHeader.toJson(),
+                body: body,
+                transactionTrailer: t.transactionTrailer.toJson()
+            });
+        }
+        edi:EdiInterchange built = {
+            interchangeHeader: msg.interchangeHeader.toJson(),
+            transactions: rawTxns,
+            interchangeTrailer: msg.interchangeTrailer.toJson()
+        };
+        raw = built;
+    }`;
+
     return string `
 
 # Parse only the envelope header segments from the given EDI string.
@@ -221,6 +277,19 @@ public isolated function interchangeFromEdiString(string ediText) returns ${name
     edi:EdiSchema ediSchema = check edi:getSchema(schemaJson);
     edi:EdiInterchange raw = check edi:interchangeFromEdiString(ediText, ediSchema);
     ${assemble}
+}
+
+# Serialise a fully populated ${name}Interchange into EDI text. Inverse of
+# interchangeFromEdiString. A transaction whose body is an error cannot
+# be serialised — filter or replace such transactions before calling.
+#
+# + msg - The interchange to serialise
+# + return - EDI text, or error
+public isolated function interchangeToEdiString(${name}Interchange msg) returns string|error {
+    edi:EdiSchema ediSchema = check edi:getSchema(schemaJson);
+    edi:EdiInterchange raw;
+    ${rawInterchange}
+    return edi:interchangeToEdiString(raw, ediSchema);
 }
 ${bodyHelper}`;
 }

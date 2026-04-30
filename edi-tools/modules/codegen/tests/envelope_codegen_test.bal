@@ -156,6 +156,8 @@ function testEnvelopeCodegenOutput() returns error? {
             "Generated module should export headersFromEdiString");
     test:assertTrue(output.includes("public isolated function interchangeFromEdiString"),
             "Generated module should export interchangeFromEdiString");
+    test:assertTrue(output.includes("public isolated function interchangeToEdiString"),
+            "Generated module should export interchangeToEdiString — the write-side companion");
 
     // headersFromEdiString returns a typed OrdersHeaders record, not json.
     test:assertTrue(output.includes("returns OrdersHeaders|error"),
@@ -164,4 +166,8 @@ function testEnvelopeCodegenOutput() returns error? {
             "Generated module should declare OrdersHeaders");
     test:assertFalse(output.includes("function headersFromEdiString(string ediText) returns json"),
             "headersFromEdiString must not leak `json` as its return type");
+
+    // interchangeToEdiString takes the typed OrdersInterchange and returns string|error.
+    test:assertTrue(output.includes("interchangeToEdiString(OrdersInterchange msg) returns string|error"),
+            "interchangeToEdiString must take the typed OrdersInterchange wrapper");
 }
