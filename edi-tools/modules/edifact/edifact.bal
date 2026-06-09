@@ -135,7 +135,7 @@ function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinition
             'field: "+",
             component: ":",
             repetition: "*",
-            decimalSeparator: "."
+            decimalSeparator: ","
         },
         segments: [],
         segmentDefinitions: {}

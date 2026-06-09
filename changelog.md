@@ -19,10 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   on the closed `edi:EdiSchema` record.
 
 ### Changed
-- EDIFACT schema generation now defaults `decimalSeparator` to `.` (the EDIFACT
-  standard) and no longer emits the `ignoreSegments: ["UNB"]` workaround; UNB/UNZ
-  and UNH/UNT are lifted into the `envelope`. X12 generation lifts ST/SE and
-  inlines ISA/IEA/GS/GE into the envelope levels.
+- EDIFACT schema generation no longer emits the `ignoreSegments: ["UNB"]`
+  workaround; UNB/UNZ and UNH/UNT are lifted into the `envelope`. X12 generation
+  lifts ST/SE and inlines ISA/IEA/GS/GE into the envelope levels.
 
 ## [2.0.0] - 2024-05-29
 
