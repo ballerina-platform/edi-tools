@@ -7,8 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- [Add envelope-aware schema generation and typed envelope codegen per BEP-1441](https://github.com/ballerina-platform/ballerina-spec/issues/1441):
+  `convertX12Schema` and `convertEdifactSchema` now auto-populate a structured
+  `envelope` field (interchange / group? / transaction levels). `codegen` emits
+  typed envelope wrappers when the schema declares an `envelope` — `<Name>Interchange`,
+  `<Name>FunctionalGroup` (X12), `<Name>Transaction` (with `body: <Name>|error`),
+  plus generated `headersFromEdiString`, `interchangeFromEdiString`, and
+  `interchangeToEdiString` functions.
+- `libgen` prints a post-generation notice that the generated library requires
+  `ballerina/edi >= 1.6.0`, since older runtimes reject the new `envelope` field
+  on the closed `edi:EdiSchema` record.
 
 ### Changed
+- EDIFACT schema generation now defaults `decimalSeparator` to `.` (the EDIFACT
+  standard) and no longer emits the `ignoreSegments: ["UNB"]` workaround; UNB/UNZ
+  and UNH/UNT are lifted into the `envelope`. X12 generation lifts ST/SE and
+  inlines ISA/IEA/GS/GE into the envelope levels.
 
 ## [2.0.0] - 2024-05-29
 

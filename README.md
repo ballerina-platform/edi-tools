@@ -164,6 +164,48 @@ public function main() returns error? {
 }
 ````
 
+### Reading and writing EDI envelopes
+
+When the source schema is generated from a standard X12 or EDIFACT spec, it carries
+a structured `envelope` definition, and `codegen` emits additional typed wrappers for
+working with the full interchange envelope (not just the message body):
+
+- `<Name>Interchange`, `<Name>FunctionalGroup` (X12), and `<Name>Transaction` records that
+  mirror the envelope hierarchy. Each `<Name>Transaction.body` is `<Name>|error`, so a
+  malformed transaction body is captured rather than aborting the whole parse (fail-safe).
+- `headersFromEdiString` — extracts just the envelope headers.
+- `interchangeFromEdiString` — parses the full interchange into a typed `<Name>Interchange`.
+- `interchangeToEdiString` — the inverse, serializing a `<Name>Interchange` back to EDI text.
+
+For example, a package generated from the EDIFACT ORDERS spec exposes an
+`ORDERSInterchange` type whose transactions can be read and re-serialized:
+
+````ballerina
+import ballerina/io;
+import sample.orders;
+
+public function main() returns error? {
+    string ediText = check io:fileReadString("resources/sample.edi");
+
+    // Parse the full envelope hierarchy into typed records.
+    orders:ORDERSInterchange interchange = check orders:interchangeFromEdiString(ediText);
+    foreach var txn in interchange.transactions {
+        if txn.body is error {
+            io:println("Quarantined: ", (<error>txn.body).message());
+            continue;
+        }
+        io:println(txn.body);
+    }
+
+    // Serialize a (filtered/transformed) interchange back to EDI text.
+    string ediOut = check orders:interchangeToEdiString(interchange);
+    io:println(ediOut);
+}
+````
+
+> These envelope wrappers require `ballerina/edi >= 1.6.0`. `libgen` prints a notice to
+> this effect after generating a package, since older runtimes reject the `envelope` field.
+
 ## Package generation
 
 Usually, organizations have to work with many EDI formats, and integration developers need to have a convenient way to work on EDI data with minimum effort. Ballerina EDI libraries facilitate this by allowing organizations to pack all EDI processing codes for their EDI collections into an importable package. Therefore, integration developers can simply import those libraries and convert EDI messages into Ballerina records in a single line of code.
