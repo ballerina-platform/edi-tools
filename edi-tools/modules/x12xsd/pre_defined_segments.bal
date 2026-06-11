@@ -26,16 +26,24 @@ final edi:EdiSegSchema ISA_SEG = {
     fields: [
         {tag: "code", required: true},
         {tag: "authInfoQualifier", required: true},
-        {tag: "authInfo", required: true},
+        // ISA02 / ISA04 are fixed-width (10 chars) and carry all spaces when
+        // ISA01 / ISA03 is "00" (no authorization / security information) —
+        // which is the common case in production. The runtime treats
+        // whitespace-only required fields as missing, so these must be
+        // optional to accept standard interchanges.
+        {tag: "authInfo", required: false},
         {tag: "securityQualifier", required: true},
-        {tag: "securityInfo", required: true},
+        {tag: "securityInfo", required: false},
         {tag: "senderQualifier", required: true},
         {tag: "senderId", required: true},
         {tag: "receiverQualifier", required: true},
         {tag: "receiverId", required: true},
         {tag: "date", required: true},
         {tag: "time", required: true},
-        {tag: "repetitionSeparator", required: true},
+        // ISA11 in 004010 is the Interchange Control Standards Identifier
+        // (constant "U"). Later versions repurpose it as the repetition
+        // separator, but this converter targets the 004010 family.
+        {tag: "standardsId", required: true},
         {tag: "version", required: true},
         {tag: "controlNumber", required: true, dataType: edi:STRING},
         {tag: "ackRequested", required: true},

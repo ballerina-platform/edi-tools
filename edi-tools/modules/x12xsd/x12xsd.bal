@@ -79,7 +79,7 @@ public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
     }
     edi:EdiSegGroupSchema rootSegGroupSchema = check convertSegmentGroup(root, x12xsd, ediSchema);
     ediSchema.segments = rootSegGroupSchema.segments;
-    populateX12Envelope(ediSchema);
+    check populateX12Envelope(ediSchema);
     return ediSchema;
 }
 
@@ -87,7 +87,10 @@ public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
 //   * interchange — ISA / IEA (inline definitions)
 //   * group       — GS / GE (inline definitions)
 //   * transaction — ST / SE (lifted out of `segments` where the XSD placed them)
-function populateX12Envelope(edi:EdiSchema schema) {
+// Returns an error if the XSD does not declare ST / SE — generating a closed
+// envelope wrapper without transaction header/trailer segments would produce
+// a schema that can never parse a conformant interchange.
+function populateX12Envelope(edi:EdiSchema schema) returns error? {
     edi:EdiUnitSchema[] body = [];
     edi:EdiUnitSchema[] txnHeader = [];
     edi:EdiUnitSchema[] txnTrailer = [];
@@ -101,6 +104,14 @@ function populateX12Envelope(edi:EdiSchema schema) {
         } else {
             body.push(unit);
         }
+    }
+
+    if txnHeader.length() == 0 || txnTrailer.length() == 0 {
+        return error(string `Cannot generate envelope for ${schema.name}: ` +
+                "the source XSD does not declare " +
+                (txnHeader.length() == 0 ? "ST" : "SE") +
+                " in the transaction set. An envelope without transaction " +
+                "header/trailer segments cannot parse a conformant interchange.");
     }
 
     schema.segmentDefinitions["ISA"] = ISA_SEG;
