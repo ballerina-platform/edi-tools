@@ -203,8 +203,9 @@ public function main() returns error? {
 }
 ````
 
-> These envelope wrappers require `ballerina/edi >= 1.6.0`. `libgen` prints a notice to
-> this effect after generating a package, since older runtimes reject the `envelope` field.
+> These envelope wrappers require `ballerina/edi >= 1.6.0`; older runtimes reject the
+> `envelope` field. For envelope-aware schemas, `libgen` pins this floor via a
+> `[[dependency]]` block in the generated package's `Ballerina.toml` and prints a notice.
 
 ## Package generation
 
