@@ -74,22 +74,75 @@ allprojects {
     }
 }
 
-subprojects {
+configurations {
+    jbalTools
+    ballerinaStdLibs
+}
 
-    configurations {
-        ballerinaStdLibs
+dependencies {
+    /* jBallerina tools distribution */
+    jbalTools("org.ballerinalang:jballerina-tools:${project.ballerinaLangVersion}") {
+        transitive = false
     }
 
-    dependencies {
-        /* Standard libraries */
-        ballerinaStdLibs "io.ballerina.stdlib:io-ballerina:${project.stdlibIoVersion}"
-        ballerinaStdLibs "io.ballerina.stdlib:log-ballerina:${project.stdlibLogVersion}"
-        ballerinaStdLibs "io.ballerina.stdlib:file-ballerina:${project.stdlibFileVersion}"
+    /* Standard libraries */
+    ballerinaStdLibs "io.ballerina.stdlib:io-ballerina:${project.stdlibIoVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:log-ballerina:${project.stdlibLogVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:file-ballerina:${project.stdlibFileVersion}"
 
-        ballerinaStdLibs "io.ballerina.stdlib:os-ballerina:${project.stdlibOsVersion}"
-        ballerinaStdLibs "io.ballerina.stdlib:time-ballerina:${project.stdlibTimeVersion}"
-        ballerinaStdLibs "io.ballerina.stdlib:observe-ballerina:${project.observeVersion}"
-        ballerinaStdLibs "io.ballerina:observe-ballerina:${project.observeInternalVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:os-ballerina:${project.stdlibOsVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:time-ballerina:${project.stdlibTimeVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:observe-ballerina:${project.observeVersion}"
+    ballerinaStdLibs "io.ballerina:observe-ballerina:${project.observeInternalVersion}"
+
+    /* EDI module (timestamped snapshots from GitHub Packages) */
+    ballerinaStdLibs "io.ballerina.stdlib:edi-ballerina:${project.ballerinaEdiVersion}"
+}
+
+// Local jBallerina distribution used for all `bal` invocations of the build.
+// The distribution repo is preloaded with the ballerinaStdLibs balas (including
+// the timestamped ballerina/edi snapshot) so that builds resolve them locally
+// instead of waiting for a Ballerina Central release.
+def extractedDistributionDir = "${project.buildDir}/target/extracted-distributions"
+ext.ballerinaDistributionPath = "${extractedDistributionDir}/jballerina-tools-zip/jballerina-tools-${project.ballerinaLangVersion}"
+
+task unpackJballerinaTools(type: Copy) {
+    from {
+        configurations.jbalTools.resolvedConfiguration.resolvedArtifacts.collect { artifact ->
+            zipTree(artifact.getFile())
+        }
+    }
+    into new File(extractedDistributionDir, "jballerina-tools-zip")
+}
+
+task unpackStdLibs {
+    dependsOn unpackJballerinaTools
+    doLast {
+        configurations.ballerinaStdLibs.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+            copy {
+                from project.zipTree(artifact.getFile())
+                into new File(extractedDistributionDir, artifact.name + "-zip")
+            }
+        }
+    }
+}
+
+task copyStdlibs {
+    dependsOn unpackStdLibs
+    doLast {
+        configurations.ballerinaStdLibs.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+            def artifactExtractedPath = "${extractedDistributionDir}/" + artifact.name + "-zip"
+            copy {
+                into ballerinaDistributionPath
+                duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                into("repo/bala") {
+                    from "${artifactExtractedPath}/bala/"
+                }
+                into("repo/cache") {
+                    from "${artifactExtractedPath}/cache"
+                }
+            }
+        }
     }
 }
 

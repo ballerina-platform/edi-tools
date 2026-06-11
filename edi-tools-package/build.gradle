@@ -33,6 +33,7 @@ def ballerinaLocalDir = System.getProperty("user.home") + "/.ballerina/repositor
 def ediPackageDir = project.file("$project.projectDir")
 def balCentralCacheDir = project.file(System.getProperty("user.home") + "/.ballerina/repositories/central.ballerina.io")
 def ballerinaToolConfigToml = System.getProperty("user.home") + "/.ballerina/.config/bal-tools.toml"
+def distributionBinPath = "${rootProject.ext.ballerinaDistributionPath}/bin"
 task updateTomlFiles {
     // Update the Ballerina.toml and Dependencies.toml files
     doLast {
@@ -103,13 +104,18 @@ task createBallerinaToolConfigFile {
         def tomlFile = file(ballerinaToolConfigToml)
         def tomlFileContent = tomlFile.text
 
-        // Append tool to toml file if it does not exist
-        if (!tomlFileContent.contains(configFileContent)) {
-            tomlFile << "\n" + configFileContent
-            println("Successfully created the bal-tools.toml file in the .ballerina/.config directory")
-        } else {
-            println("bal edi tool already exists!")
-        }
+        // Drop stale editoolspackage entries from previous builds; a dangling
+        // entry pointing at a version no longer in the bala cache crashes `bal`
+        def parts = tomlFileContent.split(java.util.regex.Pattern.quote("[[tool]]"))
+        def header = parts.length > 0 ? parts[0].trim() : ""
+        def retainedBlocks = parts.length > 1 ? parts[1..-1]
+                .collect { it.trim() }
+                .findAll { it && !it.contains('name = "editoolspackage"') }
+                .collect { "[[tool]]\n" + it } : []
+
+        def newContent = (header ? header + "\n\n" : "") + retainedBlocks.join("\n\n")
+        tomlFile.text = newContent + (newContent.endsWith("\n") ? "" : "\n") + configFileContent
+        println("Successfully registered the bal edi tool (version ${version}) in bal-tools.toml")
     }
 }
 
@@ -118,10 +124,11 @@ task buildEDIPackage {
         // Pack and push the EDI Tools package to the local repository
         exec {
             workingDir ediPackageDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', "/c", "bal pack && bal push --repository=local"
+                commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat pack && ${distributionBinPath}/bal.bat push --repository=local && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', "-c", "bal pack && bal push --repository=local"
+                commandLine 'sh', "-c", "${distributionBinPath}/bal pack && ${distributionBinPath}/bal push --repository=local"
             }
         }
         println("Successfully build and pushed the EDI Tools package to the local repository")
@@ -152,10 +159,11 @@ task publishEDIPackage {
         // Push the EDI Tools package to the central repository
         exec {
             workingDir ediPackageDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', "/c", "bal pack && bal push"
+                commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat pack && ${distributionBinPath}/bal.bat push && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', "-c", "bal pack && bal push"
+                commandLine 'sh', "-c", "${distributionBinPath}/bal pack && ${distributionBinPath}/bal push"
             }
         }
         println("Successfully pushed the EDI Tools package to the central.")
@@ -181,5 +189,7 @@ commitTomlFiles.dependsOn updateTomlFiles
 buildEDIPackage.dependsOn createBallerinaToolConfigFile
 buildEDIPackage.dependsOn copyEdiCliJar
 buildEDIPackage.dependsOn commitTomlFiles
+buildEDIPackage.dependsOn ':copyStdlibs'
+publishEDIPackage.dependsOn ':copyStdlibs'
 
 release.dependsOn build

@@ -17,6 +17,19 @@
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
+def ediVersion = stripBallerinaExtensionVersion("${project.ballerinaEdiVersion}")
+def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/tests/Ballerina.toml")
+def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
+def distributionBinPath = "${rootProject.ext.ballerinaDistributionPath}/bin"
+
+task updateTomlFiles {
+    // Update the Ballerina.toml file with the timestamped ballerina/edi version
+    doLast {
+        def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@edi.version@", ediVersion)
+        ballerinaTomlFile.text = newConfig
+    }
+}
+
 task prepareTests {
     doLast {
         file('resources').listFiles().each { sampleFile ->
@@ -33,12 +46,14 @@ task prepareTests {
             // Generate code for each sample using the schema.json file
             try {
                 exec {
-                        def genCommand = "bal edi codegen -i resources/${sampleName}/schema.json -o modules/${sampleName}/gen_code.bal"
-                        println("Executing command: " + genCommand)
+                        workingDir project.projectDir
+                        environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                        def genCommand = "edi codegen -i resources/${sampleName}/schema.json -o modules/${sampleName}/gen_code.bal"
+                        println("Executing command: bal " + genCommand)
                         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                            commandLine 'cmd', "/c", genCommand
+                            commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat ${genCommand} && exit %%ERRORLEVEL%%"
                         } else {
-                            commandLine 'sh', "-c", genCommand
+                            commandLine 'sh', "-c", "${distributionBinPath}/bal ${genCommand}"
                         }
                     }
             } catch (Exception e) {
@@ -63,10 +78,12 @@ task runTests {
         try {
             // Run tests for each sample
             exec {
+                    workingDir project.projectDir
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        commandLine 'cmd', "/c", 'bal test --code-coverage --coverage-format=xml'
+                        commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat test --code-coverage --coverage-format=xml && exit %%ERRORLEVEL%%"
                     } else {
-                        commandLine 'sh', "-c", 'bal test --code-coverage --coverage-format=xml'
+                        commandLine 'sh', "-c", "${distributionBinPath}/bal test --code-coverage --coverage-format=xml"
                     }
             }
         } catch (Exception e) {
@@ -82,4 +99,7 @@ task  test{
     dependsOn runTests
 }
 
+prepareTests.dependsOn updateTomlFiles
+prepareTests.dependsOn ':copyStdlibs'
+prepareTests.dependsOn ':edi-tools-package:build'
 runTests.dependsOn prepareTests

@@ -21,8 +21,10 @@ description = 'Ballerina - EDI tools'
 def packageName = "editools"
 def packageOrg = "ballerina"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
+def ediVersion = stripBallerinaExtensionVersion("${project.ballerinaEdiVersion}")
 def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/Ballerina.toml")
 def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
+def distributionBinPath = "${rootProject.ext.ballerinaDistributionPath}/bin"
 
 task updateTomlFiles {
     // Update the Ballerina.toml and Dependencies.toml files
@@ -30,6 +32,7 @@ task updateTomlFiles {
         println "Updating toml files"
         def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
+        newConfig = newConfig.replace("@edi.version@", ediVersion)
         ballerinaTomlFile.text = newConfig
     }
 }
@@ -38,11 +41,12 @@ task buildEDIToolCore() {
     // Build the ballerina tools
     doLast {
         project.exec {
-            ignoreExitValue true
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "bal build"
+                commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat build && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "bal build"
+                commandLine 'sh', '-c', "${distributionBinPath}/bal build"
             }
         }
     }
@@ -71,10 +75,12 @@ task test{
         try {
             // Run tests for each sample
             exec {
+                    workingDir project.projectDir
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        commandLine 'cmd', "/c", 'bal test --code-coverage --coverage-format=xml'
+                        commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat test --code-coverage --coverage-format=xml && exit %%ERRORLEVEL%%"
                     } else {
-                        commandLine 'sh', "-c", 'bal test --code-coverage --coverage-format=xml'
+                        commandLine 'sh', "-c", "${distributionBinPath}/bal test --code-coverage --coverage-format=xml"
                     }
             }
         } catch (Exception e) {
@@ -96,5 +102,6 @@ task build {
 
 buildEDIToolCore.dependsOn deleteTarget
 buildEDIToolCore.dependsOn updateTomlFiles
+buildEDIToolCore.dependsOn ':copyStdlibs'
 copyEdiToolsJar.dependsOn buildEDIToolCore
 test.dependsOn buildEDIToolCore
