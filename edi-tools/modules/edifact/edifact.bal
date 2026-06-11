@@ -129,7 +129,14 @@ function genEdiSchema(string url, string code, string dir, SegmentDefintions all
 function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinitions, string name) returns EDISchema|error {
     EDISchema ediSchema = {
         name,
-        ignoreSegments: [],
+        // The ballerina/edi runtime (>= 1.6.0) strips and validates a leading
+        // UNA service string advice itself in all schema-driven envelope paths
+        // (fromEdiString, headersFromEdiString, interchangeFromEdiString).
+        // "UNA" is additionally listed here as belt-and-braces for any
+        // non-envelope path (e.g. a user who strips the `envelope` field from
+        // the generated schema): the segment reader then skips UNA via the
+        // ignore list instead of failing with "Mandatory unit is missing".
+        ignoreSegments: ["UNA"],
         delimiters: {
             segment: "'",
             'field: "+",
@@ -162,15 +169,18 @@ function genMsgTypeEdiSchema(string msgType, SegmentDefintions segmentDefinition
     // EDIFACT envelope: interchange = UNB / UNZ, transaction = UNH / UNT.
     // No group level. Lift UNH / UNT out of `segments` and add UNB / UNZ
     // definitions so the runtime can parse the full interchange.
-    populateEdifactEnvelope(ediSchema);
+    check populateEdifactEnvelope(ediSchema);
     return ediSchema;
 }
 
 // Builds the structured envelope for an EDIFACT schema. UNH and UNT are
 // extracted from `segments` (where the message-table conversion places them)
 // into `envelope.transaction`; UNB and UNZ are added as new envelope refs and
-// their definitions inserted into `segmentDefinitions`.
-function populateEdifactEnvelope(EDISchema schema) {
+// their definitions inserted into `segmentDefinitions`. Returns an error if
+// the source message spec does not declare UNH / UNT — generating a closed
+// envelope wrapper without transaction header/trailer segments would produce
+// a schema that can never parse a conformant interchange.
+function populateEdifactEnvelope(EDISchema schema) returns error? {
     (Segement|SegmentGroup)[] body = [];
     (Segement|SegmentGroup)[] txnHeader = [];
     (Segement|SegmentGroup)[] txnTrailer = [];
@@ -183,6 +193,14 @@ function populateEdifactEnvelope(EDISchema schema) {
         } else {
             body.push(seg);
         }
+    }
+
+    if txnHeader.length() == 0 || txnTrailer.length() == 0 {
+        return error(string `Cannot generate envelope for message type ${schema.name}: ` +
+                "the source specification does not declare " +
+                (txnHeader.length() == 0 ? "UNH" : "UNT") +
+                " in its segment table. An envelope without transaction " +
+                "header/trailer segments cannot parse a conformant interchange.");
     }
 
     if !schema.segmentDefinitions.hasKey("UNB") {
