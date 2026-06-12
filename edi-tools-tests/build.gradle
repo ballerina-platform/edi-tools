@@ -21,6 +21,7 @@ def ediVersion = stripBallerinaExtensionVersion("${project.ballerinaEdiVersion}"
 def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/tests/Ballerina.toml")
 def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
 def distributionBinPath = "${rootProject.ext.ballerinaDistributionPath}/bin"
+def ediToolsJar = "${project.rootDir}/edi-tools/target/bin/editools.jar"
 
 task updateTomlFiles {
     // Update the Ballerina.toml file with the timestamped ballerina/edi version
@@ -43,12 +44,15 @@ task prepareTests {
             delete "modules/${sampleName}"
             mkdir "modules/${sampleName}/tests"
 
-            // Generate code for each sample using the schema.json file
+            // Generate code for each sample by running the EDI tool jar directly with the
+            // distribution's bal; the `bal edi` CLI spawns a nested `bal` from PATH, which is
+            // unavailable when no system-wide Ballerina is installed (the CLI itself is covered
+            // by the JUnit suite in edi-tools-cli)
             try {
                 exec {
                         workingDir project.projectDir
                         environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-                        def genCommand = "edi codegen -i resources/${sampleName}/schema.json -o modules/${sampleName}/gen_code.bal"
+                        def genCommand = "run ${ediToolsJar} -- codegen resources/${sampleName}/schema.json modules/${sampleName}/gen_code.bal"
                         println("Executing command: bal " + genCommand)
                         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                             commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat ${genCommand} && exit %%ERRORLEVEL%%"
@@ -59,6 +63,13 @@ task prepareTests {
             } catch (Exception e) {
                     println("Test code generation failed: " + e.message)
                     throw e
+            }
+
+            // The EDI tool logs errors but exits 0, so verify the generated file explicitly
+            def genCodeFile = file("modules/${sampleName}/gen_code.bal")
+            if (!genCodeFile.exists() || genCodeFile.length() == 0) {
+                throw new GradleException("Code generation failed for sample '${sampleName}': " +
+                        "${genCodeFile} was not generated. Check the EDI tool output above.")
             }
 
             // Copy the generated code to the tests directory
@@ -101,5 +112,5 @@ task  test{
 
 prepareTests.dependsOn updateTomlFiles
 prepareTests.dependsOn ':copyStdlibs'
-prepareTests.dependsOn ':edi-tools-package:build'
+prepareTests.dependsOn ':edi-tools:buildEDIToolCore'
 runTests.dependsOn prepareTests
