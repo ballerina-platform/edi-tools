@@ -72,4 +72,15 @@ test {
         events 'passed', 'failed', 'skipped'
         showStandardStreams = true
     }
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        // XML report is uploaded to Codecov by the CI workflows
+        xml.required = true
+    }
+    // Analyze only the compiled CLI classes; the default also scans build/resources/main,
+    // where the bundled editools.jar fails JaCoCo's class analysis
+    classDirectories.setFrom(files(sourceSets.main.output.classesDirs))
 }

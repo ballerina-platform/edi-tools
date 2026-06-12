@@ -43,3 +43,6 @@ jobs:
             uses: codecov/codecov-action@v3
             with:
               token: ${{ secrets.CODECOV_TOKEN }}
+              # Only the tool's own coverage: the editools Ballerina package and the Java CLI.
+              # edi-tools-tests' report measures generated harness code and is excluded.
+              files: edi-tools/target/report/editools/coverage-report.xml,edi-tools-cli/build/reports/jacoco/test/jacocoTestReport.xml
