@@ -99,6 +99,11 @@ final readonly & json schemaJson = ${schema.toJsonString()};
 // function only needs to reference them by name.
 function renderEnvelopeRecords(string name, edi:EdiEnvelopeSchema env) returns string {
     string transactionRecord = string `
+# A single transaction within a ${name} interchange.
+#
+# + transactionHeader - Transaction header segment
+# + body - Parsed ${name} body, or the parse error when the body is malformed
+# + transactionTrailer - Transaction trailer segment
 public type ${name}Transaction record {|
     ${name}TransactionHeader transactionHeader;
     ${name}|error body;
@@ -111,6 +116,11 @@ public type ${name}Transaction record {|
     // "interchange", "group" (when present), and "transaction".
     string headersRecord = env?.group is edi:EdiEnvelopeLevel ?
         string `
+# Envelope headers of a ${name} interchange.
+#
+# + interchange - Interchange header
+# + group - Functional group header
+# + 'transaction - Transaction header
 public type ${name}Headers record {|
     ${name}InterchangeHeader interchange;
     ${name}GroupHeader group;
@@ -118,6 +128,10 @@ public type ${name}Headers record {|
 |};
 ` :
         string `
+# Envelope headers of a ${name} interchange.
+#
+# + interchange - Interchange header
+# + 'transaction - Transaction header
 public type ${name}Headers record {|
     ${name}InterchangeHeader interchange;
     ${name}TransactionHeader 'transaction;
@@ -126,12 +140,22 @@ public type ${name}Headers record {|
 
     if env?.group is edi:EdiEnvelopeLevel {
         return string `${transactionRecord}
+# A functional group within a ${name} interchange.
+#
+# + groupHeader - Group header segment
+# + transactions - Transactions in the group
+# + groupTrailer - Group trailer segment
 public type ${name}FunctionalGroup record {|
     ${name}GroupHeader groupHeader;
     ${name}Transaction[] transactions;
     ${name}GroupTrailer groupTrailer;
 |};
 
+# A parsed ${name} interchange with its full envelope hierarchy.
+#
+# + interchangeHeader - Interchange header segment
+# + groups - Functional groups in the interchange
+# + interchangeTrailer - Interchange trailer segment
 public type ${name}Interchange record {|
     ${name}InterchangeHeader interchangeHeader;
     ${name}FunctionalGroup[] groups;
@@ -141,6 +165,11 @@ ${headersRecord}`;
     }
 
     return string `${transactionRecord}
+# A parsed ${name} interchange with its full envelope hierarchy.
+#
+# + interchangeHeader - Interchange header segment
+# + transactions - Transactions in the interchange
+# + interchangeTrailer - Interchange trailer segment
 public type ${name}Interchange record {|
     ${name}InterchangeHeader interchangeHeader;
     ${name}Transaction[] transactions;
@@ -267,9 +296,7 @@ public isolated function headersFromEdiString(string ediText) returns ${name}Hea
 }
 
 # Parse the full envelope hierarchy from the given EDI string.
-# Envelope headers and trailers are fail-fast; transaction body is fail-safe —
-# a malformed body becomes an error in that transaction's body field
-# without aborting the rest of the interchange.
+# A malformed transaction body becomes an error in that transaction's body field.
 #
 # + ediText - EDI string to parse
 # + return - Parsed ${name}Interchange, or error if the envelope is malformed
@@ -279,9 +306,8 @@ public isolated function interchangeFromEdiString(string ediText) returns ${name
     ${assemble}
 }
 
-# Serialise a fully populated ${name}Interchange into EDI text. Inverse of
-# interchangeFromEdiString. A transaction whose body is an error cannot
-# be serialised — filter or replace such transactions before calling.
+# Serialise a ${name}Interchange into EDI text; the inverse of interchangeFromEdiString.
+# A transaction whose body is an error is refused — filter or replace it before calling.
 #
 # + msg - The interchange to serialise
 # + return - EDI text, or error
