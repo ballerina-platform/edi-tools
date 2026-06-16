@@ -32,6 +32,7 @@ public type LibData record {|
     string ediDeserializers = "";
     string ediSerializers = "";
     string[] ediNames = [];
+    boolean hasEnvelope = false;
 |};
 
 # Generates a Ballerina library project containing:
@@ -49,6 +50,14 @@ public function generateLibrary(LibData libdata) returns error? {
         check generateCodeFromSchemas(libdata, "", ());
     }
     check createBalLib(libdata);
+    if libdata.hasEnvelope {
+        io:println("");
+        io:println("Generated library uses envelope-aware schema and APIs from " +
+                "ballerina/edi " + EDI_RUNTIME_VERSION + ". Older runtime versions " +
+                "reject the new `envelope` field with `field cannot be added to " +
+                "the closed record 'edi:EdiSchema'`. The generated Ballerina.toml " +
+                "pins `ballerina/edi` >= " + EDI_RUNTIME_VERSION + " accordingly.");
+    }
 }
 
 function createLibStructure(LibData libdata) returns error? {
@@ -112,6 +121,9 @@ function generateEDIFileSpecificCode(string ediName, string ediVersion, json map
     libdata.ediNames.push(completeEdiName);
     edi:EdiSchema ediMapping = check edi:getSchema(mappingJson);
     ediMapping.name = "EDI_" + completeEdiName + "_" + ediMapping.name;
+    if ediMapping.envelope is edi:EdiEnvelopeSchema {
+        libdata.hasEnvelope = true;
+    }
 
     string modulePath = check file:joinPath(libdata.libPath, "modules", moduleName);
     check file:createDir(modulePath, file:RECURSIVE);

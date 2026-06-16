@@ -95,6 +95,23 @@ dependencies {
     ballerinaStdLibs "io.ballerina.stdlib:observe-ballerina:${project.observeVersion}"
     ballerinaStdLibs "io.ballerina:observe-ballerina:${project.observeInternalVersion}"
 
+    // edifact.bal fetches segment schemas over HTTP, so the edifact module needs
+    // ballerina/http available in the intermediate distribution, along with its
+    // full transitive closure (the minimal jballerina-tools pack bundles none of
+    // these, and bal does not pull a distribution-repo package's deps from Central).
+    ballerinaStdLibs "io.ballerina.stdlib:http-ballerina:${project.stdlibHttpVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:auth-ballerina:${project.stdlibAuthVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:cache-ballerina:${project.stdlibCacheVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:constraint-ballerina:${project.stdlibConstraintVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:crypto-ballerina:${project.stdlibCryptoVersion}"
+    ballerinaStdLibs "io.ballerina.lib:data.jsondata-ballerina:${project.stdlibJsondataVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:jwt-ballerina:${project.stdlibJwtVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:mime-ballerina:${project.stdlibMimeVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:oauth2-ballerina:${project.stdlibOAuth2Version}"
+    ballerinaStdLibs "io.ballerina.stdlib:task-ballerina:${project.stdlibTaskVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:url-ballerina:${project.stdlibUrlVersion}"
+    ballerinaStdLibs "io.ballerina.stdlib:uuid-ballerina:${project.stdlibUuidVersion}"
+
     /* EDI module (timestamped snapshots from GitHub Packages) */
     ballerinaStdLibs "io.ballerina.stdlib:edi-ballerina:${project.ballerinaEdiVersion}"
 }

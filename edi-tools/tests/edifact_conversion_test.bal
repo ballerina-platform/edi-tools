@@ -1,7 +1,7 @@
+import ballerina/file;
 import ballerina/test;
 import editools.edifact;
 import ballerina/io;
-import ballerina/file;
 
 @test:Config {
     dataProvider: filesProvider,

@@ -7,8 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-
-### Changed
+- [Generate envelope-aware EDI schemas and typed envelope wrappers (BEP-1441)](https://github.com/ballerina-platform/ballerina-spec/issues/1441)
 
 ## [2.0.0] - 2024-05-29
 

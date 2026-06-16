@@ -14,7 +14,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
+# Minimum `ballerina/edi` runtime version required by envelope-aware schemas.
+# Older runtimes reject the new `envelope` field with "field cannot be added
+# to the closed record 'edi:EdiSchema'".
+public const EDI_RUNTIME_VERSION = "1.6.0";
+
 function generateBallerinaToml(LibData libdata) returns string {
+    // For envelope-aware schemas, pin a resolution-time floor on the runtime
+    // so the generated library never compiles against an older ballerina/edi.
+    string dependencyBlock = libdata.hasEnvelope ? string `
+[[dependency]]
+org = "ballerina"
+name = "edi"
+version = "${EDI_RUNTIME_VERSION}"
+` : "";
     return string `
 [package]
 org = "${libdata.orgName}"
@@ -22,5 +35,5 @@ name = "${libdata.libName}"
 version = "0.1.0"
 distribution = "2201.11.0"
 export=[${libdata.exportsBlock}]
-`;
+${dependencyBlock}`;
 }

@@ -79,7 +79,97 @@ public function convertFromX12Xsd(xml x12xsd) returns edi:EdiSchema|error {
     }
     edi:EdiSegGroupSchema rootSegGroupSchema = check convertSegmentGroup(root, x12xsd, ediSchema);
     ediSchema.segments = rootSegGroupSchema.segments;
+    check populateX12Envelope(ediSchema);
     return ediSchema;
+}
+
+// Builds the structured envelope for an X12 transaction set schema:
+//   * interchange — ISA / IEA (inline definitions)
+//   * group       — GS / GE (inline definitions)
+//   * transaction — ST / SE (lifted out of `segments` where the XSD placed them)
+// Returns an error if the XSD does not declare ST / SE — generating a closed
+// envelope wrapper without transaction header/trailer segments would produce
+// a schema that can never parse a conformant interchange.
+function populateX12Envelope(edi:EdiSchema schema) returns error? {
+    edi:EdiUnitSchema[] body = [];
+    edi:EdiUnitSchema[] txnHeader = [];
+    edi:EdiUnitSchema[] txnTrailer = [];
+
+    foreach edi:EdiUnitSchema unit in schema.segments {
+        string? code = getRefCode(unit, schema);
+        if code == "ST" {
+            txnHeader.push(unit);
+        } else if code == "SE" {
+            txnTrailer.push(unit);
+        } else {
+            body.push(unit);
+        }
+    }
+
+    if txnHeader.length() == 0 || txnTrailer.length() == 0 {
+        return error(string `Cannot generate envelope for ${schema.name}: ` +
+                "the source XSD does not declare " +
+                (txnHeader.length() == 0 ? "ST" : "SE") +
+                " in the transaction set. An envelope without transaction " +
+                "header/trailer segments cannot parse a conformant interchange.");
+    }
+
+    schema.segmentDefinitions["ISA"] = ISA_SEG;
+    schema.segmentDefinitions["IEA"] = IEA_SEG;
+    schema.segmentDefinitions["GS"] = GS_SEG;
+    schema.segmentDefinitions["GE"] = GE_SEG;
+
+    schema.segments = body;
+    schema.envelope = {
+        interchange: {
+            header: [<edi:EdiUnitRef>{ref: "ISA", tag: "InterchangeControlHeader", minOccurances: 1, maxOccurances: 1}],
+            trailer: [<edi:EdiUnitRef>{ref: "IEA", tag: "InterchangeControlTrailer", minOccurances: 1, maxOccurances: 1}]
+        },
+        group: {
+            header: [<edi:EdiUnitRef>{ref: "GS", tag: "FunctionalGroupHeader", minOccurances: 1, maxOccurances: 1}],
+            trailer: [<edi:EdiUnitRef>{ref: "GE", tag: "FunctionalGroupTrailer", minOccurances: 1, maxOccurances: 1}]
+        },
+        'transaction: {
+            header: forceMandatoryX12(txnHeader),
+            trailer: forceMandatoryX12(txnTrailer)
+        }
+    };
+}
+
+// ST and SE are lifted out of `segments[]` as-is and inherit whatever
+// `minOccurances` the XSD specified (often 0). At the envelope level they
+// are mandatory by definition, so promote them.
+function forceMandatoryX12(edi:EdiUnitSchema[] units) returns edi:EdiUnitSchema[] {
+    edi:EdiUnitSchema[] result = [];
+    foreach edi:EdiUnitSchema u in units {
+        if u is edi:EdiSegSchema {
+            edi:EdiSegSchema promoted = u.clone();
+            promoted.minOccurances = 1;
+            result.push(promoted);
+        } else if u is edi:EdiUnitRef {
+            edi:EdiUnitRef promoted = u.clone();
+            promoted.minOccurances = 1;
+            result.push(promoted);
+        } else {
+            edi:EdiSegGroupSchema promoted = u.clone();
+            promoted.minOccurances = 1;
+            result.push(promoted);
+        }
+    }
+    return result;
+}
+
+// Returns the segment code of an EdiUnitSchema entry, resolving an EdiUnitRef
+// through `schema.segmentDefinitions` when needed.
+function getRefCode(edi:EdiUnitSchema unit, edi:EdiSchema schema) returns string? {
+    if unit is edi:EdiSegSchema {
+        return unit.code;
+    }
+    if unit is edi:EdiUnitRef {
+        edi:EdiSegSchema? def = schema.segmentDefinitions[unit.ref];
+        return def?.code;
+    }
+    return ();
 }
 
 function convertFromX12WithHeaders(string inPath) returns edi:EdiSchema|error {
