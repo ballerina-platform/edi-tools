@@ -1,5 +1,6 @@
 name: Build
-# This is non compatible with standard workflows, due to the need to install ballerina step
+# The build uses a local jballerina-tools distribution downloaded by Gradle,
+# so no system Ballerina installation is required.
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
@@ -22,11 +23,6 @@ jobs:
           - name: Checkout Repository
             uses: actions/checkout@v3
 
-          - name: Set Up Ballerina
-            uses: ballerina-platform/setup-ballerina@v1.1.0
-            with:
-              version: latest
-              
           - name: Set up JDK 21
             uses: actions/setup-java@v3
             with:
@@ -58,3 +54,6 @@ jobs:
             uses: codecov/codecov-action@v3
             with:
               token: ${{ secrets.CODECOV_TOKEN }}
+              # Only the tool's own coverage: the editools Ballerina package and the Java CLI.
+              # edi-tools-tests' report measures generated harness code and is excluded.
+              files: edi-tools/target/report/editools/coverage-report.xml,edi-tools-cli/build/reports/jacoco/test/jacocoTestReport.xml

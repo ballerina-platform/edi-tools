@@ -46,10 +46,41 @@ repositories {
 dependencies {
     implementation 'org.ballerinalang:ballerina-cli:2201.11.0'
     implementation 'info.picocli:picocli:4.0.1'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'com.google.code.gson:gson:2.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 build.dependsOn ":edi-tools:build"
 
+// editools.jar (a main resource) is produced by :edi-tools:copyEdiToolsJar; stage the fresh jar
+// into build/resources/main rather than a stale one from a previous build
+processResources.mustRunAfter ':edi-tools:copyEdiToolsJar'
+
 test {
+    // Ensures a fresh editools.jar in src/main/resources and, transitively
+    // (buildEDIToolCore -> :copyStdlibs), an unpacked local Ballerina distribution
+    dependsOn ':edi-tools:copyEdiToolsJar'
     useJUnitPlatform()
+    // The CLI commands spawn `bal run ...` resolved from PATH; point it at the local
+    // distribution (on Windows this may shadow rather than replace `Path` — CI is ubuntu-only)
+    environment 'PATH', "${rootProject.ext.ballerinaDistributionPath}/bin${File.pathSeparator}${System.getenv('PATH')}"
+    // Shared test data (X12 xsd + expected JSON, EDIFACT expected JSON) lives in edi-tools/tests
+    systemProperty 'edi.tools.test.resources', "${rootProject.projectDir}/edi-tools/tests/resources"
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        showStandardStreams = true
+    }
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        // XML report is uploaded to Codecov by the CI workflows
+        xml.required = true
+    }
+    // Analyze only the compiled CLI classes; the default also scans build/resources/main,
+    // where the bundled editools.jar fails JaCoCo's class analysis
+    classDirectories.setFrom(files(sourceSets.main.output.classesDirs))
 }

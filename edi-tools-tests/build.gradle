@@ -17,6 +17,20 @@
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
+def ediVersion = stripBallerinaExtensionVersion("${project.ballerinaEdiVersion}")
+def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/tests/Ballerina.toml")
+def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
+def distributionBinPath = "${rootProject.ext.ballerinaDistributionPath}/bin"
+def ediToolsJar = "${project.rootDir}/edi-tools/target/bin/editools.jar"
+
+task updateTomlFiles {
+    // Update the Ballerina.toml file with the timestamped ballerina/edi version
+    doLast {
+        def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@edi.version@", ediVersion)
+        ballerinaTomlFile.text = newConfig
+    }
+}
+
 task prepareTests {
     doLast {
         file('resources').listFiles().each { sampleFile ->
@@ -30,20 +44,32 @@ task prepareTests {
             delete "modules/${sampleName}"
             mkdir "modules/${sampleName}/tests"
 
-            // Generate code for each sample using the schema.json file
+            // Generate code for each sample by running the EDI tool jar directly with the
+            // distribution's bal; the `bal edi` CLI spawns a nested `bal` from PATH, which is
+            // unavailable when no system-wide Ballerina is installed (the CLI itself is covered
+            // by the JUnit suite in edi-tools-cli)
             try {
                 exec {
-                        def genCommand = "bal edi codegen -i resources/${sampleName}/schema.json -o modules/${sampleName}/gen_code.bal"
-                        println("Executing command: " + genCommand)
+                        workingDir project.projectDir
+                        environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                        def genCommand = "run ${ediToolsJar} -- codegen resources/${sampleName}/schema.json modules/${sampleName}/gen_code.bal"
+                        println("Executing command: bal " + genCommand)
                         if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                            commandLine 'cmd', "/c", genCommand
+                            commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat ${genCommand} && exit %%ERRORLEVEL%%"
                         } else {
-                            commandLine 'sh', "-c", genCommand
+                            commandLine 'sh', "-c", "${distributionBinPath}/bal ${genCommand}"
                         }
                     }
             } catch (Exception e) {
                     println("Test code generation failed: " + e.message)
                     throw e
+            }
+
+            // The EDI tool logs errors but exits 0, so verify the generated file explicitly
+            def genCodeFile = file("modules/${sampleName}/gen_code.bal")
+            if (!genCodeFile.exists() || genCodeFile.length() == 0) {
+                throw new GradleException("Code generation failed for sample '${sampleName}': " +
+                        "${genCodeFile} was not generated. Check the EDI tool output above.")
             }
 
             // Copy the generated code to the tests directory
@@ -63,10 +89,12 @@ task runTests {
         try {
             // Run tests for each sample
             exec {
+                    workingDir project.projectDir
+                    environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                        commandLine 'cmd', "/c", 'bal test --code-coverage --coverage-format=xml'
+                        commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat test --code-coverage --coverage-format=xml && exit %%ERRORLEVEL%%"
                     } else {
-                        commandLine 'sh', "-c", 'bal test --code-coverage --coverage-format=xml'
+                        commandLine 'sh', "-c", "${distributionBinPath}/bal test --code-coverage --coverage-format=xml"
                     }
             }
         } catch (Exception e) {
@@ -82,4 +110,7 @@ task  test{
     dependsOn runTests
 }
 
+prepareTests.dependsOn updateTomlFiles
+prepareTests.dependsOn ':copyStdlibs'
+prepareTests.dependsOn ':edi-tools:buildEDIToolCore'
 runTests.dependsOn prepareTests
