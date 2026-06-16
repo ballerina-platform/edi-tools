@@ -205,9 +205,9 @@ isolated function unwrap${name}Body(${name}|error typed) returns json|error {
 }`;
 
     string convertTxn = env?.group is edi:EdiEnvelopeLevel ?
-        string `foreach var grp in raw.groups ?: [] {
+        string `foreach edi:EdiFunctionalGroup grp in raw.groups ?: [] {
             ${name}Transaction[] txns = [];
-            foreach var t in grp.transactions {
+            foreach edi:EdiTransaction t in grp.transactions {
                 ${name}|error body = convert${name}Body(t.body);
                 ${name}TransactionHeader th = check t.transactionHeader.cloneWithType();
                 ${name}TransactionTrailer tt = check t.transactionTrailer.cloneWithType();
@@ -217,7 +217,7 @@ isolated function unwrap${name}Body(${name}|error typed) returns json|error {
             ${name}GroupTrailer gt = check grp.groupTrailer.cloneWithType();
             groups.push({groupHeader: gh, transactions: txns, groupTrailer: gt});
         }` :
-        string `foreach var t in raw.transactions ?: [] {
+        string `foreach edi:EdiTransaction t in raw.transactions ?: [] {
             ${name}|error body = convert${name}Body(t.body);
             ${name}TransactionHeader th = check t.transactionHeader.cloneWithType();
             ${name}TransactionTrailer tt = check t.transactionTrailer.cloneWithType();
@@ -242,9 +242,9 @@ isolated function unwrap${name}Body(${name}|error typed) returns json|error {
     string rawInterchange = env?.group is edi:EdiEnvelopeLevel ?
         string `{
         edi:EdiFunctionalGroup[] rawGroups = [];
-        foreach var g in msg.groups {
+        foreach ${name}FunctionalGroup g in msg.groups {
             edi:EdiTransaction[] rawTxns = [];
-            foreach var t in g.transactions {
+            foreach ${name}Transaction t in g.transactions {
                 json|error body = unwrap${name}Body(t.body);
                 rawTxns.push({
                     transactionHeader: t.transactionHeader.toJson(),
@@ -267,7 +267,7 @@ isolated function unwrap${name}Body(${name}|error typed) returns json|error {
     }` :
         string `{
         edi:EdiTransaction[] rawTxns = [];
-        foreach var t in msg.transactions {
+        foreach ${name}Transaction t in msg.transactions {
             json|error body = unwrap${name}Body(t.body);
             rawTxns.push({
                 transactionHeader: t.transactionHeader.toJson(),

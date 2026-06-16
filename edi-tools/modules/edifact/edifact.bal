@@ -185,10 +185,10 @@ function populateEdifactEnvelope(EDISchema schema) returns error? {
     (Segement|SegmentGroup)[] txnHeader = [];
     (Segement|SegmentGroup)[] txnTrailer = [];
 
-    foreach var seg in schema.segments {
-        if seg is Segement && seg.ref == "UNH" {
+    foreach Segement|SegmentGroup seg in schema.segments {
+        if seg is Segement && seg.ref == UNH.code {
             txnHeader.push(seg);
-        } else if seg is Segement && seg.ref == "UNT" {
+        } else if seg is Segement && seg.ref == UNT.code {
             txnTrailer.push(seg);
         } else {
             body.push(seg);
@@ -198,23 +198,23 @@ function populateEdifactEnvelope(EDISchema schema) returns error? {
     if txnHeader.length() == 0 || txnTrailer.length() == 0 {
         return error(string `Cannot generate envelope for message type ${schema.name}: ` +
                 "the source specification does not declare " +
-                (txnHeader.length() == 0 ? "UNH" : "UNT") +
+                (txnHeader.length() == 0 ? UNH.code : UNT.code) +
                 " in its segment table. An envelope without transaction " +
                 "header/trailer segments cannot parse a conformant interchange.");
     }
 
-    if !schema.segmentDefinitions.hasKey("UNB") {
-        schema.segmentDefinitions["UNB"] = UNB;
+    if !schema.segmentDefinitions.hasKey(UNB.code) {
+        schema.segmentDefinitions[UNB.code] = UNB;
     }
-    if !schema.segmentDefinitions.hasKey("UNZ") {
-        schema.segmentDefinitions["UNZ"] = UNZ;
+    if !schema.segmentDefinitions.hasKey(UNZ.code) {
+        schema.segmentDefinitions[UNZ.code] = UNZ;
     }
 
     schema.segments = body;
     schema.envelope = {
         interchange: {
-            header: [{ref: "UNB", tag: "interchange_header", minOccurances: 1, maxOccurances: 1}],
-            trailer: [{ref: "UNZ", tag: "interchange_trailer", minOccurances: 1, maxOccurances: 1}]
+            header: [{ref: UNB.code, tag: "interchange_header", minOccurances: 1, maxOccurances: 1}],
+            trailer: [{ref: UNZ.code, tag: "interchange_trailer", minOccurances: 1, maxOccurances: 1}]
         },
         'transaction: {
             header: forceMandatory(txnHeader),
@@ -229,7 +229,7 @@ function populateEdifactEnvelope(EDISchema schema) returns error? {
 // mandatory by definition, so promote them.
 function forceMandatory((Segement|SegmentGroup)[] units) returns (Segement|SegmentGroup)[] {
     (Segement|SegmentGroup)[] result = [];
-    foreach var u in units {
+    foreach Segement|SegmentGroup u in units {
         if u is Segement {
             Segement promoted = u.clone();
             promoted.minOccurances = 1;

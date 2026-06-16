@@ -1,4 +1,4 @@
-// Copyright (c) 2026 WSO2 LLC. (http://www.wso2.org).
+// Copyright (c) 2026 WSO2 LLC. (http://www.wso2.com).
 //
 // WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
@@ -152,17 +152,26 @@ public function main() {
 
     os:Process proc = check os:exec({value: "bal", arguments: ["build", pkgPath]});
     int exitCode = check proc.waitForExit();
+
+    // Capture any failure message, then always clean up the temp dir before
+    // asserting — Ballerina has no try/finally, and test:assertFail aborts the
+    // function, so cleanup placed after it would never run on the failure path.
+    string? failure = ();
     if exitCode != 0 {
         byte[] stdoutBytes = check proc.output(io:stdout);
         byte[] stderrBytes = check proc.output(io:stderr);
         string stdoutText = check string:fromBytes(stdoutBytes);
         string stderrText = check string:fromBytes(stderrBytes);
-        test:assertFail(string `Generated envelope code failed to compile (bal build exit ${exitCode}).
+        failure = string `Generated envelope code failed to compile (bal build exit ${exitCode}).
 stdout:
 ${stdoutText}
 stderr:
-${stderrText}`);
+${stderrText}`;
     }
 
     check file:remove(tmpDir, file:RECURSIVE);
+
+    if failure is string {
+        test:assertFail(failure);
+    }
 }
