@@ -423,11 +423,16 @@ This repository only contains the source code for the package.
 
     > **Note:** After installation, remember to set the `JAVA_HOME` environment variable to the directory where JDK was installed.
 
-2. Download and install [Ballerina Swan Lake](https://ballerina.io/).
-
-3. Download and install [Docker](https://www.docker.com/get-started).
+2. Download and install [Docker](https://www.docker.com/get-started).
 
     > **Note**: Ensure that the Docker daemon is running before executing any tests.
+
+3. Export your GitHub personal access token with the `read:packages` scope and your GitHub username. The build downloads the jBallerina tools distribution and the timestamped `ballerina/edi` snapshots from [GitHub Packages](https://github.com/orgs/ballerina-platform/packages), so a system-wide Ballerina installation is not required.
+
+   ```bash
+   export packageUser=<GitHub username>
+   export packagePAT=<GitHub personal access token with read:packages scope>
+   ```
 
 ### Build options
 
