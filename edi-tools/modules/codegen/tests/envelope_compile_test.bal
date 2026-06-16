@@ -112,9 +112,11 @@ final readonly & json x12EnvelopeSchemaJson = {
 // both envelope shapes:
 //   * EDIFACT-style (no group level)  — default module
 //   * X12-style (with group level)    — submodule mx12
-// The generated sources are written into a temporary Ballerina package whose
-// Ballerina.toml pins ballerina/edi 1.6.0 from the local repository, and
-// `bal build` is run on it. A non-zero exit code fails the test.
+// The generated sources are written into a temporary Ballerina package and
+// compiled with `bal build`. `ballerina/edi` is left unpinned so it resolves
+// from the distribution running the build — the gradle build points
+// BALLERINA_DIST_BIN at the intermediate distribution, which bundles the
+// ballerina/edi snapshot. A non-zero exit code fails the test.
 @test:Config {}
 function testGeneratedEnvelopeCodeCompiles() returns error? {
     string tmpDir = check file:createTempDir();
@@ -127,12 +129,6 @@ function testGeneratedEnvelopeCodeCompiles() returns error? {
 org = "wso2test"
 name = "compilecheck"
 version = "0.1.0"
-
-[[dependency]]
-org = "ballerina"
-name = "edi"
-version = "${EDI_RUNTIME_VERSION}"
-repository = "local"
 `;
     check io:fileWriteString(check file:joinPath(pkgPath, "Ballerina.toml"), balToml);
 
@@ -150,7 +146,15 @@ public function main() {
     // X12 shape (with group) in the submodule.
     check generateCodeForSchema(x12EnvelopeSchemaJson, check file:joinPath(x12ModulePath, "rate_gen.bal"));
 
-    os:Process proc = check os:exec({value: "bal", arguments: ["build", pkgPath]});
+    // Prefer the intermediate distribution's `bal` (exported by the gradle
+    // build via BALLERINA_DIST_BIN); fall back to the system `bal` for ad-hoc
+    // local runs.
+    string balCommand = "bal";
+    string distBin = os:getEnv("BALLERINA_DIST_BIN");
+    if distBin != "" {
+        balCommand = check file:joinPath(distBin, "bal");
+    }
+    os:Process proc = check os:exec({value: balCommand, arguments: ["build", pkgPath]});
     int exitCode = check proc.waitForExit();
 
     // Capture any failure message, then always clean up the temp dir before

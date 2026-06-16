@@ -77,6 +77,10 @@ task test{
             exec {
                     workingDir project.projectDir
                     environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                    // Expose the intermediate distribution (preloaded with the
+                    // ballerina/edi snapshot) so the compile test compiles
+                    // generated code with it instead of the system `bal`.
+                    environment "BALLERINA_DIST_BIN", "${distributionBinPath}"
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                         commandLine 'cmd', "/c", "${distributionBinPath}/bal.bat test --code-coverage --coverage-format=xml && exit %%ERRORLEVEL%%"
                     } else {
