@@ -36,10 +36,10 @@ $ bal edi convertEdifactSchema -v d03a -t ORDERS -o resources/orders-schema.json
 **Step 2 — Generate Ballerina records and parser functions:**
 
 ```
-$ bal edi codegen -i resources/orders-schema.json -o modules/orders/orders.bal
+$ bal edi codegen -i resources/orders-schema.json -o orders.bal
 ```
 
-`modules/orders` now contains typed records plus `fromEdiString` / `toEdiString`. Because EDIFACT documents carry an envelope, the tool also emits `interchangeFromEdiString` / `interchangeToEdiString`. See [Using the generated code](#using-the-generated-code).
+The default module now contains typed records plus `fromEdiString` / `toEdiString`. Because EDIFACT documents carry an envelope, the tool also emits `interchangeFromEdiString` / `interchangeToEdiString`. See [Using the generated code](#using-the-generated-code).
 
 > **Tip:** For common EDIFACT D03A message types, prebuilt packages are published under the `ballerinax` organization (e.g. `ballerinax/edifact.d03a.supplychain`) and can be imported directly without generating any code. See the [`ballerina/edi` module](https://github.com/ballerina-platform/module-ballerina-edi#working-with-standard-edi-formats).
 
@@ -56,23 +56,22 @@ $ bal edi convertX12Schema -i input/850.xsd -o resources/850-schema.json
 **Step 2 — Generate Ballerina code:**
 
 ```
-$ bal edi codegen -i resources/850-schema.json -o modules/po/po.bal
+$ bal edi codegen -i resources/850-schema.json -o po.bal
 ```
 
 The result matches the EDIFACT flow: typed records and parser functions ready for use.
 
 ## Using the generated code
 
-Set up a project and a module to hold the generated code, then run `codegen` into it:
+Create a project and generate the code into its default module:
 
 ```
 $ bal new sample
 $ cd sample
-$ bal add orders
-$ bal edi codegen -i resources/orders-schema.json -o modules/orders/orders.bal
+$ bal edi codegen -i resources/orders-schema.json -o orders.bal
 ```
 
-The generated module exposes typed records named after the schema, plus parser functions. For an `ORDERS` schema, the body record is `ORDERS` and the interchange wrapper is `ORDERSInterchange`.
+The generated code exposes typed records named after the schema, plus parser functions, in the default module. For an `ORDERS` schema, the body record is `ORDERS` and the interchange wrapper is `ORDERSInterchange`. For larger projects, the generated EDI code can live in its own package within a Ballerina workspace alongside your integration.
 
 ### Reading EDI files
 
@@ -80,11 +79,10 @@ The generated module exposes typed records named after the schema, plus parser f
 
 ```ballerina
 import ballerina/io;
-import sample.orders;
 
 public function main() returns error? {
     string ediText = check io:fileReadString("resources/order.edi");
-    orders:ORDERS document = check orders:fromEdiString(ediText);
+    ORDERS document = check fromEdiString(ediText);
     io:println(document);
 }
 ```
@@ -95,11 +93,10 @@ public function main() returns error? {
 
 ```ballerina
 import ballerina/io;
-import sample.orders;
 
 public function main() returns error? {
-    orders:ORDERS document = { /* populate the record */ };
-    string ediText = check orders:toEdiString(document);
+    ORDERS document = { /* populate the record */ };
+    string ediText = check toEdiString(document);
     io:println(ediText);
 }
 ```
@@ -115,13 +112,12 @@ An EDI interchange is wrapped in an **envelope** — interchange and (for X12) f
 
 ```ballerina
 import ballerina/io;
-import sample.orders;
 
 public function main() returns error? {
     string ediText = check io:fileReadString("resources/order.edi");
 
     // Parse the full envelope hierarchy into typed records.
-    orders:ORDERSInterchange interchange = check orders:interchangeFromEdiString(ediText);
+    ORDERSInterchange interchange = check interchangeFromEdiString(ediText);
     foreach var txn in interchange.transactions {
         if txn.body is error {
             io:println("Quarantined: ", (<error>txn.body).message());
@@ -131,7 +127,7 @@ public function main() returns error? {
     }
 
     // Serialize a (filtered/transformed) interchange back to EDI text.
-    string ediOut = check orders:interchangeToEdiString(interchange);
+    string ediOut = check interchangeToEdiString(interchange);
     io:println(ediOut);
 }
 ```
@@ -223,7 +219,7 @@ ITM*A-45*100~
 Generate code from it the same way:
 
 ```
-bal edi codegen -i schema.json -o modules/orders/orders.bal
+bal edi codegen -i schema.json -o orders.bal
 ```
 
 For the full schema grammar — delimiters, segment groups, fields, components, sub-components, the `envelope` declaration, and additional configuration — see the [Ballerina EDI Schema Specification](https://github.com/ballerina-platform/module-ballerina-edi/blob/main/docs/specs/SchemaSpecification.md).
