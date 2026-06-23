@@ -27,16 +27,16 @@ $ bal tool pull edi
 
 EDIFACT is the international EDI standard. The tool includes the EDIFACT message specifications, so the schema is generated from the version and message type — no schema needs to be written by hand.
 
-**Step 1 — Convert the spec into a Ballerina EDI schema.** Use `-v` for the EDIFACT version (e.g. `d03a`) and `-t` for the message type (e.g. `ORDERS`, `INVOIC`):
+**Step 1 — Convert the spec into a Ballerina EDI schema.** Use `-v` for the EDIFACT version (e.g. `d03a`) and `-t` for the message type (e.g. `ORDERS`, `INVOIC`). `-o` is an output directory; the schema is written there as `<message-type>.json` (here, `resources/ORDERS.json`):
 
 ```
-$ bal edi convertEdifactSchema -v d03a -t ORDERS -o resources/orders-schema.json
+$ bal edi convertEdifactSchema -v d03a -t ORDERS -o resources
 ```
 
 **Step 2 — Generate Ballerina records and parser functions:**
 
 ```
-$ bal edi codegen -i resources/orders-schema.json -o orders.bal
+$ bal edi codegen -i resources/ORDERS.json -o orders.bal
 ```
 
 The default module now contains typed records plus `fromEdiString` / `toEdiString`. Because EDIFACT documents carry an envelope, the tool also emits `interchangeFromEdiString` / `interchangeToEdiString`. See [Using the generated code](#using-the-generated-code).
@@ -68,7 +68,7 @@ Create a project and generate the code into its default module:
 ```
 $ bal new sample
 $ cd sample
-$ bal edi codegen -i resources/orders-schema.json -o orders.bal
+$ bal edi codegen -i resources/ORDERS.json -o orders.bal
 ```
 
 The generated code exposes typed records named after the schema, plus parser functions, in the default module. For an `ORDERS` schema, the body record is `ORDERS` and the interchange wrapper is `ORDERSInterchange`. For larger projects, the generated EDI code can live in its own package within a Ballerina workspace alongside your integration.
