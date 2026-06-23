@@ -174,11 +174,14 @@ A generated package also includes a REST connector, so it can be built (`bal bui
 ```
 curl --location 'http://localhost:9090/porderParser/edis/850' \
 --header 'Content-Type: text/plain' \
---data-raw 'ST*850*0001~
+--data-raw 'GS*PO*SENDERID*RECEIVERID*20240802*1705*1*X*004010~
+ST*850*0001~
 BEG*00*NE*4500012345**20240802~
 PO1*1*10*EA*15.00**BP*123456789012~
 CTT*1~
-SE*5*0001~'
+SE*5*0001~
+GE*1*1~
+IEA*1*000000001~'
 ```
 
 The matching `objects/850` endpoint performs the reverse (JSON to X12 850 text).
