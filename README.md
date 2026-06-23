@@ -232,7 +232,7 @@ For the full schema grammar — delimiters, segment groups, fields, components, 
 
 ### ESL schemas
 
-ESL (Electronic Shelf Labeling) schemas, used for retail pricing feeds, can be converted with `convertESL`, supplying the base segment definitions:
+ESL (EDI Schema Language) is a schema-definition format that describes an EDI message's structure in YAML, alongside a base segment-definitions file. Convert an ESL schema into a Ballerina EDI schema with `convertESL`:
 
 ```
 $ bal edi convertESL -b segment_definitions.yaml -i esl_schema.esl -o resources/schema.json
