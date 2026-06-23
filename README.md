@@ -26,7 +26,7 @@ The generated code uses the [`ballerina/edi`](https://github.com/ballerina-platf
 Pull the EDI tool from [Ballerina Central](https://central.ballerina.io/):
 
 ```
-$ bal tool pull edi
+bal tool pull edi
 ```
 
 ## Generate from an EDIFACT spec
@@ -36,13 +36,13 @@ EDIFACT is the international EDI standard. The tool includes the EDIFACT message
 **Step 1 — Convert the spec into a Ballerina EDI schema.** Use `-v` for the EDIFACT version (e.g. `d03a`) and `-t` for the message type (e.g. `ORDERS`, `INVOIC`). `-o` is an output directory; the schema is written there as `<message-type>.json` (here, `resources/ORDERS.json`):
 
 ```
-$ bal edi convertEdifactSchema -v d03a -t ORDERS -o resources
+bal edi convertEdifactSchema -v d03a -t ORDERS -o resources
 ```
 
 **Step 2 — Generate Ballerina records and parser functions:**
 
 ```
-$ bal edi codegen -i resources/ORDERS.json -o orders.bal
+bal edi codegen -i resources/ORDERS.json -o orders.bal
 ```
 
 The default module now contains typed records plus `fromEdiString` / `toEdiString`. Because EDIFACT documents carry an envelope, the tool also emits `interchangeFromEdiString` / `interchangeToEdiString`. See [Using the generated code](#using-the-generated-code).
@@ -56,13 +56,13 @@ X12 is the EDI standard used across North America. X12 specifications are licens
 **Step 1 — Convert the X12 schema into a Ballerina EDI schema:**
 
 ```
-$ bal edi convertX12Schema -i input/850.xsd -o resources/850-schema.json
+bal edi convertX12Schema -i input/850.xsd -o resources/850-schema.json
 ```
 
 **Step 2 — Generate Ballerina code:**
 
 ```
-$ bal edi codegen -i resources/850-schema.json -o po.bal
+bal edi codegen -i resources/850-schema.json -o po.bal
 ```
 
 The result matches the EDIFACT flow: typed records and parser functions ready for use.
@@ -72,9 +72,9 @@ The result matches the EDIFACT flow: typed records and parser functions ready fo
 Create a project and generate the code into its default module:
 
 ```
-$ bal new sample
-$ cd sample
-$ bal edi codegen -i resources/ORDERS.json -o orders.bal
+bal new sample
+cd sample
+bal edi codegen -i resources/ORDERS.json -o orders.bal
 ```
 
 The generated code exposes typed records named after the schema, plus parser functions, in the default module. For an `ORDERS` schema, the body record is `ORDERS` and the interchange wrapper is `ORDERSInterchange`. For larger projects, the generated EDI code can live in its own package within a Ballerina workspace alongside your integration.
@@ -126,7 +126,7 @@ public function main() returns error? {
     ORDERSInterchange interchange = check interchangeFromEdiString(ediText);
     foreach var txn in interchange.transactions {
         if txn.body is error {
-            io:println("Quarantined: ", (<error>txn.body).message());
+            io:println("Quarantined: ", txn.body.message());
             continue;
         }
         io:println(txn.body);
@@ -184,7 +184,7 @@ curl --location 'http://localhost:9090/porderParser/edis/850' \
 BEG*00*NE*4500012345**20240802~
 PO1*1*10*EA*15.00**BP*123456789012~
 CTT*1~
-SE*16*0001~'
+SE*5*0001~'
 ```
 
 The matching `objects/850` endpoint performs the reverse (JSON to X12 850 text).
@@ -235,7 +235,7 @@ For the full schema grammar — delimiters, segment groups, fields, components, 
 ESL (EDI Schema Language) is a schema-definition format that describes an EDI message's structure in YAML, alongside a base segment-definitions file. Convert an ESL schema into a Ballerina EDI schema with `convertESL`:
 
 ```
-$ bal edi convertESL -b segment_definitions.yaml -i esl_schema.esl -o resources/schema.json
+bal edi convertESL -b segment_definitions.yaml -i esl_schema.esl -o resources/schema.json
 ```
 
 ## Issues and projects
