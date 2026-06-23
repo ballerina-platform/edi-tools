@@ -11,11 +11,11 @@ Electronic Data Interchange (EDI) is how businesses exchange documents such as p
 - **EDIFACT** — the international UN standard, with message types such as `ORDERS`, `INVOIC`, and `DESADV`.
 - **X12** — the ANSI ASC X12 standard used across North America, with transaction sets such as `850` (purchase order), `810` (invoice), and `856` (ship notice).
 
-You do not need to learn the raw EDI wire format. Point the `bal edi` tool at the standard you already work with, and it generates the Ballerina record types and parser functions for you — so a purchase order or invoice becomes an ordinary typed record you read and write like any other Ballerina value.
+The `bal edi` tool generates Ballerina record types and parser functions from an EDI standard's specification, so EDI documents can be processed as typed Ballerina records rather than parsed by hand.
 
 The tool can:
 
-- **Generate code from an EDIFACT or X12 spec** — the common case, covered first below.
+- **Generate code from an EDIFACT or X12 spec** — the most common case.
 - **Bundle several schemas into a reusable library package**, optionally exposed as a REST service.
 - **Generate code from a custom schema** — for proprietary or non-standard formats.
 
@@ -31,7 +31,7 @@ $ bal tool pull edi
 
 ## Generate from an EDIFACT spec
 
-EDIFACT is the international EDI standard. The tool already knows the EDIFACT message specifications, so there is no schema to write — you just name the version and message type.
+EDIFACT is the international EDI standard. The tool includes the EDIFACT message specifications, so the schema is generated from the version and message type — no schema needs to be written by hand.
 
 **Step 1 — Convert the spec into a Ballerina EDI schema.** Use `-v` for the EDIFACT version (e.g. `d03a`) and `-t` for the message type (e.g. `ORDERS`, `INVOIC`):
 
@@ -47,11 +47,11 @@ $ bal edi codegen -i resources/orders-schema.json -o modules/orders/orders.bal
 
 `modules/orders` now contains typed records plus `fromEdiString` / `toEdiString`. Because EDIFACT documents carry an envelope, the tool also emits `interchangeFromEdiString` / `interchangeToEdiString`. See [Using the generated code](#using-the-generated-code).
 
-> **Tip:** For common EDIFACT D03A message types, prebuilt packages are published under the `ballerinax` organization (e.g. `ballerinax/edifact.d03a.supplychain`) — you can import those directly without generating anything. See the [`ballerina/edi` module](https://github.com/ballerina-platform/module-ballerina-edi#working-with-standard-edi-formats).
+> **Tip:** For common EDIFACT D03A message types, prebuilt packages are published under the `ballerinax` organization (e.g. `ballerinax/edifact.d03a.supplychain`) and can be imported directly without generating any code. See the [`ballerina/edi` module](https://github.com/ballerina-platform/module-ballerina-edi#working-with-standard-edi-formats).
 
 ## Generate from an X12 schema
 
-X12 is the EDI standard used across North America. X12 specifications are licensed from ASC X12, so you start from the X12 schema (XSD) you are entitled to use and convert it.
+X12 is the EDI standard used across North America. X12 specifications are licensed from ASC X12, so the workflow starts from a licensed X12 schema (XSD) and converts it into a Ballerina EDI schema.
 
 **Step 1 — Convert the X12 schema into a Ballerina EDI schema:**
 
@@ -65,7 +65,7 @@ $ bal edi convertX12Schema -i input/850.xsd -o resources/850-schema.json
 $ bal edi codegen -i resources/850-schema.json -o modules/po/po.bal
 ```
 
-The result is the same shape as the EDIFACT flow: typed records and parser functions you can use right away.
+The result matches the EDIFACT flow: typed records and parser functions ready for use.
 
 ## Using the generated code
 
@@ -112,7 +112,7 @@ public function main() returns error? {
 
 ### Reading and writing EDI envelopes
 
-A real EDI file is wrapped in an **envelope** — interchange and (for X12) functional-group headers and trailers around one or more transactions. When the schema comes from an X12 or EDIFACT spec, `codegen` also emits typed envelope wrappers and envelope-aware functions:
+An EDI interchange is wrapped in an **envelope** — interchange and (for X12) functional-group headers and trailers around one or more transactions. When the schema comes from an X12 or EDIFACT spec, `codegen` also emits typed envelope wrappers and envelope-aware functions:
 
 - `<Name>Interchange`, `<Name>FunctionalGroup` (X12), and `<Name>Transaction` records that mirror the envelope hierarchy. Each `<Name>Transaction.body` is `<Name>|error`, so a malformed transaction body is captured rather than aborting the whole parse (fail-safe).
 - `headersFromEdiString` — extracts just the envelope headers (useful for routing).
@@ -175,11 +175,11 @@ public function main() returns error? {
 }
 ```
 
-Because trading partners often use variations of a standard format, you can also generate a partner-specific package from partner-specific schemas.
+Because trading partners often use variations of a standard format, a partner-specific package can be generated from partner-specific schemas.
 
 ### Running a generated package as a REST service
 
-A generated package also includes a REST connector, so it can be built (`bal build`) and run (`bal run`) as a standalone service that converts EDI over HTTP — handy when EDI processing should be its own microservice. Each schema gets an EDI-to-JSON and a JSON-to-EDI endpoint. For example, converting an X12 850 to JSON:
+A generated package also includes a REST connector, so it can be built (`bal build`) and run (`bal run`) as a standalone service that converts EDI over HTTP — useful when EDI processing is deployed as a separate microservice. Each schema gets an EDI-to-JSON and a JSON-to-EDI endpoint. For example, converting an X12 850 to JSON:
 
 ```
 curl --location 'http://localhost:9090/porderParser/edis/850' \
@@ -195,7 +195,7 @@ The matching `objects/850` endpoint performs the reverse (JSON to X12 850 text).
 
 ## Custom EDI schemas
 
-If you work with a proprietary or non-standard format that is neither X12 nor EDIFACT, describe its structure directly in the Ballerina EDI schema format (JSON) and run `codegen` on it — no conversion step needed. A minimal schema for a simple order looks like:
+For a proprietary or non-standard format that is neither X12 nor EDIFACT, the structure can be described directly in the Ballerina EDI schema format (JSON) and passed to `codegen` without a conversion step. A minimal schema for a simple order looks like:
 
 ```json
 {
