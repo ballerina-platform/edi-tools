@@ -200,7 +200,8 @@ function convertFromX12WithHeaders(string inPath) returns edi:EdiSchema|error {
 // supplied Interchange/FunctionalGroup XSDs:
 //   segments = [ISA, FunctionalGroup[GS, Transaction[ST, ...body..., SE], GE], IEA]
 // Unlike the plain path (`populateX12Envelope`), the user supplies their own
-// envelope segment definitions, so those are preserved as-is and only relocated.
+// envelope segment definitions; those definitions are preserved, relocated into
+// the envelope, and promoted to mandatory (minOccurances = 1) via `forceMandatoryX12`.
 function populateX12EnvelopeFromHeaders(edi:EdiSchema schema) returns error? {
     [edi:EdiUnitSchema, edi:EdiUnitSchema, edi:EdiUnitSchema[]] [isa, iea, interchangeBody] =
             check extractEnvelopeHeaderTrailer(schema.segments, "ISA", "IEA", schema, "interchange");
@@ -253,7 +254,7 @@ function extractEnvelopeHeaderTrailer(edi:EdiUnitSchema[] units, string headerCo
     if headers.length() != 1 || trailers.length() != 1 {
         return error(string `Cannot generate envelope for ${schema.name}: expected exactly one ` +
                 string `${headerCode} and one ${trailerCode} at the ${level} level, but found ` +
-                string `${headers.length()} and ${trailers.length()}.`);
+                string `${headers.length()} ${headerCode} and ${trailers.length()} ${trailerCode}.`);
     }
     return [headers[0], trailers[0], rest];
 }
