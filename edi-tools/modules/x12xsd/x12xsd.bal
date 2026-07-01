@@ -190,7 +190,85 @@ function convertFromX12WithHeaders(string inPath) returns edi:EdiSchema|error {
     }
     edi:EdiSegGroupSchema rootSegGroupSchema = check convertSegmentGroup(root, interchangeXsd, ediSchema, inPath);
     ediSchema.segments = rootSegGroupSchema.segments;
+    check populateX12EnvelopeFromHeaders(ediSchema);
     return ediSchema;
+}
+
+// Lifts the X12 envelope out of the nested `segments[]` produced by headers-mode
+// conversion into the structured `envelope` field required by envelope-aware
+// runtime APIs. Headers mode builds a fixed three-level nesting from the
+// supplied Interchange/FunctionalGroup XSDs:
+//   segments = [ISA, FunctionalGroup[GS, Transaction[ST, ...body..., SE], GE], IEA]
+// Unlike the plain path (`populateX12Envelope`), the user supplies their own
+// envelope segment definitions; those definitions are preserved, relocated into
+// the envelope, and promoted to mandatory (minOccurances = 1) via `forceMandatoryX12`.
+function populateX12EnvelopeFromHeaders(edi:EdiSchema schema) returns error? {
+    [edi:EdiUnitSchema, edi:EdiUnitSchema, edi:EdiUnitSchema[]] [isa, iea, interchangeBody] =
+            check extractEnvelopeHeaderTrailer(schema.segments, "ISA", "IEA", schema, "interchange");
+    edi:EdiSegGroupSchema functionalGroup = check singleEnvelopeGroup(interchangeBody, schema, "functional group");
+
+    [edi:EdiUnitSchema, edi:EdiUnitSchema, edi:EdiUnitSchema[]] [gs, ge, groupBody] =
+            check extractEnvelopeHeaderTrailer(functionalGroup.segments, "GS", "GE", schema, "functional group");
+    edi:EdiSegGroupSchema 'transaction = check singleEnvelopeGroup(groupBody, schema, "transaction set");
+
+    [edi:EdiUnitSchema, edi:EdiUnitSchema, edi:EdiUnitSchema[]] [st, se, body] =
+            check extractEnvelopeHeaderTrailer('transaction.segments, "ST", "SE", schema, "transaction set");
+
+    schema.envelope = {
+        interchange: {
+            header: forceMandatoryX12([isa]),
+            trailer: forceMandatoryX12([iea])
+        },
+        group: {
+            header: forceMandatoryX12([gs]),
+            trailer: forceMandatoryX12([ge])
+        },
+        'transaction: {
+            header: forceMandatoryX12([st]),
+            trailer: forceMandatoryX12([se])
+        }
+    };
+    schema.segments = body;
+}
+
+// Scans one envelope level, returning its single header segment, single trailer
+// segment, and the remaining units. Fails fast if the header or trailer code
+// appears anything other than exactly once, so a malformed headers XSD produces
+// a deterministic error rather than a silently arbitrary envelope.
+function extractEnvelopeHeaderTrailer(edi:EdiUnitSchema[] units, string headerCode, string trailerCode,
+        edi:EdiSchema schema, string level)
+        returns [edi:EdiUnitSchema, edi:EdiUnitSchema, edi:EdiUnitSchema[]]|error {
+    edi:EdiUnitSchema[] headers = [];
+    edi:EdiUnitSchema[] trailers = [];
+    edi:EdiUnitSchema[] rest = [];
+    foreach edi:EdiUnitSchema unit in units {
+        string? code = getRefCode(unit, schema);
+        if code == headerCode {
+            headers.push(unit);
+        } else if code == trailerCode {
+            trailers.push(unit);
+        } else {
+            rest.push(unit);
+        }
+    }
+    if headers.length() != 1 || trailers.length() != 1 {
+        return error(string `Cannot generate envelope for ${schema.name}: expected exactly one ` +
+                string `${headerCode} and one ${trailerCode} at the ${level} level, but found ` +
+                string `${headers.length()} ${headerCode} and ${trailers.length()} ${trailerCode}.`);
+    }
+    return [headers[0], trailers[0], rest];
+}
+
+// Returns the single nested segment group at an envelope level. Fails fast when
+// the level does not contain exactly one segment group, so an unexpected extra
+// group is reported rather than silently picked.
+function singleEnvelopeGroup(edi:EdiUnitSchema[] units, edi:EdiSchema schema, string level)
+        returns edi:EdiSegGroupSchema|error {
+    if units.length() != 1 || units[0] !is edi:EdiSegGroupSchema {
+        return error(string `Cannot generate envelope for ${schema.name}: expected exactly one ` +
+                string `${level} segment group, but found ${units.length()} unit(s).`);
+    }
+    return <edi:EdiSegGroupSchema>units[0];
 }
 
 function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema, string dirPath = "", int parentMinOccur = 0, int parentMaxOccur = 1) returns edi:EdiSegGroupSchema|error {

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="FunctionalGroup.xsd"/>
+    <xs:element name="X12_Interchange">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ISA_InterchangeControlHeader"/>
+                <xs:element ref="X12_FunctionalGroup" maxOccurs="unbounded"/>
+                <xs:element ref="IEA_InterchangeControlTrailer"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ISA_InterchangeControlHeader">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ISA01__AuthorizationInformationQualifier">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="IEA_InterchangeControlTrailer">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="IEA01__NumberOfIncludedFunctionalGroups">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

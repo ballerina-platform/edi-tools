@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="TestMessage.xsd"/>
+    <xs:element name="X12_FunctionalGroup">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="GS_FunctionalGroupHeader"/>
+                <xs:element ref="X12_004010_TEST" maxOccurs="unbounded"/>
+                <xs:element ref="GE_FunctionalGroupTrailer"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="GS_FunctionalGroupHeader">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="GS01__FunctionalIdentifierCode">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="GE_FunctionalGroupTrailer">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="GE01__NumberOfTransactionSetsIncluded">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
