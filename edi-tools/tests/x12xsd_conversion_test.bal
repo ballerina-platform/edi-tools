@@ -39,8 +39,12 @@ function testX12XsdConversionWithHeaders() returns error? {
     }
     test:assertEquals(refCode(schema, envelope.interchange.header[0]), "ISA");
     test:assertEquals(refCode(schema, envelope.interchange.trailer[0]), "IEA");
-    test:assertEquals(refCode(schema, (<edi:EdiEnvelopeLevel>envelope.group).header[0]), "GS");
-    test:assertEquals(refCode(schema, (<edi:EdiEnvelopeLevel>envelope.group).trailer[0]), "GE");
+    edi:EdiEnvelopeLevel? group = envelope.group;
+    if group is () {
+        test:assertFail("Headers-mode envelope is missing the functional group level.");
+    }
+    test:assertEquals(refCode(schema, group.header[0]), "GS");
+    test:assertEquals(refCode(schema, group.trailer[0]), "GE");
     test:assertEquals(refCode(schema, envelope.'transaction.header[0]), "ST");
     test:assertEquals(refCode(schema, envelope.'transaction.trailer[0]), "SE");
 
