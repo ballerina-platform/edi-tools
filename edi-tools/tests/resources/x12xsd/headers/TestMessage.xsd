@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="X12_004010_TEST">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ST_TransactionSetHeader"/>
+                <xs:element ref="BGN_BeginningSegment"/>
+                <xs:element ref="SE_TransactionSetTrailer"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ST_TransactionSetHeader">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ST01__TransactionSetIdentifierCode">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="BGN_BeginningSegment">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="BGN01__TransactionSetPurposeCode">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="SE_TransactionSetTrailer">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="SE01__NumberOfIncludedSegments">
+                    <xs:simpleType>
+                        <xs:restriction base="xs:string"/>
+                    </xs:simpleType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

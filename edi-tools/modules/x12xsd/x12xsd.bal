@@ -190,7 +190,95 @@ function convertFromX12WithHeaders(string inPath) returns edi:EdiSchema|error {
     }
     edi:EdiSegGroupSchema rootSegGroupSchema = check convertSegmentGroup(root, interchangeXsd, ediSchema, inPath);
     ediSchema.segments = rootSegGroupSchema.segments;
+    check populateX12EnvelopeFromHeaders(ediSchema);
     return ediSchema;
+}
+
+// Lifts the X12 envelope out of the nested `segments[]` produced by headers-mode
+// conversion into the structured `envelope` field required by envelope-aware
+// runtime APIs. Headers mode builds a fixed three-level nesting from the
+// supplied Interchange/FunctionalGroup XSDs:
+//   segments = [ISA, FunctionalGroup[GS, Transaction[ST, ...body..., SE], GE], IEA]
+// Unlike the plain path (`populateX12Envelope`), the user supplies their own
+// envelope segment definitions, so those are preserved as-is and only relocated.
+function populateX12EnvelopeFromHeaders(edi:EdiSchema schema) returns error? {
+    edi:EdiUnitSchema? isa = ();
+    edi:EdiUnitSchema? iea = ();
+    edi:EdiSegGroupSchema? functionalGroup = ();
+    foreach edi:EdiUnitSchema unit in schema.segments {
+        string? code = getRefCode(unit, schema);
+        if code == "ISA" {
+            isa = unit;
+        } else if code == "IEA" {
+            iea = unit;
+        } else if unit is edi:EdiSegGroupSchema {
+            functionalGroup = unit;
+        }
+    }
+    if isa is () || iea is () {
+        return error(string `Cannot generate envelope for ${schema.name}: interchange ` +
+                "control header (ISA) or trailer (IEA) not found in the schema.");
+    }
+    if functionalGroup is () {
+        return error(string `Cannot generate envelope for ${schema.name}: functional ` +
+                "group not found in the schema.");
+    }
+
+    edi:EdiUnitSchema? gs = ();
+    edi:EdiUnitSchema? ge = ();
+    edi:EdiSegGroupSchema? 'transaction = ();
+    foreach edi:EdiUnitSchema unit in functionalGroup.segments {
+        string? code = getRefCode(unit, schema);
+        if code == "GS" {
+            gs = unit;
+        } else if code == "GE" {
+            ge = unit;
+        } else if unit is edi:EdiSegGroupSchema {
+            'transaction = unit;
+        }
+    }
+    if gs is () || ge is () {
+        return error(string `Cannot generate envelope for ${schema.name}: functional ` +
+                "group header (GS) or trailer (GE) not found in the schema.");
+    }
+    if 'transaction is () {
+        return error(string `Cannot generate envelope for ${schema.name}: transaction ` +
+                "set not found within the functional group.");
+    }
+
+    edi:EdiUnitSchema? st = ();
+    edi:EdiUnitSchema? se = ();
+    edi:EdiUnitSchema[] body = [];
+    foreach edi:EdiUnitSchema unit in 'transaction.segments {
+        string? code = getRefCode(unit, schema);
+        if code == "ST" {
+            st = unit;
+        } else if code == "SE" {
+            se = unit;
+        } else {
+            body.push(unit);
+        }
+    }
+    if st is () || se is () {
+        return error(string `Cannot generate envelope for ${schema.name}: transaction set ` +
+                "header (ST) or trailer (SE) not found in the schema.");
+    }
+
+    schema.envelope = {
+        interchange: {
+            header: forceMandatoryX12([isa]),
+            trailer: forceMandatoryX12([iea])
+        },
+        group: {
+            header: forceMandatoryX12([gs]),
+            trailer: forceMandatoryX12([ge])
+        },
+        'transaction: {
+            header: forceMandatoryX12([st]),
+            trailer: forceMandatoryX12([se])
+        }
+    };
+    schema.segments = body;
 }
 
 function convertSegmentGroup(xml segmentGroup, xml x12xsd, edi:EdiSchema schema, string dirPath = "", int parentMinOccur = 0, int parentMaxOccur = 1) returns edi:EdiSegGroupSchema|error {
