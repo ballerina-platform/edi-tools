@@ -56,6 +56,42 @@ function testX12XsdConversionWithHeaders() returns error? {
     }
 }
 
+@test:Config
+function testX12EnumerationConversionToFieldValueConstraints() returns error? {
+    xml x12Schema = check io:fileReadXml(
+        "tests/resources/x12xsd/qualifier-constraints/834-ref.xsd");
+    edi:EdiSchema schema = check x12xsd:convertFromX12Xsd(x12Schema);
+
+    edi:EdiSegSchema policySegment = check getSegmentDefinition(
+        schema, "REF_MemberPolicyNumber_2000");
+    map<string[]> policyConstraints = check getFieldValueConstraints(policySegment);
+    string[]? policyQualifiers = policyConstraints["REF01__ReferenceIdentificationQualifier"];
+    test:assertEquals(policyQualifiers, ["1L"]);
+    test:assertFalse(policyConstraints.hasKey("REF02__MemberGroupOrPolicyNumber"));
+
+    edi:EdiSegSchema supplementalSegment = check getSegmentDefinition(
+        schema, "REF_MemberSupplementalIdentifier_2000");
+    map<string[]> supplementalConstraints = check getFieldValueConstraints(supplementalSegment);
+    string[]? supplementalQualifiers = supplementalConstraints["REF01__ReferenceIdentificationQualifier"];
+    test:assertEquals(supplementalQualifiers, ["17", "23", "DX"]);
+}
+
+function getSegmentDefinition(edi:EdiSchema schema, string name) returns edi:EdiSegSchema|error {
+    edi:EdiSegSchema? segment = schema.segmentDefinitions[name];
+    if segment is () {
+        return error(string `Segment definition not found: ${name}`);
+    }
+    return segment;
+}
+
+function getFieldValueConstraints(edi:EdiSegSchema segment) returns map<string[]>|error {
+    map<string[]>? constraints = segment.fieldValueConstraints;
+    if constraints is () {
+        return error(string `Field-value constraints not generated for segment: ${segment.tag}`);
+    }
+    return constraints;
+}
+
 function refCode(edi:EdiSchema schema, edi:EdiUnitSchema unit) returns string? {
     if unit is edi:EdiSegSchema {
         return unit.code;

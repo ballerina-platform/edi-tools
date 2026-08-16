@@ -319,6 +319,7 @@ function convertSegment(string segmentName, int minOccurs, int maxOccurs, xml x1
     edi:EdiSegSchema segSchema =
         {code: getBalCompatibleName(nameParts[0]), tag: getBalCompatibleName(nameParts[1]), minOccurances: minOccurs, maxOccurances: maxOccurs};
     segSchema.fields.push({tag: "code", required: true});
+    map<string[]> fieldValueConstraints = {};
     xml fieldElements = segElement/<xs:complexType>/<xs:sequence>/<xs:element>;
     foreach xml fieldElement in fieldElements {
         string fieldName = "";
@@ -358,9 +359,30 @@ function convertSegment(string segmentName, int minOccurs, int maxOccurs, xml x1
                 fieldSchema.dataType = dataType;
             }
         }
+        string[] enumerationValues = check getEnumerationValues(fieldElement, segmentName, fieldName);
+        if enumerationValues.length() > 0 {
+            fieldValueConstraints[fieldName] = enumerationValues;
+        }
         segSchema.fields.push(fieldSchema);
     }
+    if fieldValueConstraints.length() > 0 {
+        segSchema.fieldValueConstraints = fieldValueConstraints;
+    }
     return segSchema;
+}
+
+function getEnumerationValues(xml fieldElement, string segmentName, string fieldName) returns string[]|error {
+    string[] values = [];
+    xml enumerationElements = fieldElement/<xs:simpleType>/<xs:restriction>/<xs:enumeration>;
+    foreach xml enumerationElement in enumerationElements {
+        string|error value = enumerationElement.value;
+        if value is error {
+            return error(string `Enumeration value not found. Segment: ${segmentName}, Field: ${fieldName}, ` +
+                    string `Enumeration: ${enumerationElement.toString()}`, value);
+        }
+        values.push(value);
+    }
+    return values;
 }
 
 function convertCompositeField(edi:EdiFieldSchema fieldSchema, xml compositeElements, string segmentName, string fieldName) returns error? {
