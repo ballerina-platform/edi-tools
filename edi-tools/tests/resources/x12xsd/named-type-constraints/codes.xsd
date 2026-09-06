@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="urn:x12:schemas:005010"
+           targetNamespace="urn:x12:schemas:005010"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:simpleType name="DE_143">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="834"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="DE_128">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="0F"/>
+            <xs:enumeration value="1L"/>
+            <xs:enumeration value="17"/>
+            <xs:enumeration value="23"/>
+            <xs:enumeration value="DX"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

@@ -26,6 +26,7 @@ type CompositeSchema record {|
 type ElementDef record {|
     string tag;
     edi:EdiDataType dataType;
+    string[] values = [];
 |};
 
 public function readSegmentSchemas(json basedef) returns map<edi:EdiSegSchema>|error {
@@ -82,6 +83,9 @@ public function readSegmentSchemas(json basedef) returns map<edi:EdiSegSchema>|e
                     dataType: elementDef.dataType,
                     required: check segField.usage == "M"
                 };
+                if elementDef.values.length() > 0 {
+                    fieldSchema.values = elementDef.values.clone();
+                }
                 segSchema.fields.push(fieldSchema);
             }
             io:println(segField);
@@ -103,6 +107,17 @@ function readFieldDefinitions(json basedef) returns map<ElementDef>|error {
             tag: getBalCompatibleName(check fieldDef.name),
             dataType: getDataType(check fieldDef.'type)
         };
+        // Optional code list of the element (e.g. the legal qualifier codes). Attached to the
+        // generated schema as a value constraint; validated when writing EDI. Authors can opt a
+        // node into segment matching by setting "discriminator": true on the generated schema.
+        json|error elementValues = fieldDef.values;
+        if elementValues is json[] {
+            string[] values = [];
+            foreach json elementValue in elementValues {
+                values.push(elementValue.toString());
+            }
+            fieldSchema.values = values;
+        }
         elementDefs[check fieldDef.id] = fieldSchema;
     }
     return elementDefs;
@@ -133,6 +148,9 @@ function readCompositeDefinitions(json basedef, map<ElementDef> elements) return
                 dataType: elementDef.dataType,
                 required: check componentDef.usage == "M"
             };
+            if elementDef.values.length() > 0 {
+                componentSchema.values = elementDef.values.clone();
+            }
             compositeSchema.components.push(componentSchema);
         }
         compositeSchemas[check compositeDef.id] = compositeSchema;

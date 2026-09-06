@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- [Extract X12 XSD enumerations (inline and named simple types resolved through `xs:include`, e.g. a shared `Codes.xsd`) into the generated schema as `values` constraints, marking inline enumerations of same-code sibling definitions as `discriminator`s for qualifier-based segment matching](https://github.com/ballerina-platform/ballerina-library/issues/9100)
+- [Read optional `values` code lists from ESL element definitions into the generated schema](https://github.com/ballerina-platform/ballerina-library/issues/9100)
+- [Generate string-literal union types (e.g. `("17"|"23"|"DX")`) for discriminator fields in generated records, so an out-of-set qualifier becomes a compile-time error; validation-only `values` lists keep their base type](https://github.com/ballerina-platform/ballerina-library/issues/9100)
 
 ### Fixed
 

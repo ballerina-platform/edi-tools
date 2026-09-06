@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns="urn:x12:schemas:005010"
+           targetNamespace="urn:x12:schemas:005010"
+           xmlns:x12="http://xml.x12.org/isomorph"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:include schemaLocation="codes.xsd"/>
+    <xs:element name="X12_005010_834N">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ST_TransactionSetHeader"/>
+                <xs:element ref="REF_SubscriberIdentifier_2000"/>
+                <xs:element ref="REF_MemberPolicyNumber_2000" minOccurs="0"/>
+                <xs:element ref="SE_TransactionSetTrailer"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="ST_TransactionSetHeader">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="ST01__TransactionSetIdentifierCode" type="DE_143">
+                    <xs:annotation>
+                        <xs:appinfo>
+                            <x12:STD_Info Name="Transaction Set Identifier Code" Number="143" DataType="ID"/>
+                        </xs:appinfo>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="ST02__TransactionSetControlNumber">
+                    <xs:annotation>
+                        <xs:appinfo>
+                            <x12:STD_Info Name="Transaction Set Control Number" Number="329" DataType="AN"/>
+                        </xs:appinfo>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="REF_SubscriberIdentifier_2000">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="REF01__ReferenceIdentificationQualifier" type="DE_128">
+                    <xs:annotation>
+                        <xs:appinfo>
+                            <x12:STD_Info Name="Reference Identification Qualifier" Number="128" DataType="ID"/>
+                        </xs:appinfo>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="REF02__SubscriberIdentifier">
+                    <xs:annotation>
+                        <xs:appinfo>
+                            <x12:STD_Info Name="Reference Identification" Number="127" DataType="AN"/>
+                        </xs:appinfo>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="REF_MemberPolicyNumber_2000">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="REF01__ReferenceIdentificationQualifier" type="DE_128">
+                    <xs:annotation>
+                        <xs:appinfo>
+                            <x12:STD_Info Name="Reference Identification Qualifier" Number="128" DataType="ID"/>
+                        </xs:appinfo>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="REF02__MemberGroupOrPolicyNumber">
+                    <xs:annotation>
+                        <xs:appinfo>
+                            <x12:STD_Info Name="Reference Identification" Number="127" DataType="AN"/>
+                        </xs:appinfo>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="SE_TransactionSetTrailer">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="SE01__TransactionSegmentCount">
+                    <xs:annotation>
+                        <xs:appinfo>
+                            <x12:STD_Info Name="Number of Included Segments" Number="96" DataType="N0"/>
+                        </xs:appinfo>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="SE02__TransactionSetControlNumber">
+                    <xs:annotation>
+                        <xs:appinfo>
+                            <x12:STD_Info Name="Transaction Set Control Number" Number="329" DataType="AN"/>
+                        </xs:appinfo>
+                    </xs:annotation>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

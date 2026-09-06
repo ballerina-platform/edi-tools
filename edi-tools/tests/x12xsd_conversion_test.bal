@@ -66,3 +66,71 @@ function refCode(edi:EdiSchema schema, edi:EdiUnitSchema unit) returns string? {
     }
     return ();
 }
+
+@test:Config
+function testInlineEnumerationsBecomeValueDiscriminators() returns error? {
+    string inpath = "tests/resources/x12xsd/qualifier-constraints/834-ref.xsd";
+    string outpath = "tests/resources/x12xsd/qualifier-constraints/834-ref.json";
+    check x12xsd:convertFromX12XsdAndWrite(inpath, outpath);
+    edi:EdiSchema schema = check (check io:fileReadJson(outpath)).cloneWithType();
+
+    // The three REF definitions are same-code siblings, so their inline qualifier
+    // enumerations must be attached as values and marked as discriminators.
+    edi:EdiFieldSchema policyQualifier = check getField(schema, "REF_MemberPolicyNumber_2000",
+        "REF01__ReferenceIdentificationQualifier");
+    test:assertEquals(policyQualifier.discriminator, ["1L"],
+        "Qualifier of a same-code sibling definition must become a discriminator");
+    test:assertEquals(policyQualifier.values, (), "A discriminating enumeration is not duplicated into values");
+
+    edi:EdiFieldSchema supplementalQualifier = check getField(schema, "REF_MemberSupplementalIdentifier_2000",
+        "REF01__ReferenceIdentificationQualifier");
+    test:assertEquals(supplementalQualifier.discriminator, ["17", "23", "DX"]);
+
+    // ST has no same-code sibling: its inline enumeration is demoted to a plain value
+    // constraint and must not participate in segment matching.
+    edi:EdiFieldSchema stIdentifier = check getField(schema, "ST_TransactionSetHeader",
+        "ST01__TransactionSetIdentifierCode");
+    test:assertEquals(stIdentifier.values, ["834"]);
+    test:assertEquals(stIdentifier.discriminator, (), "Unique-code definitions must not get discriminators");
+
+    // Non-enumerated fields must carry no value constraints.
+    edi:EdiFieldSchema policyIdentifier = check getField(schema, "REF_MemberPolicyNumber_2000",
+        "REF02__MemberGroupOrPolicyNumber");
+    test:assertEquals(policyIdentifier.values, ());
+    test:assertEquals(policyIdentifier.discriminator, ());
+}
+
+@test:Config
+function testNamedTypeEnumerationsResolvedFromIncludedSchema() returns error? {
+    string inpath = "tests/resources/x12xsd/named-type-constraints/834-named.xsd";
+    string outpath = "tests/resources/x12xsd/named-type-constraints/834-named.json";
+    check x12xsd:convertFromX12XsdAndWrite(inpath, outpath);
+    edi:EdiSchema schema = check (check io:fileReadJson(outpath)).cloneWithType();
+
+    // DE_128 is defined in the included codes.xsd. Its full code list must be attached
+    // as a value constraint, but named-type code lists never become discriminators —
+    // only inline (position-narrowed) enumerations do.
+    edi:EdiFieldSchema subscriberQualifier = check getField(schema, "REF_SubscriberIdentifier_2000",
+        "REF01__ReferenceIdentificationQualifier");
+    test:assertEquals(subscriberQualifier.values, ["0F", "1L", "17", "23", "DX"]);
+    test:assertEquals(subscriberQualifier.discriminator, (),
+        "Named-type code lists must stay plain value constraints even for same-code siblings");
+
+    edi:EdiFieldSchema stIdentifier = check getField(schema, "ST_TransactionSetHeader",
+        "ST01__TransactionSetIdentifierCode");
+    test:assertEquals(stIdentifier.values, ["834"]);
+    test:assertEquals(stIdentifier.discriminator, ());
+}
+
+function getField(edi:EdiSchema schema, string segDefName, string fieldTag) returns edi:EdiFieldSchema|error {
+    edi:EdiSegSchema? segDef = schema.segmentDefinitions[segDefName];
+    if segDef is () {
+        return error(string `Segment definition not found: ${segDefName}`);
+    }
+    foreach edi:EdiFieldSchema fieldSchema in segDef.fields {
+        if fieldSchema.tag == fieldTag {
+            return fieldSchema;
+        }
+    }
+    return error(string `Field not found. Segment definition: ${segDefName}, Field: ${fieldTag}`);
+}

@@ -123,6 +123,8 @@ function testGeneratedEnvelopeCodeCompiles() returns error? {
     string pkgPath = check file:joinPath(tmpDir, "compilecheck");
     string x12ModulePath = check file:joinPath(pkgPath, "modules", "mx12");
     check file:createDir(x12ModulePath, file:RECURSIVE);
+    string discModulePath = check file:joinPath(pkgPath, "modules", "mdisc");
+    check file:createDir(discModulePath, file:RECURSIVE);
 
     string balToml = string `
 [package]
@@ -135,6 +137,8 @@ version = "0.1.0"
     // Entry point importing the X12 submodule so `bal build` compiles it too.
     string mainBal = string `
 import compilecheck.mx12 as _;
+import compilecheck.mdisc as _;
+import compilecheck.mesc as _;
 
 public function main() {
 }
@@ -145,6 +149,12 @@ public function main() {
     check generateCodeForSchema(envelopeSchemaJson, check file:joinPath(pkgPath, "orders_gen.bal"));
     // X12 shape (with group) in the submodule.
     check generateCodeForSchema(x12EnvelopeSchemaJson, check file:joinPath(x12ModulePath, "rate_gen.bal"));
+    // Discriminator fields generate string-literal union types; compile them too.
+    check generateCodeForSchema(discriminatorUnionSchemaJson, check file:joinPath(discModulePath, "disc_gen.bal"));
+    // Codes needing escaping must also produce source that compiles.
+    string escModulePath = check file:joinPath(pkgPath, "modules", "mesc");
+    check file:createDir(escModulePath, file:RECURSIVE);
+    check generateCodeForSchema(escapedValuesSchemaJson, check file:joinPath(escModulePath, "esc_gen.bal"));
 
     // Prefer the intermediate distribution's `bal` (exported by the gradle
     // build via BALLERINA_DIST_BIN); fall back to the system `bal` for ad-hoc

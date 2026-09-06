@@ -53,7 +53,7 @@ public function convertEsl(string eslDataPath, string eslSegmentsPath, string ou
         json eslJson = check yaml:readFile(eslDataPath);
         edi:EdiSchema ediSchema = check readEslSchema(eslJson, segDefinitions);
         check fixSchema(ediSchema);
-        check io:fileWriteJson(outputPath, ediSchema.toJson());
+        check io:fileWriteJson(outputPath, ediSchema);
     }
 }
 
