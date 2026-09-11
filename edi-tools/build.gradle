@@ -15,6 +15,13 @@
  *
  */
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
 
 description = 'Ballerina - EDI tools'
 
@@ -38,9 +45,10 @@ task updateTomlFiles {
 }
 
 task buildEDIToolCore() {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     // Build the ballerina tools
     doLast {
-        project.exec {
+        execHelper.execOperations.exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -71,10 +79,11 @@ task copyEdiToolsJar {
     }
 }
 task test{
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         try {
             // Run tests for each sample
-            exec {
+            execHelper.execOperations.exec {
                     workingDir project.projectDir
                     environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                     // Expose the intermediate distribution (preloaded with the

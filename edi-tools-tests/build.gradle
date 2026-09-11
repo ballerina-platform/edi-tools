@@ -16,6 +16,13 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
 
 def ediVersion = stripBallerinaExtensionVersion("${project.ballerinaEdiVersion}")
 def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/tests/Ballerina.toml")
@@ -32,6 +39,7 @@ task updateTomlFiles {
 }
 
 task prepareTests {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         file('resources').listFiles().each { sampleFile ->
             if (sampleFile.name == 'common') {
@@ -49,7 +57,7 @@ task prepareTests {
             // unavailable when no system-wide Ballerina is installed (the CLI itself is covered
             // by the JUnit suite in edi-tools-cli)
             try {
-                exec {
+                execHelper.execOperations.exec {
                         workingDir project.projectDir
                         environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                         def genCommand = "run ${ediToolsJar} -- codegen resources/${sampleName}/schema.json modules/${sampleName}/gen_code.bal"
@@ -85,10 +93,11 @@ task prepareTests {
 }
 
 task runTests {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         try {
             // Run tests for each sample
-            exec {
+            execHelper.execOperations.exec {
                     workingDir project.projectDir
                     environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
                     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
