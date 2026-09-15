@@ -16,6 +16,13 @@
  */
 
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.process.ExecOperations
+
+import javax.inject.Inject
+
+abstract class BallerinaExecHelper {
+    @Inject abstract ExecOperations getExecOperations()
+}
 
 version stripBallerinaExtensionVersion("${project.version}")
 
@@ -48,9 +55,10 @@ task updateTomlFiles {
 }
 
 task commitTomlFiles {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     // Commit the Ballerina.toml and Dependencies.toml files
     doLast {
-        project.exec {
+        execHelper.execOperations.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                 commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
@@ -120,9 +128,10 @@ task createBallerinaToolConfigFile {
 }
 
 task buildEDIPackage {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         // Pack and push the EDI Tools package to the local repository
-        exec {
+        execHelper.execOperations.exec {
             workingDir ediPackageDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -155,9 +164,10 @@ task buildEDIPackage {
     }
 }
 task publishEDIPackage {
+    def execHelper = project.objects.newInstance(BallerinaExecHelper)
     doLast {
         // Push the EDI Tools package to the central repository
-        exec {
+        execHelper.execOperations.exec {
             workingDir ediPackageDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {

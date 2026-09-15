@@ -17,7 +17,7 @@
 
 plugins {
     id "com.github.spotbugs-base"
-    id "com.github.johnrengelman.shadow"
+    id "com.gradleup.shadow"
     id "de.undercouch.download"
     id "net.researchgate.release"
 }
@@ -43,6 +43,9 @@ allprojects {
     version = project.version
 
     apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = jacocoVersion
+    }
     apply plugin: 'maven-publish'
 
     repositories {
@@ -165,9 +168,18 @@ task copyStdlibs {
 
 def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
-task build {
-    dependsOn ":edi-tools-package:build"
-    dependsOn ":edi-tools-tests:test"
+if (tasks.names.contains('build')) {
+    tasks.named('build') {
+        dependsOn ":edi-tools-package:build"
+        dependsOn ":edi-tools-tests:test"
+
+    }
+} else {
+    tasks.register('build') {
+        dependsOn ":edi-tools-package:build"
+        dependsOn ":edi-tools-tests:test"
+
+    }
 }
 
 release {
