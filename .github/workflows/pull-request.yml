@@ -8,4 +8,8 @@ jobs:
     name: Run PR Build Workflow
     if: ${{ github.repository_owner == 'ballerina-platform' }}
     uses: ballerina-platform/ballerina-library/.github/workflows/pull-request-build-template.yml@main
+    # TODO: Re-enable the Windows tests once the codegen tests run on Windows: the `bal` process tests need `bal.bat`,
+    # and `testNonJsonFilesAreSkipped` writes a file name containing ':', which Windows rejects.
+    with:
+      additional-windows-test-flags: "-x test"
     secrets: inherit
